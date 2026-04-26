@@ -1,0 +1,112 @@
+import React from "react";
+import { Send, Mail, Phone, MapPin } from "lucide-react";
+
+// Custom SVG Icons for brands not available in current lucide version
+const FacebookIcon = ({ size = 20 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+  </svg>
+);
+
+const YoutubeIcon = ({ size = 20 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.42a2.78 2.78 0 0 0-1.94 2C1 8.14 1 12 1 12s0 3.86.42 5.58a2.78 2.78 0 0 0 1.94 2c1.72.42 8.6.42 8.6.42s6.88 0 8.6-.42a2.78 2.78 0 0 0 1.94-2C23 15.86 23 12 23 12s0-3.86-.42-5.58z" />
+    <polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02" />
+  </svg>
+);
+
+const InstagramIcon = ({ size = 20 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
+    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
+  </svg>
+);
+
+const XIcon = ({ size = 20 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 4l11.733 16h4.267l-11.733 -16z" />
+    <path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772" />
+  </svg>
+);
+
+function Footer() {
+  return (
+    <footer className="bg-[#09264d] text-white pt-20 pb-10 mt-20" dir="rtl">
+      <div className="max-w-7xl mx-auto px-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-16 mb-20">
+          {/* Column 1: About */}
+          <div className="space-y-8">
+            <h2 className="text-4xl font-black tracking-tighter">حضرميديا</h2>
+            <p className="text-blue-100/70 text-base leading-8 font-bold">
+              منصة إخبارية حضرمية مستقلة تهتم بنقل الخبر والتحقيقات المعمقة في حضرموت والمهجر واليمن والعالم.
+            </p>
+            <div className="flex gap-4">
+              {[
+                { icon: FacebookIcon, color: "hover:bg-[#3b5998]" },
+                { icon: XIcon, color: "hover:bg-black" },
+                { icon: YoutubeIcon, color: "hover:bg-[#ff0000]" },
+                { icon: InstagramIcon, color: "hover:bg-[#e1306c]" }
+              ].map((item, i) => (
+                <a key={i} href="#" className={`w-12 h-12 rounded-xl border border-white/10 flex items-center justify-center transition-all ${item.color} hover:border-transparent group`}>
+                  <item.icon size={22} className="group-hover:scale-110 transition-transform" />
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* Column 2: Quick Links */}
+          <div className="space-y-8">
+            <h3 className="text-xl font-black border-r-4 border-red-600 pr-4">روابط سريعة</h3>
+            <ul className="space-y-5 text-blue-100/60 font-bold">
+              {["الرئيسية", "أحداث", "تقارير كرس ميديا", "قصص", "إحصائيات إخبارية", "كاريكاتير", "مقال", "الدراسات"].map((link) => (
+
+                <li key={link}>
+                  <a href="#" className="hover:text-white hover:pr-2 transition-all block">{link}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Column 3: Services */}
+          <div className="space-y-8">
+            <h3 className="text-xl font-black border-r-4 border-red-600 pr-4">خدمات</h3>
+            <ul className="space-y-5 text-blue-100/60 font-bold">
+              {["عن حضرميديا", "فريق التحرير", "أعلن معنا", "سياسة الخصوصية", "شروط الاستخدام", "اتصل بنا"].map((link) => (
+                <li key={link}>
+                  <a href="#" className="hover:text-white hover:pr-2 transition-all block">{link}</a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Column 4: Newsletter */}
+          <div className="space-y-8">
+            <h3 className="text-xl font-black border-r-4 border-red-600 pr-4">النشرة البريدية</h3>
+            <p className="text-blue-100/60 font-bold leading-7">اشترك في نشرتنا البريدية ليصلك كل جديد</p>
+            <div className="space-y-4">
+              <div className="relative">
+                <input type="email" placeholder="أدخل بريدك الإلكتروني" className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-red-600 transition-all placeholder:text-blue-100/30 font-bold" />
+              </div>
+              <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl transition-all shadow-lg shadow-blue-900/40">اشتراك</button>
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom Bar */}
+        <div className="border-t border-white/5 pt-10 flex flex-col md:flex-row justify-between items-center gap-6 text-sm font-bold text-blue-100/40">
+          <p>جميع الحقوق محفوظة © 2024 حضرميديا</p>
+          <div className="flex gap-8">
+            <a href="#" className="hover:text-white transition-colors">سياسة الخصوصية</a>
+            <span className="text-white/5">|</span>
+            <a href="#" className="hover:text-white transition-colors">شروط الاستخدام</a>
+            <span className="text-white/5">|</span>
+            <a href="#" className="hover:text-white transition-colors">خريطة الموقع</a>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+export default Footer;
