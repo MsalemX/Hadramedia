@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import { 
   PlayCircle, Image as ImageIcon, Map, FileText, Bell, ChevronLeft, 
   Clock, Eye, BarChart2, Video, MousePointer2, Building2, Users, Leaf, 
@@ -107,14 +107,14 @@ const ReportsPage = () => {
           <main className="lg:col-span-9 space-y-12">
             
             {/* Featured Report */}
-            <section className="relative rounded-[2.5rem] overflow-hidden h-[540px] group shadow-2xl">
+            <Link to="/report/1" className="relative rounded-[2.5rem] overflow-hidden h-[540px] group shadow-2xl block">
               <img src={portImg} className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" alt="" />
               <div className="absolute inset-0 bg-gradient-to-t from-[#09264d] via-[#09264d]/20 to-transparent" />
               
               <div className="absolute inset-0 flex items-center justify-center">
-                 <button className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 text-white hover:scale-110 hover:bg-red-600 transition-all shadow-2xl group/play">
+                 <div className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 text-white hover:scale-110 hover:bg-red-600 transition-all shadow-2xl group/play">
                     <PlayCircle size={48} fill="currentColor" className="text-white group-hover/play:text-white" />
-                 </button>
+                 </div>
               </div>
 
               <div className="absolute bottom-0 right-0 left-0 p-12 text-white">
@@ -137,34 +137,34 @@ const ReportsPage = () => {
                    </div>
                 </div>
               </div>
-            </section>
+            </Link>
 
             {/* Reports Grid */}
             <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-               {reports.map((report, i) => (
-                 <article key={i} className="bg-white rounded-[2rem] overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group">
-                    <div className="relative h-56 overflow-hidden">
-                       <img src={report.image} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                       <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-all" />
-                       <span className="absolute top-4 right-4 bg-[#09264d] text-white text-[9px] font-black py-1.5 px-4 rounded-lg shadow-lg uppercase tracking-widest">{report.category}</span>
-                    </div>
-                    <div className="p-8">
-                       <h3 className="text-lg font-black text-slate-800 mb-4 leading-tight group-hover:text-red-600 transition-colors">{report.title}</h3>
-                       <p className="text-slate-500 text-xs font-bold leading-relaxed mb-8 line-clamp-2">{report.excerpt}</p>
-                       
-                       <div className="flex items-center justify-between pt-6 border-t border-gray-50">
-                          <div className="flex items-center gap-1.5 text-[10px] font-black text-[#09264d]">
-                             <Video size={14} className="text-red-600" />
-                             <span>{report.type}</span>
-                          </div>
-                          <div className="flex items-center gap-1 text-[10px] text-slate-400 font-bold">
-                             <Clock size={12} />
-                             <span>{report.date}</span>
-                          </div>
-                       </div>
-                    </div>
-                 </article>
-               ))}
+                {reports.map((report, i) => (
+                  <Link to={`/report/${i + 2}`} key={i} className="bg-white rounded-[2rem] overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group block">
+                     <div className="relative h-56 overflow-hidden">
+                        <img src={report.image} alt="" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                        <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-all" />
+                        <span className="absolute top-4 right-4 bg-[#09264d] text-white text-[9px] font-black py-1.5 px-4 rounded-lg shadow-lg uppercase tracking-widest">{report.category}</span>
+                     </div>
+                     <div className="p-8">
+                        <h3 className="text-lg font-black text-slate-800 mb-4 leading-tight group-hover:text-red-600 transition-colors">{report.title}</h3>
+                        <p className="text-slate-500 text-xs font-bold leading-relaxed mb-8 line-clamp-2">{report.excerpt}</p>
+                        
+                        <div className="flex items-center justify-between pt-6 border-t border-gray-50">
+                           <div className="flex items-center gap-1.5 text-[10px] font-black text-[#09264d]">
+                              <Video size={14} className="text-red-600" />
+                              <span>{report.type}</span>
+                           </div>
+                           <div className="flex items-center gap-1 text-[10px] text-slate-400 font-bold">
+                              <Clock size={12} />
+                              <span>{report.date}</span>
+                           </div>
+                        </div>
+                     </div>
+                  </Link>
+                ))}
             </section>
 
             {/* Load More */}

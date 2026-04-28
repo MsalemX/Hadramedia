@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import { Filter, Calendar, Bell, ChevronLeft, Clock, Eye, ChevronDown } from 'lucide-react';
 
 // Image Assets
@@ -168,21 +168,22 @@ const EventsPage = () => {
           <main className="lg:col-span-9 space-y-12 order-1 lg:order-2">
             
             {/* Featured Hero */}
-            <section className="relative rounded-[2.5rem] overflow-hidden h-[480px] group shadow-2xl">
+            <Link to="/post/1" className="relative rounded-[2rem] md:rounded-[2.5rem] overflow-hidden h-[300px] md:h-[480px] group shadow-2xl block">
               <img src={heroImg} className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" alt="" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/30 to-transparent" />
               
-              <div className="absolute bottom-0 right-0 left-0 p-12 text-white">
-                <span className="bg-blue-600 px-4 py-2 rounded-lg text-[10px] font-black mb-6 inline-block shadow-lg">أحداث محلية</span>
-                <h2 className="text-4xl font-black mb-6 leading-tight max-w-3xl drop-shadow-lg group-hover:text-blue-200 transition-colors">تنمية حضرموت: مشاريع جديدة لتعزيز البنية التحتية ودعم الاقتصاد المحلي</h2>
-                <p className="text-gray-300 text-base mb-8 max-w-2xl leading-relaxed font-bold opacity-90">تواصل الجهات الحكومية والجهات المحلية تنفيذ مشاريع تنموية في مختلف القطاعات تهدف إلى تحسين الخدمات وتوفير فرص العمل.</p>
+              <div className="absolute bottom-0 right-0 left-0 p-6 md:p-12 text-white">
+                <span className="bg-blue-600 px-4 py-2 rounded-lg text-[10px] font-black mb-4 md:mb-6 inline-block shadow-lg">أحداث محلية</span>
+                <h2 className="text-2xl md:text-4xl font-black mb-4 md:mb-6 leading-tight max-w-3xl drop-shadow-lg group-hover:text-blue-200 transition-colors">تنمية حضرموت: مشاريع جديدة لتعزيز البنية التحتية ودعم الاقتصاد المحلي</h2>
+                <p className="hidden md:block text-gray-300 text-base mb-8 max-w-2xl leading-relaxed font-bold opacity-90">تواصل الجهات الحكومية والجهات المحلية تنفيذ مشاريع تنموية في مختلف القطاعات تهدف إلى تحسين الخدمات وتوفير فرص العمل.</p>
                 
-                <div className="flex items-center gap-8 text-xs font-black text-gray-400 border-t border-white/10 pt-8">
-                  <span className="flex items-center gap-2"><Clock size={16} className="text-blue-500" /> 20 مايو 2024</span>
-                  <span className="flex items-center gap-2"><Eye size={16} className="text-blue-500" /> 12.5K مشاهدة</span>
+                <div className="flex items-center gap-4 md:gap-8 text-[10px] md:text-xs font-black text-gray-400 border-t border-white/10 pt-6 md:pt-8">
+                  <span className="flex items-center gap-2"><Clock size={14} className="text-blue-500" /> 20 مايو 2024</span>
+                  <span className="flex items-center gap-2"><Eye size={14} className="text-blue-500" /> 12.5K مشاهدة</span>
                 </div>
               </div>
-            </section>
+
+            </Link>
 
             {/* Latest Events List */}
             <section>
@@ -193,7 +194,7 @@ const EventsPage = () => {
               
               <div className="space-y-6">
                 {events.map((event) => (
-                  <div key={event.id} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col md:flex-row gap-8 hover:shadow-md transition-all group cursor-pointer">
+                  <Link to={`/post/${event.id}`} key={event.id} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col md:flex-row gap-8 hover:shadow-md transition-all group cursor-pointer">
                     <div className="flex-1 order-2 md:order-1">
                       <div className="flex items-center gap-3 mb-4">
                         <span className="bg-slate-100 text-[#09264d] px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest">{event.category}</span>
@@ -208,7 +209,7 @@ const EventsPage = () => {
                     <div className="w-full md:w-56 h-40 shrink-0 order-1 md:order-2 overflow-hidden rounded-2xl shadow-inner">
                       <img src={event.image} alt="" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
               

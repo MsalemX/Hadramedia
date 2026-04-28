@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import { 
   Newspaper, TrendingUp, Bell, ChevronLeft, Clock, User, 
   Share2, Quote, PenTool, MessageSquare, Filter, ChevronDown
@@ -70,7 +70,7 @@ const ArticlesPage = () => {
           <main className="lg:col-span-9 space-y-12 order-1 lg:order-2">
             
             {/* Featured Opinion Piece */}
-            <section className="bg-white rounded-[3rem] overflow-hidden border border-gray-100 shadow-2xl flex flex-col md:flex-row min-h-[480px] group">
+            <Link to="/article/1" className="bg-white rounded-[3rem] overflow-hidden border border-gray-100 shadow-2xl flex flex-col md:flex-row min-h-[480px] group block">
                <div className="md:w-1/2 p-12 lg:p-16 flex flex-col justify-center">
                   <div className="flex items-center gap-3 mb-8">
                      <Quote size={40} className="text-red-600 opacity-20" />
@@ -93,7 +93,7 @@ const ArticlesPage = () => {
                   <img src={heroImg} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" alt="Author" />
                   <div className="absolute inset-0 bg-gradient-to-r from-white via-transparent to-transparent hidden md:block" />
                </div>
-            </section>
+            </Link>
 
             {/* Articles List */}
             <section className="space-y-8">
@@ -104,7 +104,7 @@ const ArticlesPage = () => {
 
                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                   {articles.map((art, i) => (
-                    <article key={i} className="bg-white rounded-[2.5rem] overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl transition-all duration-500 group flex flex-col">
+                    <Link to={`/article/${i + 2}`} key={i} className="bg-white rounded-[2.5rem] overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl transition-all duration-500 group flex flex-col block">
                        <div className="relative h-64 overflow-hidden">
                           <img src={art.image} alt="" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                           <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-all" />
@@ -127,12 +127,12 @@ const ArticlesPage = () => {
                                 <span className="flex items-center gap-1"><Clock size={14} /> 6 دقائق قراءة</span>
                                 <span>{art.date}</span>
                              </div>
-                             <button className="text-[#09264d] hover:text-red-600 transition-colors">
+                             <button className="text-[#09264d] hover:text-red-600 transition-colors" onClick={(e) => e.preventDefault()}>
                                 <Share2 size={18} />
                              </button>
                           </div>
                        </div>
-                    </article>
+                    </Link>
                   ))}
                </div>
             </section>

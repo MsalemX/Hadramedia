@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import { 
   BarChart3, Bell, ChevronLeft, Clock, Eye, FileText, 
   Share2, MessageSquare, Filter, ChevronDown, CheckSquare, Calendar
@@ -70,31 +70,28 @@ const StatisticsPage = () => {
           <main className="lg:col-span-9 space-y-12 order-1 lg:order-2">
             
             {/* Featured Survey Report */}
-            <section className="relative rounded-[3rem] overflow-hidden h-[540px] group shadow-2xl">
+            <Link to="/statistics/1" className="relative rounded-[2rem] md:rounded-[3rem] overflow-hidden h-[300px] md:h-[540px] group shadow-2xl block">
               <img src="images/hero.png" className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" alt="" />
               <div className="absolute inset-0 bg-gradient-to-t from-[#09264d] via-[#09264d]/40 to-transparent" />
               
-              <div className="absolute bottom-0 right-0 left-0 p-12 text-white">
-                <span className="bg-[#e00013] px-5 py-2 rounded-xl text-[10px] font-black mb-6 inline-block shadow-lg uppercase tracking-widest">استطلاع رأي</span>
-                <h2 className="text-4xl lg:text-5xl font-black mb-6 leading-tight max-w-4xl drop-shadow-lg group-hover:text-red-400 transition-colors">صوت المواطن: كيف يرى الحضارم مستقبل التنمية في محافظتهم؟</h2>
-                <p className="text-gray-200 text-lg mb-8 max-w-3xl leading-relaxed font-bold opacity-90">تقرير شامل يحلل نتائج الاستطلاع السنوي الكبير لآراء المواطنين حول الخدمات والتعليم والأمن في مختلف المديريات.</p>
+              <div className="absolute bottom-0 right-0 left-0 p-6 md:p-12 text-white">
+                <span className="bg-[#e00013] px-4 md:px-5 py-1.5 md:py-2 rounded-xl text-[9px] md:text-[10px] font-black mb-4 md:mb-6 inline-block shadow-lg uppercase tracking-widest">استطلاع رأي</span>
+                <h2 className="text-2xl md:text-4xl lg:text-5xl font-black mb-4 md:mb-6 leading-tight max-w-4xl drop-shadow-lg group-hover:text-red-400 transition-colors">صوت المواطن: كيف يرى الحضارم مستقبل التنمية في محافظتهم؟</h2>
+                <p className="hidden md:block text-gray-200 text-lg mb-8 max-w-3xl leading-relaxed font-bold opacity-90">تقرير شامل يحلل نتائج الاستطلاع السنوي الكبير لآراء المواطنين حول الخدمات والتعليم والأمن في مختلف المديريات.</p>
                 
-                <div className="flex flex-wrap items-center gap-8 text-xs font-black text-gray-300 border-t border-white/10 pt-8">
-                   <div className="flex items-center gap-2 bg-white/5 px-4 py-2 rounded-lg border border-white/10">
-                      <CheckSquare size={16} className="text-red-600" />
-                      <span>المشاركين: 5,420 مواطن ومواطنة</span>
+                <div className="flex flex-wrap items-center gap-4 md:gap-8 text-[10px] md:text-xs font-black text-gray-300 border-t border-white/10 pt-6 md:pt-8">
+                   <div className="flex items-center gap-2 bg-white/5 px-3 md:px-4 py-1.5 md:py-2 rounded-lg border border-white/10">
+                      <CheckSquare size={14} className="text-red-600" />
+                      <span>المشاركين: 5,420</span>
                    </div>
                    <div className="flex items-center gap-2">
-                      <Calendar size={16} className="text-red-600" />
-                      <span>تاريخ النشر: 22 مايو 2024</span>
-                   </div>
-                   <div className="flex items-center gap-2">
-                      <MessageSquare size={16} className="text-red-600" />
-                      <span>124 تعليق</span>
+                      <Calendar size={14} className="text-red-600" />
+                      <span>22 مايو 2024</span>
                    </div>
                 </div>
               </div>
-            </section>
+
+            </Link>
 
             {/* Surveys List */}
             <section className="space-y-8">
@@ -105,7 +102,7 @@ const StatisticsPage = () => {
 
                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                   {surveys.map((survey, i) => (
-                    <article key={i} className="bg-white rounded-[2.5rem] overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl transition-all duration-500 group flex flex-col">
+                    <Link to={`/statistics/${i + 2}`} key={i} className="bg-white rounded-[2.5rem] overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl transition-all duration-500 group flex flex-col block">
                        <div className="relative h-64 overflow-hidden">
                           <img src={survey.image} alt="" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                           <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-all" />
@@ -122,12 +119,12 @@ const StatisticsPage = () => {
                                    <span className="flex items-center gap-1"><Clock size={12} /> {survey.date}</span>
                                 </div>
                              </div>
-                             <button className="flex items-center gap-1 text-[11px] font-black text-[#09264d] hover:text-red-600 transition-colors">
+                             <span className="flex items-center gap-1 text-[11px] font-black text-[#09264d] group-hover:text-red-600 transition-colors">
                                 عرض التقرير <ChevronLeft size={16} />
-                             </button>
+                             </span>
                           </div>
                        </div>
-                    </article>
+                    </Link>
                   ))}
                </div>
             </section>
@@ -173,13 +170,13 @@ const StatisticsPage = () => {
               <h3 className="text-lg font-black text-slate-800 mb-8 border-r-4 border-red-600 pr-4">الأكثر متابعة</h3>
               <div className="space-y-8">
                 {[1, 2, 3].map((id) => (
-                  <div key={id} className="group cursor-pointer">
+                  <Link to={`/statistics/${id}`} key={id} className="group cursor-pointer block">
                     <h4 className="text-sm font-black text-slate-800 leading-snug group-hover:text-red-600 transition-colors">ما هو القطاع الأكثر حاجة للإصلاح في حضرموت؟</h4>
                     <div className="flex items-center gap-4 mt-3 text-[10px] text-slate-400 font-bold">
                        <span className="text-red-600">8,500 صوت</span>
                        <span className="flex items-center gap-1"><Eye size={12} /> 12K</span>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>

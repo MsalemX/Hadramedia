@@ -1,5 +1,5 @@
-import React from "react";
 import { Send, Mail, Phone, MapPin } from "lucide-react";
+import { Link } from "react-router-dom";
 
 // Custom SVG Icons for brands not available in current lucide version
 const FacebookIcon = ({ size = 20 }) => (
@@ -55,26 +55,39 @@ function Footer() {
             </div>
           </div>
 
-          {/* Column 2: Quick Links */}
           <div className="space-y-8">
             <h3 className="text-xl font-black border-r-4 border-red-600 pr-4">روابط سريعة</h3>
             <ul className="space-y-5 text-blue-100/60 font-bold">
-              {["الرئيسية", "أحداث", "تقارير كرس ميديا", "قصص", "إحصائيات إخبارية", "كاريكاتير", "مقال", "الدراسات"].map((link) => (
-
-                <li key={link}>
-                  <a href="#" className="hover:text-white hover:pr-2 transition-all block">{link}</a>
+              {[
+                { label: "الرئيسية", to: "/" },
+                { label: "أحداث", to: "/events" },
+                { label: "تقارير كرس ميديا", to: "/reports" },
+                { label: "قصص", to: "/stories" },
+                { label: "استطلاعات", to: "/statistics" },
+                { label: "كاريكاتير", to: "/cartoons" },
+                { label: "مقال", to: "/article" },
+                { label: "الدراسات", to: "/studies" }
+              ].map((link) => (
+                <li key={link.label}>
+                  <Link to={link.to} className="hover:text-white hover:pr-2 transition-all block">{link.label}</Link>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Column 3: Services */}
           <div className="space-y-8">
             <h3 className="text-xl font-black border-r-4 border-red-600 pr-4">خدمات</h3>
             <ul className="space-y-5 text-blue-100/60 font-bold">
-              {["عن حضرميديا", "فريق التحرير", "أعلن معنا", "سياسة الخصوصية", "شروط الاستخدام", "اتصل بنا"].map((link) => (
-                <li key={link}>
-                  <a href="#" className="hover:text-white hover:pr-2 transition-all block">{link}</a>
+              {[
+                { label: "عن حضرميديا", to: "/about" },
+                { label: "فريق التحرير", to: "/team" },
+                { label: "أعلن معنا", to: "/advertise" },
+                { label: "سياسة الخصوصية", to: "/privacy" },
+                { label: "شروط الاستخدام", to: "/terms" },
+                { label: "اتصل بنا", to: "/contact" }
+              ].map((link, i) => (
+                <li key={i}>
+                  <Link to={link.to} className="hover:text-white hover:pr-2 transition-all block">{link.label}</Link>
                 </li>
               ))}
             </ul>
@@ -93,15 +106,14 @@ function Footer() {
           </div>
         </div>
 
-        {/* Bottom Bar */}
         <div className="border-t border-white/5 pt-10 flex flex-col md:flex-row justify-between items-center gap-6 text-sm font-bold text-blue-100/40">
           <p>جميع الحقوق محفوظة © 2024 حضرميديا</p>
           <div className="flex gap-8">
-            <a href="#" className="hover:text-white transition-colors">سياسة الخصوصية</a>
+            <Link to="/privacy" className="hover:text-white transition-colors">سياسة الخصوصية</Link>
             <span className="text-white/5">|</span>
-            <a href="#" className="hover:text-white transition-colors">شروط الاستخدام</a>
+            <Link to="/terms" className="hover:text-white transition-colors">شروط الاستخدام</Link>
             <span className="text-white/5">|</span>
-            <a href="#" className="hover:text-white transition-colors">خريطة الموقع</a>
+            <Link to="/contact" className="hover:text-white transition-colors">اتصل بنا</Link>
           </div>
         </div>
       </div>

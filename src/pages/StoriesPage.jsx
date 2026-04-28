@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import { 
   BookOpen, Bell, ChevronLeft, Clock, User, Share2, Eye, Star, Users, Leaf, 
   Home, Camera, Palette, Info, HelpCircle, Image as ImageIcon, ChevronDown
@@ -93,13 +93,13 @@ const StoriesPage = () => {
               <h3 className="text-lg font-black text-slate-800 mb-8 border-r-4 border-red-600 pr-4">الأكثر قراءة</h3>
               <div className="space-y-6">
                 {[1, 2, 3].map((id) => (
-                  <div key={id} className="flex gap-4 items-center group cursor-pointer">
+                  <Link to={`/story/${id}`} key={id} className="flex gap-4 items-center group cursor-pointer block">
                     <div className="text-2xl font-black text-slate-200 group-hover:text-red-600 transition-colors shrink-0">0{id}</div>
                     <div>
                       <h4 className="text-xs font-black text-slate-800 leading-tight group-hover:text-red-600 transition-colors">من بائع متجول إلى صاحب متجر ناجح</h4>
                       <span className="text-[9px] text-slate-400 font-bold mt-1 block">18 مايو 2024</span>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -109,7 +109,7 @@ const StoriesPage = () => {
           <main className="lg:col-span-9 space-y-12">
             
             {/* Featured Story */}
-            <section className="relative rounded-[3rem] overflow-hidden h-[540px] group shadow-2xl">
+            <Link to="/story/1" className="relative rounded-[3rem] overflow-hidden h-[540px] group shadow-2xl block">
               <img src={featuredStory.image} className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" alt="" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
               
@@ -133,12 +133,12 @@ const StoriesPage = () => {
                    </div>
                 </div>
               </div>
-            </section>
+            </Link>
 
             {/* Stories Grid */}
             <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
                {stories.map((story, i) => (
-                 <article key={i} className="bg-white rounded-[2.5rem] overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group flex flex-col">
+                 <Link to={`/story/${i + 2}`} key={i} className="bg-white rounded-[2.5rem] overflow-hidden border border-gray-100 shadow-sm hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group flex flex-col block">
                     <div className="relative h-64 overflow-hidden">
                        <img src={story.image} alt="" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-all" />
@@ -153,12 +153,12 @@ const StoriesPage = () => {
                              <Clock size={14} />
                              <span>{story.date}</span>
                           </div>
-                          <button className="flex items-center gap-1.5 text-[10px] font-black text-[#09264d] hover:text-red-600 transition-colors uppercase tracking-widest">
+                          <span className="flex items-center gap-1.5 text-[10px] font-black text-[#09264d] group-hover:text-red-600 transition-colors uppercase tracking-widest">
                              اقرأ القصة <ChevronLeft size={14} />
-                          </button>
+                          </span>
                        </div>
                     </div>
-                 </article>
+                 </Link>
                ))}
             </section>
 

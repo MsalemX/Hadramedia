@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import { 
   LayoutGrid, TrendingUp, Bell, ChevronLeft, Clock, User, 
   Share2, Calendar, Filter, ChevronDown, Download, Heart
@@ -74,7 +74,7 @@ const CartoonsPage = () => {
           <main className="lg:col-span-9 space-y-12 order-1 lg:order-2">
             
             {/* Featured Caricature */}
-            <section className="bg-white rounded-[3rem] overflow-hidden border border-gray-100 shadow-2xl p-8 lg:p-12">
+            <Link to="/cartoon/1" className="bg-white rounded-[2rem] md:rounded-[3rem] overflow-hidden border border-gray-100 shadow-2xl p-6 md:p-8 lg:p-12 block group/main">
                <div className="relative rounded-[2rem] overflow-hidden bg-slate-50 border-8 border-slate-100 shadow-inner group">
                   <img src={heroImg} className="w-full h-auto object-cover transition-transform duration-700 group-hover:scale-105" alt="Featured Caricature" />
                   <div className="absolute top-6 left-6 flex gap-3">
@@ -86,12 +86,13 @@ const CartoonsPage = () => {
                      </button>
                   </div>
                </div>
-               <div className="mt-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div className="mt-8 md:mt-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
                   <div>
                     <span className="bg-red-600 px-4 py-1.5 rounded-lg text-[9px] font-black text-white mb-3 inline-block uppercase tracking-widest">كاريكاتير اليوم</span>
-                    <h2 className="text-3xl font-black text-[#09264d] leading-tight">ارتفاع الأسعار وحلم "القفة" المملوءة</h2>
-                    <p className="text-slate-500 font-bold text-sm mt-3">بريشة: فريق حضرميديا - 20 مايو 2024</p>
+                    <h2 className="text-2xl md:text-3xl font-black text-[#09264d] leading-tight group-hover/main:text-red-600 transition-colors">ارتفاع الأسعار وحلم "القفة" المملوءة</h2>
+                    <p className="text-slate-500 font-bold text-xs md:text-sm mt-3">بريشة: فريق حضرميديا - 20 مايو 2024</p>
                   </div>
+
                   <div className="flex items-center gap-6">
                      <div className="flex flex-col items-center gap-1">
                         <span className="text-2xl font-black text-[#09264d]">4.2K</span>
@@ -104,12 +105,12 @@ const CartoonsPage = () => {
                      </div>
                   </div>
                </div>
-            </section>
+            </Link>
 
             {/* Caricatures Grid */}
             <section className="grid grid-cols-1 md:grid-cols-2 gap-10">
                {cartoons.map((cartoon, i) => (
-                 <article key={i} className="bg-white rounded-[2.5rem] p-6 border border-gray-100 shadow-sm hover:shadow-2xl transition-all duration-500 group">
+                 <Link to={`/cartoon/${i + 2}`} key={i} className="bg-white rounded-[2.5rem] p-6 border border-gray-100 shadow-sm hover:shadow-2xl transition-all duration-500 group block">
                     <div className="relative rounded-[2rem] overflow-hidden bg-slate-50 border-4 border-slate-50 shadow-sm mb-6 aspect-[4/3]">
                        <img src={cartoon.image} alt="" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                        <div className="absolute inset-0 bg-black/5 group-hover:bg-transparent transition-all" />
@@ -123,16 +124,16 @@ const CartoonsPage = () => {
                              <span>{cartoon.date}</span>
                           </div>
                           <div className="flex items-center gap-4">
-                             <button className="flex items-center gap-1.5 text-xs font-black text-slate-400 hover:text-red-600 transition-colors">
+                             <button className="flex items-center gap-1.5 text-xs font-black text-slate-400 hover:text-red-600 transition-colors" onClick={(e) => e.preventDefault()}>
                                 <Heart size={16} /> <span>{cartoon.likes}</span>
                              </button>
-                             <button className="text-slate-400 hover:text-[#09264d] transition-colors">
+                             <button className="text-slate-400 hover:text-[#09264d] transition-colors" onClick={(e) => e.preventDefault()}>
                                 <Share2 size={16} />
                              </button>
                           </div>
                        </div>
                     </div>
-                 </article>
+                 </Link>
                ))}
             </section>
 

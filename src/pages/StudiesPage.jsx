@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import { 
   FileText, Bell, Clock, User, Send, Tag, ChevronLeft, 
   Download, Eye, BookOpen, Filter, Search, ShieldCheck
@@ -64,7 +64,7 @@ const StudiesPage = () => {
           <main className="lg:col-span-9 space-y-12 order-1 lg:order-2">
             
             {/* Featured Study Document */}
-            <section className="bg-[#09264d] rounded-[3rem] overflow-hidden shadow-2xl flex flex-col md:flex-row group border border-white/5">
+            <Link to="/study/1" className="bg-[#09264d] rounded-[3rem] overflow-hidden shadow-2xl flex flex-col md:flex-row group border border-white/5 block">
                <div className="md:w-2/5 relative overflow-hidden bg-white/5 p-12 flex items-center justify-center">
                   <div className="relative group-hover:scale-105 transition-transform duration-700 shadow-2xl shadow-black/50">
                      <img src={portImg} className="w-64 h-80 object-cover rounded-lg border-l-8 border-red-600 shadow-2xl" alt="Study Cover" />
@@ -88,15 +88,15 @@ const StudiesPage = () => {
                   </div>
 
                   <div className="mt-12 flex gap-4">
-                     <a href="#" className="flex-1 bg-red-600 hover:bg-red-700 text-white font-black py-5 rounded-2xl transition-all shadow-xl shadow-red-900/20 flex items-center justify-center gap-3">
+                     <span className="flex-1 bg-red-600 hover:bg-red-700 text-white font-black py-5 rounded-2xl transition-all shadow-xl shadow-red-900/20 flex items-center justify-center gap-3">
                         <Download size={20} /> تحميل الدراسة (PDF)
-                     </a>
-                     <button className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center hover:bg-white/20 transition-all border border-white/10">
+                     </span>
+                     <button className="w-16 h-16 bg-white/10 rounded-2xl flex items-center justify-center hover:bg-white/20 transition-all border border-white/10" onClick={(e) => e.preventDefault()}>
                         <BookOpen size={24} />
                      </button>
                   </div>
                </div>
-            </section>
+            </Link>
 
             {/* Studies List Grid */}
             <section className="space-y-10">
@@ -107,11 +107,11 @@ const StudiesPage = () => {
 
                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                   {studies.map((study, i) => (
-                    <article key={i} className="bg-white rounded-[2.5rem] overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl transition-all duration-500 group flex flex-col p-6">
+                    <Link to={`/study/${i + 2}`} key={i} className="bg-white rounded-[2.5rem] overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl transition-all duration-500 group flex flex-col p-6 block">
                        <div className="relative h-64 overflow-hidden rounded-[2rem] shadow-inner bg-slate-50 mb-8 border border-gray-50">
                           <img src={study.image} alt="" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-all flex items-center justify-center">
-                             <button className="bg-white text-[#09264d] p-4 rounded-full shadow-2xl hover:bg-red-600 hover:text-white transition-all transform translate-y-4 group-hover:translate-y-0 duration-500">
+                             <button className="bg-white text-[#09264d] p-4 rounded-full shadow-2xl hover:bg-red-600 hover:text-white transition-all transform translate-y-4 group-hover:translate-y-0 duration-500" onClick={(e) => e.preventDefault()}>
                                 <Download size={24} />
                              </button>
                           </div>
@@ -129,12 +129,12 @@ const StudiesPage = () => {
                                    <span className="flex items-center gap-1 text-red-600"><FileText size={12} /> {study.pages}</span>
                                 </div>
                              </div>
-                             <a href="#" className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-[#09264d] hover:bg-red-600 hover:text-white transition-all">
+                             <span className="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-[#09264d] group-hover:bg-red-600 group-hover:text-white transition-all">
                                 <ChevronLeft size={18} />
-                             </a>
+                             </span>
                           </div>
                        </div>
-                    </article>
+                    </Link>
                   ))}
                </div>
             </section>
@@ -162,7 +162,7 @@ const StudiesPage = () => {
               <h3 className="text-lg font-black text-slate-800 mb-8 border-r-4 border-red-600 pr-4">الأكثر تحميلاً</h3>
               <div className="space-y-8">
                 {[1, 2, 3, 4].map((id) => (
-                  <div key={id} className="group cursor-pointer">
+                  <Link to={`/study/${id}`} key={id} className="group cursor-pointer block">
                     <div className="flex items-center gap-2 mb-2 text-[10px] font-black text-red-600">
                        <ShieldCheck size={14} />
                        <span>دراسة محكمة</span>
@@ -172,7 +172,7 @@ const StudiesPage = () => {
                        <span className="flex items-center gap-1"><Download size={12} /> 1.2K تحميل</span>
                        <span className="flex items-center gap-1"><Eye size={12} /> 3.5K</span>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             </div>

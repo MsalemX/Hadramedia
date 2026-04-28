@@ -21,9 +21,9 @@ function Hero() {
   const duplicatedNews = [...sidebarNews, ...sidebarNews];
 
   return (
-    <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8 h-[540px]">
+    <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8 lg:h-[540px]">
       {/* Animated Sidebar News (Downward Motion) */}
-      <div className="lg:col-span-3 h-full overflow-hidden relative bg-white rounded-3xl border border-gray-100 shadow-sm">
+      <div className="lg:col-span-3 h-[300px] lg:h-full overflow-hidden relative bg-white rounded-3xl border border-gray-100 shadow-sm">
         <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-white via-white/80 to-transparent z-10" />
         <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white via-white/80 to-transparent z-10" />
 
@@ -56,14 +56,14 @@ function Hero() {
       </div>
 
       {/* Main Feature */}
-      <div className="lg:col-span-9 relative rounded-3xl overflow-hidden h-full group shadow-2xl">
+      <div className="lg:col-span-9 relative rounded-3xl overflow-hidden h-[400px] lg:h-full group shadow-2xl order-first lg:order-last">
         <img src={heroImg} className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" alt="Feature" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
 
-        <div className="absolute bottom-0 right-0 left-0 p-12 text-white">
-          <span className="bg-[#e00013] px-4 py-2 rounded-lg text-xs font-black mb-6 inline-block shadow-lg">أخبار وتحقيقات</span>
-          <h1 className="text-5xl font-black mb-6 leading-tight max-w-3xl drop-shadow-lg">تنمية حضرموت: مشاريع جديدة لتعزيز التنمية ودعم الاقتصاد المحلي</h1>
-          <p className="text-gray-200 text-lg mb-8 max-w-2xl leading-relaxed font-bold opacity-90">تواصل الجهات الحكومية والجهات المحلية تنفيذ مشاريع تنموية في مختلف القطاعات تهدف لتحسين الخدمات وتوفير فرص العمل.</p>
+        <div className="absolute bottom-0 right-0 left-0 p-6 md:p-12 text-white">
+          <span className="bg-[#e00013] px-4 py-2 rounded-lg text-[10px] md:text-xs font-black mb-4 md:mb-6 inline-block shadow-lg">أخبار وتحقيقات</span>
+          <h1 className="text-2xl md:text-4xl lg:text-5xl font-black mb-4 md:mb-6 leading-tight max-w-3xl drop-shadow-lg">تنمية حضرموت: مشاريع جديدة لتعزيز التنمية ودعم الاقتصاد المحلي</h1>
+          <p className="hidden md:block text-gray-200 text-lg mb-8 max-w-2xl leading-relaxed font-bold opacity-90">تواصل الجهات الحكومية والجهات المحلية تنفيذ مشاريع تنموية في مختلف القطاعات تهدف لتحسين الخدمات وتوفير فرص العمل.</p>
 
           <div className="flex items-center gap-8 text-sm font-black text-gray-300 border-t border-white/10 pt-8">
             <span>20 مايو 2024</span>
@@ -88,16 +88,16 @@ function Hero() {
 
 function AdBanner() {
   return (
-    <div className="relative rounded-2xl overflow-hidden h-40 mb-16 shadow-2xl border border-white/5">
+    <div className="relative rounded-2xl overflow-hidden h-48 md:h-40 mb-10 md:mb-16 shadow-2xl border border-white/5">
       <img src={adImg} className="absolute inset-0 w-full h-full object-cover" alt="Ad" />
-      <div className="absolute inset-0 bg-[#09264d]/60 backdrop-blur-[2px] flex items-center px-16 justify-between">
+      <div className="absolute inset-0 bg-[#09264d]/60 backdrop-blur-[2px] flex flex-col md:flex-row items-center px-6 md:px-16 justify-center md:justify-between text-center md:text-right gap-6">
         <div className="relative z-10">
-          <h2 className="text-4xl font-black text-white mb-2 tracking-tight">مساحة إعلانية</h2>
-          <p className="text-blue-100 text-xl font-bold opacity-90">ضع إعلانك هنا ووصل إلى آلاف القراء يومياً</p>
+          <h2 className="text-2xl md:text-4xl font-black text-white mb-2 tracking-tight">مساحة إعلانية</h2>
+          <p className="text-blue-100 text-sm md:text-xl font-bold opacity-90">ضع إعلانك هنا ووصل إلى آلاف القراء يومياً</p>
         </div>
-        <div className="flex items-center gap-8 relative z-10">
-          <button className="bg-blue-600 hover:bg-blue-700 text-white px-10 py-4 rounded-xl font-black transition-all text-lg shadow-xl shadow-blue-900/40">اعرف المزيد</button>
-          <div className="text-white/20 text-sm font-mono self-end pb-2">728x90</div>
+        <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8 relative z-10">
+          <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 md:px-10 py-3 md:py-4 rounded-xl font-black transition-all text-base md:text-lg shadow-xl shadow-blue-900/40">اعرف المزيد</button>
+          <div className="hidden md:block text-white/20 text-sm font-mono self-end pb-2">728x90</div>
         </div>
       </div>
     </div>
@@ -173,8 +173,8 @@ function ReportsSection() {
     <section>
       <div className="flex items-center justify-between mb-10">
         <div className="flex items-center gap-4">
-          <div className="w-2 h-10 bg-red-600 rounded-full" />
-          <h2 className="text-4xl font-black text-slate-800">تقارير وتحقيقات</h2>
+          <div className="w-2 h-8 md:h-10 bg-red-600 rounded-full" />
+          <h2 className="text-2xl md:text-4xl font-black text-slate-800">تقارير وتحقيقات</h2>
         </div>
         <a href="#" className="text-red-600 font-black text-sm hover:underline flex items-center gap-1">عرض الكل <ChevronLeft size={16} /></a>
       </div>
@@ -187,34 +187,6 @@ function ReportsSection() {
   );
 }
 
-function Trending() {
-  const data = [
-    { category: "اقتصاد", title: "ارتفاع أسعار الصرف في السوق المحلية", time: "ساعة", color: "text-red-600" },
-    { category: "رياضة", title: "جدول مباريات الجولة القادمة في الخليج", time: "ساعتين", color: "text-green-600" },
-    { category: "تقنية", title: "أدوات جديدة في عالم الذكاء الاصطناعي", time: "3 ساعات", color: "text-blue-600" },
-    { category: "ثقافة", title: "فعاليات ثقافية وفنية في حضرموت", time: "5 ساعات", color: "text-purple-600" },
-  ];
-  return (
-    <aside className="bg-white rounded-3xl p-8 border border-gray-100 shadow-lg">
-      <h2 className="text-2xl font-black text-slate-800 border-r-8 border-red-600 pr-4 mb-10">مواضيع تهمك</h2>
-      <div className="space-y-8">
-        {data.map((item, i) => (
-          <div key={i} className="flex gap-5 group cursor-pointer border-b border-gray-50 pb-8 last:border-0 last:pb-0">
-            <div className="w-12 h-12 rounded-full bg-red-600/10 text-red-600 flex-shrink-0 flex items-center justify-center font-black text-xl group-hover:bg-red-600 group-hover:text-white transition-all shadow-sm">
-              {String(i + 1).padStart(2, "0")}
-            </div>
-            <div className="flex-1">
-              <span className={`text-[10px] font-black uppercase tracking-widest ${item.color}`}>{item.category}</span>
-              <h3 className="font-black text-[15px] text-slate-800 mt-2 leading-7 group-hover:text-red-600 transition-colors line-clamp-2">{item.title}</h3>
-              <p className="text-[10px] text-gray-400 font-bold mt-2">منذ {item.time}</p>
-            </div>
-            <img src={defaultImg} className="w-24 h-20 rounded-2xl object-cover shadow-md group-hover:scale-105 transition-transform" alt="" />
-          </div>
-        ))}
-      </div>
-    </aside>
-  );
-}
 
 const HomePage = () => {
   return (
@@ -223,17 +195,14 @@ const HomePage = () => {
         <Hero />
         <AdBanner />
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-          <div className="lg:col-span-3 sticky top-24">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+          <div className="lg:col-span-3 lg:sticky lg:top-24 order-2 lg:order-1">
             <NewsletterCard />
             <SocialCard />
           </div>
-          <div className="lg:col-span-6">
+          <div className="lg:col-span-9">
             <ReportsSection />
             <button className="mt-16 w-full py-5 bg-white border border-gray-200 rounded-3xl text-slate-700 font-black hover:bg-gray-50 hover:shadow-md transition-all text-lg shadow-sm">عرض كل المحافظات</button>
-          </div>
-          <div className="lg:col-span-3 sticky top-24">
-            <Trending />
           </div>
         </div>
       </main>
