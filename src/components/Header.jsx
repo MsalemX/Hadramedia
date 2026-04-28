@@ -46,9 +46,17 @@ function TopHeader({ toggleMenu, isOpen }) {
           <span className="w-3 h-3 rounded-full bg-red-600 shrink-0 ml-2" />
         </Link>
         
-        {/* LEFT: Date (Hidden on small mobile) */}
-        <div className="hidden sm:block font-bold text-slate-500 text-xs md:text-sm whitespace-nowrap shrink-0">
-          {currentDate}
+        {/* LEFT: Date & Login */}
+        <div className="flex items-center gap-6">
+          <div className="hidden sm:block font-bold text-slate-500 text-xs md:text-sm whitespace-nowrap shrink-0">
+            {currentDate}
+          </div>
+          <Link 
+            to="/login" 
+            className="bg-[#09264d] text-white px-5 py-2 rounded-xl text-sm font-black hover:bg-blue-900 transition-all shadow-md shadow-blue-900/10"
+          >
+            دخول المشرف
+          </Link>
         </div>
       </div>
     </div>
