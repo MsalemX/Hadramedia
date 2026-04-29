@@ -1,11 +1,11 @@
 import React from 'react';
-import { 
-  Plus, 
-  Search, 
-  Filter, 
-  MoreVertical, 
-  Edit3, 
-  Trash2, 
+import {
+  Plus,
+  Search,
+  Filter,
+  MoreVertical,
+  Edit3,
+  Trash2,
   PlayCircle,
   ChevronRight,
   ChevronLeft,
@@ -57,11 +57,11 @@ const CrossMediaManagement = () => {
       </div>
 
       <div className="bg-white p-4 rounded-3xl border border-gray-100 shadow-sm flex flex-wrap items-center gap-4">
-        <div className="relative flex-1 min-w-[300px]">
+        <div className="relative flex-1 min-w-0">
           <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-          <input 
-            type="text" 
-            placeholder="بحث عن محتوى..." 
+          <input
+            type="text"
+            placeholder="بحث عن محتوى..."
             className="w-full bg-gray-50 border border-gray-100 rounded-2xl pr-12 pl-4 py-3 text-sm focus:outline-none focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600/20 transition-all font-bold"
           />
         </div>
@@ -103,17 +103,15 @@ const CrossMediaManagement = () => {
                     <span className="text-sm font-black text-slate-700 line-clamp-2 max-w-xs">{media.title}</span>
                   </td>
                   <td className="px-8 py-5">
-                    <span className={`px-3 py-1 rounded-full text-[10px] font-black ${
-                      media.type === 'فيديو تفاعلي' ? 'bg-blue-50 text-blue-600' : 
-                      media.type === 'خرائط تفاعلية' ? 'bg-purple-50 text-purple-600' : 'bg-orange-50 text-orange-600'
-                    }`}>
+                    <span className={`px-3 py-1 rounded-full text-[10px] font-black ${media.type === 'فيديو تفاعلي' ? 'bg-blue-50 text-blue-600' :
+                        media.type === 'خرائط تفاعلية' ? 'bg-purple-50 text-purple-600' : 'bg-orange-50 text-orange-600'
+                      }`}>
                       {media.type}
                     </span>
                   </td>
                   <td className="px-8 py-5">
-                    <span className={`px-3 py-1 rounded-full text-[10px] font-black ${
-                      media.status === 'منشور' ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-600'
-                    }`}>
+                    <span className={`px-3 py-1 rounded-full text-[10px] font-black ${media.status === 'منشور' ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-600'
+                      }`}>
                       {media.status}
                     </span>
                   </td>
