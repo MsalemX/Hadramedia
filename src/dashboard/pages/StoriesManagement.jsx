@@ -1,11 +1,11 @@
 import React from 'react';
-import { 
-  Plus, 
-  Search, 
-  Filter, 
-  MoreVertical, 
-  Edit3, 
-  Trash2, 
+import {
+  Plus,
+  Search,
+  Filter,
+  MoreVertical,
+  Edit3,
+  Trash2,
   Clock,
   ChevronRight,
   ChevronLeft
@@ -54,11 +54,11 @@ const StoriesManagement = () => {
       </div>
 
       <div className="bg-white p-4 rounded-3xl border border-gray-100 shadow-sm flex flex-wrap items-center gap-4">
-        <div className="relative flex-1 min-w-[300px]">
+        <div className="relative flex-1 min-w-0">
           <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
-          <input 
-            type="text" 
-            placeholder="بحث عن قصة..." 
+          <input
+            type="text"
+            placeholder="بحث عن قصة..."
             className="w-full bg-gray-50 border border-gray-100 rounded-2xl pr-12 pl-4 py-3 text-sm focus:outline-none focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600/20 transition-all font-bold"
           />
         </div>
@@ -104,9 +104,8 @@ const StoriesManagement = () => {
                     </div>
                   </td>
                   <td className="px-8 py-5">
-                    <span className={`px-3 py-1 rounded-full text-[10px] font-black ${
-                      story.status === 'منشور' ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-600'
-                    }`}>
+                    <span className={`px-3 py-1 rounded-full text-[10px] font-black ${story.status === 'منشور' ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-600'
+                      }`}>
                       {story.status}
                     </span>
                   </td>
