@@ -1,253 +1,299 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, useParams } from 'react-router-dom';
-import { ChevronLeft, Clock, Eye, Heart, MessageCircle, Share2, Bookmark, User, Send, ThumbsUp, MoreHorizontal } from 'lucide-react';
+import { 
+  ChevronLeft, 
+  Clock, 
+  Eye, 
+  Share2, 
+  MessageSquare, 
+  User, 
+  Send, 
+  ThumbsUp,
+  Loader2,
+  Image as ImageIcon,
+  Heart
+} from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 const PostDetailsPage = () => {
   const { id } = useParams();
-  const [likes, setLikes] = useState(124);
-  const [isLiked, setIsLiked] = useState(false);
-  const [comments, setComments] = useState([
-    {
-      id: 1,
-      author: 'أحمد محمد',
-      avatar: '/images/image.jpg',
-      content: 'مقال رائع ومفيد جداً، شكراً على هذه التغطية الشاملة للحدث. نأمل أن نرى المزيد من هذه الأخبار الإيجابية.',
-      date: 'منذ ساعتين',
-      likes: 12,
-      isLiked: false
-    },
-    {
-      id: 2,
-      author: 'ريم محمد',
-      avatar: '/images/image.jpg',
-      content: 'أتفق تماماً مع ما ورد في الخبر، خطوة ممتازة في الاتجاه الصحيح.',
-      date: 'منذ 5 ساعات',
-      likes: 8,
-      isLiked: false
-    }
-  ]);
-  const [commentName, setCommentName] = useState('');
-  const [commentEmail, setCommentEmail] = useState('');
+  const [post, setPost] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [submittingComment, setSubmittingComment] = useState(false);
 
-  const handleLike = () => {
-    setIsLiked(!isLiked);
-    setLikes(isLiked ? likes - 1 : likes + 1);
+  useEffect(() => {
+    fetchPostData();
+  }, [id]);
+
+  const fetchPostData = async () => {
+    try {
+      setLoading(true);
+      const { data: postData, error: postError } = await supabase
+        .from('news')
+        .select('*')
+        .eq('id', id)
+        .eq('status', 'منشور')
+        .single();
+
+      if (postError) throw postError;
+      setPost(postData);
+
+      try {
+        const { data: commentsData } = await supabase
+          .from('comments')
+          .select('*')
+          .eq('post_id', id)
+          .order('created_at', { ascending: false });
+        setComments(commentsData || []);
+      } catch (e) {}
+
+      // Increment views
+      await supabase.rpc('increment_views', { post_id: id });
+
+    } catch (err) {
+      console.error("Error fetching post data:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleCommentLike = (commentId) => {
-    setComments(comments.map(comment => {
-      if (comment.id === commentId) {
-        return {
-          ...comment,
-          isLiked: !comment.isLiked,
-          likes: comment.isLiked ? comment.likes - 1 : comment.likes + 1
-        };
+  const handleLike = async () => {
+    try {
+      // محاولة استدعاء الـ RPC
+      const { error } = await supabase.rpc('increment_likes', { post_id: id });
+      
+      if (error) {
+        console.error("RPC Error:", error);
+        alert(`فشل الحفظ في قاعدة البيانات: ${error.message}`);
+        return;
       }
-      return comment;
-    }));
+
+      // تحديث الحالة محلياً فقط إذا نجحت العملية في السيرفر
+      setPost(prev => ({ ...prev, likes: (prev.likes || 0) + 1 }));
+      
+    } catch (err) {
+      console.error("Critical Like Error:", err);
+      alert("حدث خطأ غير متوقع أثناء الإعجاب");
+    }
   };
 
-  const handleAddComment = (e) => {
+  const handleAddComment = async (e) => {
     e.preventDefault();
-    if (!newComment.trim() || !commentName.trim() || !commentEmail.trim()) return;
+    if (!newComment.trim() || !name.trim()) return;
 
-    const comment = {
-      id: comments.length + 1,
-      author: commentName,
-      avatar: '/images/image.jpg', // dummy avatar
-      content: newComment,
-      date: 'الآن',
-      likes: 0,
-      isLiked: false
-    };
+    try {
+      setSubmittingComment(true);
+      const { data, error } = await supabase
+        .from('comments')
+        .insert([{
+          post_id: id,
+          author_name: name,
+          author_email: email,
+          content: newComment
+        }])
+        .select()
+        .single();
 
-    setComments([comment, ...comments]);
-    setNewComment('');
-    setCommentName('');
-    setCommentEmail('');
+      if (error) throw error;
+      setComments([data, ...comments]);
+      setNewComment('');
+      setName('');
+      setEmail('');
+    } catch (err) {
+      alert('لا يمكن إضافة تعليق حالياً. تأكد من وجود جدول التعليقات.');
+    } finally {
+      setSubmittingComment(false);
+    }
   };
+
+  if (loading) return (
+    <div className="min-h-screen flex items-center justify-center bg-[#f7f8fb]">
+      <Loader2 className="w-10 h-10 text-red-600 animate-spin" />
+    </div>
+  );
+
+  if (!post) return (
+    <div className="min-h-screen flex items-center justify-center bg-[#f7f8fb] font-cairo text-right">
+      <div className="text-center">
+        <h1 className="text-2xl font-black text-slate-800 mb-4">المقال غير موجود أو لا يزال مسودة</h1>
+        <NavLink to="/" className="text-red-600 font-bold hover:underline">العودة للرئيسية</NavLink>
+      </div>
+    </div>
+  );
 
   return (
     <div className="bg-[#f7f8fb] min-h-screen pb-20 font-cairo" dir="rtl">
-      <div className="max-w-4xl mx-auto px-6 py-10">
-
-        {/* Breadcrumbs */}
-        <div className="flex items-center gap-2 text-xs font-bold text-slate-400 mb-8">
-          <NavLink to="/" className="hover:text-blue-600">الرئيسية</NavLink>
-          <ChevronLeft size={14} />
-          <NavLink to="/events" className="hover:text-blue-600">أحداث</NavLink>
-          <ChevronLeft size={14} />
-          <span className="text-slate-600 truncate max-w-[200px]">تفاصيل الخبر</span>
-        </div>
-
-        {/* Article Header */}
-        <div className="mb-8">
-          <span className="bg-blue-100 text-blue-700 px-3 py-1.5 rounded-lg text-[11px] font-black uppercase tracking-widest mb-4 inline-block">أحداث محلية</span>
-          <h1 className="text-3xl md:text-4xl font-black text-[#09264d] leading-tight mb-6">
-            تنمية حضرموت: مشاريع جديدة لتعزيز البنية التحتية ودعم الاقتصاد المحلي
-          </h1>
-
-          <div className="flex flex-wrap items-center gap-6 text-sm font-bold text-slate-500 border-b border-gray-200 pb-6">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-slate-200 overflow-hidden">
-                <img src="/images/image.jpg" alt="Author" className="w-full h-full object-cover" onError={(e) => { e.target.onerror = null; e.target.src = 'https://via.placeholder.com/150'; }} />
-              </div>
-              <span className="text-slate-800">محمد علي</span>
-            </div>
-            <span className="flex items-center gap-1.5"><Clock size={16} className="text-slate-400" /> 20 مايو 2024</span>
-            <span className="flex items-center gap-1.5"><Eye size={16} className="text-slate-400" /> 12.5K مشاهدة</span>
-            <span className="flex items-center gap-1.5"><MessageCircle size={16} className="text-slate-400" /> {comments.length} تعليقات</span>
-          </div>
-        </div>
-
-        {/* Featured Image */}
-        <div className="rounded-3xl overflow-hidden mb-10 shadow-lg h-[300px] md:h-[500px]">
-          <img src="/images/hero.png" alt="Cover" className="w-full h-full object-cover" onError={(e) => { e.target.onerror = null; e.target.src = 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'; }} />
-        </div>
-
-        {/* Article Content */}
-        <div className="bg-white rounded-3xl p-8 md:p-12 shadow-sm border border-gray-100 mb-10">
-          <div className="prose prose-lg prose-slate text-slate-700 font-medium leading-loose max-w-none">
-            <p className="text-xl text-slate-800 font-bold mb-6">
-              تواصل الجهات الحكومية والجهات المحلية تنفيذ مشاريع تنموية في مختلف القطاعات تهدف إلى تحسين الخدمات وتوفير فرص العمل.
-            </p>
-            <p className="mb-6">
-              وفي تصريح خاص، أكد محافظ المحافظة على أهمية تكاتف الجهود لتذليل الصعاب واستكمال المشاريع المتعثرة، مشيراً إلى أن السلطة المحلية تضع في سلم أولوياتها تحسين البنية التحتية الأساسية مثل شبكات الطرق والمياه والكهرباء.
-            </p>
-            <p className="mb-6">
-              كما سيتم قريباً افتتاح عدد من المدارس والمراكز الصحية في المديريات النائية والتي ستقدم خدماتها لآلاف المواطنين الذين كانوا يعانون من نقص في هذه الخدمات الحيوية.
-            </p>
-            <h3 className="text-2xl font-black text-[#09264d] mt-10 mb-4">آفاق استثمارية جديدة</h3>
-            <p className="mb-6">
-              على صعيد آخر، دعت الغرفة التجارية المستثمرين المحليين والأجانب للاستفادة من التسهيلات المقدمة في المناطق الصناعية الجديدة، مؤكدة أن المرحلة القادمة ستشهد طفرة في قطاع الصناعات التحويلية.
-            </p>
-          </div>
-        </div>
-
-        {/* Engagement Actions */}
-        <div className="flex flex-wrap items-center justify-between gap-4 bg-white rounded-2xl p-4 shadow-sm border border-gray-100 mb-12">
-          <div className="flex flex-wrap gap-4">
-            <button
-              onClick={handleLike}
-              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${isLiked ? 'bg-red-50 text-red-600' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}
-            >
-              <Heart size={20} className={isLiked ? 'fill-current' : ''} />
-              <span>{likes}</span>
-              <span className="hidden sm:inline">إعجاب</span>
-            </button>
-            <a href="#comments" className="flex items-center gap-2 px-6 py-3 bg-slate-50 text-slate-600 hover:bg-slate-100 rounded-xl font-bold transition-all">
-              <MessageCircle size={20} />
-              <span>{comments.length}</span>
-              <span className="hidden sm:inline">تعليق</span>
-            </a>
-          </div>
-          <div className="flex gap-2">
-            <button className="p-3 bg-slate-50 text-slate-600 hover:bg-slate-100 rounded-xl transition-all">
-              <Bookmark size={20} />
-            </button>
-            <button className="p-3 bg-slate-50 text-slate-600 hover:bg-slate-100 rounded-xl transition-all">
-              <Share2 size={20} />
-            </button>
-          </div>
-        </div>
-
-        {/* Comments Section */}
-        <div id="comments" className="bg-white rounded-3xl p-6 md:p-8 shadow-sm border border-gray-100">
-          <h3 className="text-2xl font-black text-[#09264d] mb-8 flex items-center gap-3">
-            <MessageCircle className="text-blue-600" />
-            التعليقات ({comments.length})
-          </h3>
-
-          {/* Add Comment Form */}
-          <form onSubmit={handleAddComment} className="mb-10 flex gap-4 items-start">
-            <div className="w-10 md:w-12 h-10 md:h-12 rounded-full bg-slate-100 shrink-0 overflow-hidden flex items-center justify-center text-slate-400 mt-1">
-              <User size={24} />
-            </div>
-            <div className="flex-1 space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input 
-                  type="text" 
-                  value={commentName}
-                  onChange={(e) => setCommentName(e.target.value)}
-                  placeholder="الاسم" 
-                  className="w-full bg-slate-50 border border-gray-200 rounded-2xl px-5 py-3 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-blue-600/5 focus:border-blue-300 transition-all outline-none"
-                  required
-                />
-                <input 
-                  type="email" 
-                  value={commentEmail}
-                  onChange={(e) => setCommentEmail(e.target.value)}
-                  placeholder="البريد الإلكتروني" 
-                  className="w-full bg-slate-50 border border-gray-200 rounded-2xl px-5 py-3 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-blue-600/5 focus:border-blue-300 transition-all outline-none"
-                  required
-                />
-              </div>
-              <div className="relative">
-                <textarea
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  placeholder="أضف تعليقاً..."
-                  className="w-full bg-slate-50 border border-gray-200 rounded-2xl px-5 py-4 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-blue-600/5 focus:border-blue-300 transition-all outline-none resize-none min-h-[100px]"
-                  required
-                />
-                <button
-                  type="submit"
-                  disabled={!newComment.trim() || !commentName.trim() || !commentEmail.trim()}
-                  className="absolute left-4 bottom-4 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white p-2.5 rounded-xl transition-colors shadow-lg shadow-blue-600/20"
-                >
-                  <Send size={18} className="rtl:-scale-x-100" />
-                </button>
-              </div>
-            </div>
-          </form>
-
-          {/* Comments List */}
-          <div className="space-y-6">
-            {comments.map(comment => (
-              <div key={comment.id} className="flex gap-3 md:gap-4">
-                <div className="w-10 h-10 rounded-full bg-slate-200 shrink-0 overflow-hidden">
-                  <img src={comment.avatar} alt={comment.author} className="w-full h-full object-cover" onError={(e) => { e.target.onerror = null; e.target.src = 'https://via.placeholder.com/150'; }} />
+      {/* Hero Section */}
+      <div className="relative h-[400px] md:h-[600px] w-full">
+        <img 
+          src={post.main_image || '/images/hero.png'} 
+          className="w-full h-full object-cover"
+          alt={post.title}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#09264d] via-[#09264d]/40 to-transparent" />
+        
+        <div className="absolute bottom-0 right-0 left-0 max-w-7xl mx-auto px-6 pb-12">
+          <div className="flex flex-col gap-4">
+             <div className="flex items-center gap-2 text-xs font-bold text-blue-200">
+                <NavLink to="/" className="hover:text-white">الرئيسية</NavLink>
+                <ChevronLeft size={14} />
+                <span className="text-white">{post.category}</span>
+             </div>
+             <h1 className="text-3xl md:text-5xl font-black text-white leading-tight max-w-4xl">{post.title}</h1>
+             <div className="flex items-center gap-6 text-sm font-bold text-gray-300 mt-4">
+                <div className="flex items-center gap-2">
+                  <Clock size={16} className="text-red-500" />
+                  <span>{new Date(post.created_at).toLocaleDateString('ar-YE')}</span>
                 </div>
-                <div className="flex-1">
-                  <div className="bg-slate-50 p-4 md:p-5 rounded-2xl rounded-tr-none">
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <h4 className="text-sm font-black text-slate-800">{comment.author}</h4>
-                        <span className="text-[10px] text-slate-400 font-bold">{comment.date}</span>
-                      </div>
-                      <button className="text-slate-400 hover:text-slate-600 transition-colors">
-                        <MoreHorizontal size={16} />
-                      </button>
+                <div className="flex items-center gap-2">
+                  <Eye size={16} className="text-red-500" />
+                  <span>{post.views || 0} مشاهدة</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Heart size={16} className="text-red-500" />
+                  <span>{post.likes || 0} إعجاب</span>
+                </div>
+             </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 -mt-10 relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          
+          {/* Main Content */}
+          <div className="lg:col-span-8 bg-white rounded-[40px] p-8 md:p-12 shadow-sm border border-gray-100 text-right">
+            <div 
+              className="prose prose-lg max-w-none font-bold text-slate-700 leading-relaxed space-y-6 article-content text-right"
+              dangerouslySetInnerHTML={{ __html: post.content }}
+            />
+
+            {/* Gallery Section if exists */}
+            {post.gallery && post.gallery.length > 0 && (
+              <div className="mt-12 space-y-8">
+                <div className="flex items-center gap-4">
+                  <div className="w-1.5 h-8 bg-red-600 rounded-full" />
+                  <h3 className="text-2xl font-black text-[#09264d]">معرض الصور</h3>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {post.gallery.map((img, idx) => (
+                    <div key={idx} className="rounded-3xl overflow-hidden shadow-lg border border-gray-100 aspect-video">
+                      <img src={img} className="w-full h-full object-cover hover:scale-105 transition-transform duration-700" alt="" />
                     </div>
-                    <p className="text-slate-600 text-sm font-medium leading-relaxed">
-                      {comment.content}
-                    </p>
-                  </div>
-
-                  {/* Comment Actions */}
-                  <div className="flex items-center gap-4 mt-2 px-2 text-xs font-bold text-slate-500">
-                    <button
-                      onClick={() => handleCommentLike(comment.id)}
-                      className={`flex items-center gap-1.5 transition-colors ${comment.isLiked ? 'text-blue-600' : 'hover:text-blue-600'}`}
-                    >
-                      <ThumbsUp size={14} className={comment.isLiked ? 'fill-current' : ''} />
-                      <span>{comment.likes}</span>
-                    </button>
-                    <button className="hover:text-slate-800 transition-colors">رد</button>
-                  </div>
+                  ))}
                 </div>
               </div>
-            ))}
+            )}
+
+            {/* Interaction Bar */}
+            <div className="mt-12 flex items-center gap-4 p-6 bg-gray-50 rounded-3xl border border-gray-100">
+               <button 
+                 onClick={handleLike}
+                 className="flex items-center gap-2 bg-white px-6 py-3 rounded-2xl shadow-sm border border-gray-100 hover:bg-red-50 hover:border-red-100 hover:text-red-600 transition-all font-black active:scale-95"
+               >
+                 <Heart size={20} className={post.likes > 0 ? 'fill-red-600 text-red-600' : ''} />
+                 {post.likes > 0 ? `${post.likes} إعجاب` : 'أعجبني'}
+               </button>
+               <button className="flex items-center gap-2 bg-white px-6 py-3 rounded-2xl shadow-sm border border-gray-100 hover:bg-blue-50 hover:border-blue-100 hover:text-blue-600 transition-all font-black">
+                 <Share2 size={20} /> مشاركة
+               </button>
+            </div>
+
+            {/* Comments Section */}
+            <div className="mt-20 pt-20 border-t border-gray-50">
+               <div className="flex items-center justify-between mb-12">
+                  <h3 className="text-3xl font-black text-[#09264d] flex items-center gap-4">
+                    <MessageSquare size={32} className="text-red-600" />
+                    التعليقات ({comments.length})
+                  </h3>
+               </div>
+
+               {/* Add Comment */}
+               <form onSubmit={handleAddComment} className="mb-16 bg-gray-50 p-8 rounded-[32px] border border-gray-100">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <input 
+                      type="text" 
+                      placeholder="الاسم المستعار" 
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className="bg-white border border-gray-200 rounded-2xl px-6 py-4 font-bold focus:outline-none focus:ring-4"
+                      required
+                    />
+                    <input 
+                      type="email" 
+                      placeholder="البريد الإلكتروني (اختياري)" 
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="bg-white border border-gray-200 rounded-2xl px-6 py-4 font-bold focus:outline-none focus:ring-4"
+                    />
+                  </div>
+                  <div className="relative">
+                    <textarea 
+                      placeholder="اكتب تعليقك هنا..." 
+                      rows={4}
+                      value={newComment}
+                      onChange={(e) => setNewComment(e.target.value)}
+                      className="w-full bg-white border border-gray-200 rounded-3xl px-6 py-6 font-bold focus:outline-none focus:ring-4 resize-none"
+                      required
+                    />
+                    <button 
+                      type="submit"
+                      disabled={submittingComment}
+                      className="absolute left-4 bottom-4 bg-[#09264d] hover:bg-blue-900 text-white p-4 rounded-2xl transition-all"
+                    >
+                      {submittingComment ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} className="rotate-180" />}
+                    </button>
+                  </div>
+               </form>
+
+               {/* Comments List */}
+               <div className="space-y-8">
+                  {comments.length > 0 ? comments.map((comment) => (
+                    <div key={comment.id} className="flex gap-6 group text-right">
+                      <div className="w-14 h-14 bg-blue-50 rounded-2xl flex items-center justify-center shrink-0 border border-blue-100 text-[#09264d]">
+                        <User size={28} />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between mb-2">
+                           <h4 className="font-black text-[#09264d]">{comment.author_name}</h4>
+                           <span className="text-[10px] font-bold text-slate-400">{new Date(comment.created_at).toLocaleDateString('ar-YE')}</span>
+                        </div>
+                        <p className="text-slate-600 font-bold leading-relaxed">{comment.content}</p>
+                      </div>
+                    </div>
+                  )) : (
+                    <div className="text-center py-10 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
+                       <p className="text-slate-400 font-bold">لا توجد تعليقات بعد.</p>
+                    </div>
+                  )}
+               </div>
+            </div>
           </div>
 
-          {comments.length > 0 && (
-            <button className="w-full mt-8 py-3 bg-white border border-gray-200 rounded-xl text-slate-600 font-black hover:bg-slate-50 transition-colors text-sm">
-              عرض المزيد من التعليقات
-            </button>
-          )}
-        </div>
+          {/* Sidebar */}
+          <aside className="lg:col-span-4 space-y-8 text-right">
+            <div className="bg-white rounded-[40px] p-8 border border-gray-100 shadow-sm">
+               <h3 className="text-xl font-black text-[#09264d] mb-6 flex items-center gap-2">
+                 <div className="w-2 h-6 bg-red-600 rounded-full" />
+                 كاتب المقال
+               </h3>
+               <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center text-slate-400">
+                    <User size={32} />
+                  </div>
+                  <div>
+                    <h4 className="font-black text-slate-800">أدمن النظام</h4>
+                    <p className="text-xs font-bold text-slate-400">إعلامي متخصص</p>
+                  </div>
+               </div>
+            </div>
+          </aside>
 
+        </div>
       </div>
     </div>
   );

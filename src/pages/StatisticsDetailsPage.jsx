@@ -1,63 +1,111 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, useParams } from 'react-router-dom';
-import { ChevronLeft, Clock, Eye, Heart, MessageSquare, Share2, Bookmark, User, Send, ThumbsUp, MoreHorizontal, BarChart3, CheckSquare, Calendar } from 'lucide-react';
+import { ChevronLeft, Clock, Eye, Heart, MessageSquare, Share2, Bookmark, User, Send, ThumbsUp, MoreHorizontal, BarChart3, Calendar, Loader2 } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 const StatisticsDetailsPage = () => {
   const { id } = useParams();
-  const [likes, setLikes] = useState(1205);
+  const [post, setPost] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [likes, setLikes] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
-  const [comments, setComments] = useState([
-    {
-      id: 1,
-      author: 'أحمد سالم',
-      avatar: '/images/image.jpg',
-      content: 'نتائج منطقية جداً، فالكهرباء هي شريان الحياة وأهم متطلب للمواطن في الوقت الحالي.',
-      date: 'منذ ساعتين',
-      likes: 85,
-      isLiked: false
-    }
-  ]);
+  const [comments, setComments] = useState([]);
   const [commentName, setCommentName] = useState('');
   const [commentEmail, setCommentEmail] = useState('');
   const [newComment, setNewComment] = useState('');
+  const [submittingComment, setSubmittingComment] = useState(false);
+
+  useEffect(() => {
+    const fetchStatisticsData = async () => {
+      try {
+        setLoading(true);
+        // Fetch post
+        const { data: postData, error: postError } = await supabase
+          .from('news')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (postError) throw postError;
+        setPost(postData);
+        setLikes(postData.views_count ? Math.floor(postData.views_count / 15) : 0);
+
+        // Fetch comments
+        const { data: commentsData } = await supabase
+          .from('comments')
+          .select('*')
+          .eq('post_id', id)
+          .order('created_at', { ascending: false });
+
+        setComments(commentsData || []);
+
+        // Increment views
+        await supabase.rpc('increment_views', { post_id: id }).catch(() => {
+          supabase.from('news').update({ views_count: (postData.views_count || 0) + 1 }).eq('id', id);
+        });
+
+      } catch (err) {
+        console.error("Error fetching statistics data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStatisticsData();
+  }, [id]);
 
   const handleLike = () => {
     setIsLiked(!isLiked);
     setLikes(isLiked ? likes - 1 : likes + 1);
   };
 
-  const handleCommentLike = (commentId) => {
-    setComments(comments.map(comment => {
-      if (comment.id === commentId) {
-        return {
-          ...comment,
-          isLiked: !comment.isLiked,
-          likes: comment.isLiked ? comment.likes - 1 : comment.likes + 1
-        };
-      }
-      return comment;
-    }));
-  };
-
-  const handleAddComment = (e) => {
+  const handleAddComment = async (e) => {
     e.preventDefault();
     if (!newComment.trim() || !commentName.trim() || !commentEmail.trim()) return;
     
-    const comment = {
-      id: comments.length + 1,
-      author: commentName,
-      avatar: '/images/image.jpg',
-      content: newComment,
-      date: 'الآن',
-      likes: 0,
-      isLiked: false
-    };
-    
-    setComments([comment, ...comments]);
-    setNewComment('');
-    setCommentName('');
-    setCommentEmail('');
+    try {
+      setSubmittingComment(true);
+      const { data, error } = await supabase
+        .from('comments')
+        .insert([{
+          post_id: id,
+          author_name: commentName,
+          author_email: commentEmail,
+          content: newComment
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+      setComments([data, ...comments]);
+      setNewComment('');
+      setCommentName('');
+      setCommentEmail('');
+    } catch (err) {
+      console.error("Error adding comment:", err);
+    } finally {
+      setSubmittingComment(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#f7f8fb] flex items-center justify-center font-cairo" dir="rtl">
+        <Loader2 className="w-10 h-10 text-red-600 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!post) {
+    return (
+      <div className="min-h-screen bg-[#f7f8fb] flex items-center justify-center font-cairo" dir="rtl">
+        <div className="text-center">
+          <h1 className="text-2xl font-black text-[#09264d] mb-4">الإحصائية غير موجودة</h1>
+          <NavLink to="/statistics" className="text-red-600 font-bold hover:underline">العودة لصفحة الإحصائيات</NavLink>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-[#f7f8fb] min-h-screen pb-20 font-cairo" dir="rtl">
@@ -69,71 +117,36 @@ const StatisticsDetailsPage = () => {
           <ChevronLeft size={14} />
           <NavLink to="/statistics" className="hover:text-blue-600 transition-colors">استطلاعات</NavLink>
           <ChevronLeft size={14} />
-          <span className="text-slate-600 truncate max-w-[200px]">تفاصيل الاستطلاع</span>
+          <span className="text-slate-600 truncate max-w-[200px]">{post.title}</span>
         </div>
 
         {/* Header */}
         <div className="mb-10 border-b border-gray-200 pb-8">
           <div className="flex items-center gap-3 mb-6">
             <span className="bg-[#e00013] text-white px-4 py-2 rounded-xl text-xs font-black shadow-sm uppercase tracking-widest flex items-center gap-2">
-              <BarChart3 size={14} /> استطلاع رأي
-            </span>
-            <span className="bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-xs font-black shadow-sm uppercase tracking-widest">
-              الخدمات العامة
+              <BarChart3 size={14} /> {post.category || 'استطلاع رأي'}
             </span>
           </div>
           <h1 className="text-4xl md:text-5xl font-black text-[#09264d] leading-tight mb-8">
-            استطلاع: 70% من المواطنين يطالبون بتحسين خدمات الكهرباء قبل الصيف
+            {post.title}
           </h1>
           
           <div className="flex flex-wrap items-center gap-8 text-sm font-bold text-slate-500 bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-            <span className="flex items-center gap-2 text-[#09264d]"><CheckSquare size={18} className="text-red-600" /> المشاركين: 5,420</span>
+            <span className="flex items-center gap-2"><Calendar size={18} className="text-red-600" /> النشر: {new Date(post.created_at).toLocaleDateString('ar-YE')}</span>
             <div className="h-8 w-px bg-gray-200 hidden md:block"></div>
-            <span className="flex items-center gap-2"><Calendar size={18} className="text-red-600" /> النشر: 22 مايو 2024</span>
-            <div className="h-8 w-px bg-gray-200 hidden md:block"></div>
-            <span className="flex items-center gap-2"><Eye size={18} className="text-red-600" /> 18K مشاهدة</span>
+            <span className="flex items-center gap-2"><Eye size={18} className="text-red-600" /> {post.views_count || 0} مشاهدة</span>
           </div>
         </div>
 
         {/* Featured Image */}
         <div className="rounded-[3rem] overflow-hidden mb-12 shadow-2xl h-[400px] md:h-[600px] relative group border-4 border-white">
-          <img src="/images/hero.png" alt="Cover" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" onError={(e) => { e.target.onerror = null; e.target.src = 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'; }} />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#09264d]/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-start p-10">
-            <div className="flex items-center gap-3 text-white bg-blue-900/80 backdrop-blur-sm px-6 py-3 rounded-2xl font-black text-sm">
-              <BarChart3 size={20} />
-              <span>عرض النتائج التفصيلية</span>
-            </div>
-          </div>
+          <img src={post.main_image || "/images/hero.png"} alt="Cover" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
         </div>
 
         {/* Content */}
         <div className="bg-white rounded-[3rem] p-8 md:p-14 shadow-sm border border-gray-100 mb-12 relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-64 h-64 bg-red-50/50 rounded-full -translate-y-32 -translate-x-32 blur-3xl"></div>
-          <div className="prose prose-lg prose-slate text-slate-700 font-medium leading-loose max-w-none relative z-10">
-            <p className="text-2xl text-[#09264d] font-black mb-8 leading-relaxed">
-              تقرير شامل يحلل نتائج الاستطلاع السنوي الكبير لآراء المواطنين حول الخدمات والتعليم والأمن في مختلف المديريات.
-            </p>
-            <p className="mb-6">
-              أظهرت نتائج الاستطلاع الميداني الذي أجراه فريق حضرميديا خلال شهر مايو أن تحسين خدمات الكهرباء يتصدر قائمة مطالب المواطنين بنسبة تجاوزت 70%، خصوصاً مع اقتراب فصل الصيف وارتفاع درجات الحرارة.
-            </p>
-            
-            <div className="bg-slate-50 border-r-4 border-red-600 p-8 rounded-l-2xl my-10 shadow-inner">
-              <h3 className="text-xl font-black text-[#09264d] mb-4 flex items-center gap-2">
-                <CheckSquare className="text-red-600" />
-                ملخص النتائج بالأرقام:
-              </h3>
-              <ul className="list-disc list-inside space-y-3 text-slate-600 font-bold">
-                <li>70% طالبوا بحلول عاجلة للكهرباء.</li>
-                <li>15% أشاروا إلى أهمية ضبط أسعار المواد الغذائية.</li>
-                <li>10% ركزوا على قطاع الصحة والمستشفيات.</li>
-                <li>5% توزعوا بين قضايا التعليم والأمن.</li>
-              </ul>
-            </div>
-            
-            <p className="mb-6">
-              وقد أشار العديد من المشاركين في الاستطلاع إلى أن الحلول الترقيعية لم تعد مقبولة، وأن السلطة المحلية مطالبة بشفافية أكبر في الكشف عن خططها للصيف القادم لتجنب المعاناة المتكررة للمواطنين.
-            </p>
-          </div>
+          <div className="prose prose-lg prose-slate text-slate-700 font-medium leading-loose max-w-none relative z-10 article-content"
+               dangerouslySetInnerHTML={{ __html: post.content }} />
         </div>
 
         {/* Engagement Actions */}
@@ -206,10 +219,10 @@ const StatisticsDetailsPage = () => {
                 />
                 <button
                   type="submit"
-                  disabled={!newComment.trim() || !commentName.trim() || !commentEmail.trim()}
+                  disabled={submittingComment || !newComment.trim() || !commentName.trim() || !commentEmail.trim()}
                   className="absolute left-4 bottom-4 bg-[#09264d] hover:bg-blue-900 disabled:bg-slate-300 text-white p-3 rounded-xl transition-all shadow-lg shadow-blue-900/30"
                 >
-                  <Send size={20} className="rtl:-scale-x-100" />
+                  {submittingComment ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} className="rtl:-scale-x-100" />}
                 </button>
               </div>
             </div>
@@ -217,48 +230,29 @@ const StatisticsDetailsPage = () => {
 
           {/* Comments List */}
           <div className="space-y-6">
-            {comments.map(comment => (
+            {comments.length > 0 ? comments.map(comment => (
               <div key={comment.id} className="flex gap-4">
-                <div className="w-12 h-12 rounded-full bg-slate-200 shrink-0 overflow-hidden shadow-sm">
-                  <img src={comment.avatar} alt={comment.author} className="w-full h-full object-cover" onError={(e) => { e.target.onerror = null; e.target.src = 'https://via.placeholder.com/150'; }} />
+                <div className="w-12 h-12 rounded-full bg-slate-200 shrink-0 overflow-hidden flex items-center justify-center shadow-sm">
+                  <User size={24} className="text-slate-400" />
                 </div>
                 <div className="flex-1">
                   <div className="bg-slate-50/80 p-5 md:p-6 rounded-[2rem] rounded-tr-none border border-gray-100/50">
                     <div className="flex justify-between items-start mb-3">
                       <div>
-                        <h4 className="text-sm font-black text-[#09264d]">{comment.author}</h4>
-                        <span className="text-[10px] text-slate-400 font-bold">{comment.date}</span>
+                        <h4 className="text-sm font-black text-[#09264d]">{comment.author_name}</h4>
+                        <span className="text-[10px] text-slate-400 font-bold">{new Date(comment.created_at).toLocaleDateString('ar-YE')}</span>
                       </div>
-                      <button className="text-slate-300 hover:text-slate-600 transition-colors">
-                        <MoreHorizontal size={18} />
-                      </button>
                     </div>
                     <p className="text-slate-600 text-sm font-medium leading-relaxed">
                       {comment.content}
                     </p>
                   </div>
-                  
-                  {/* Comment Actions */}
-                  <div className="flex items-center gap-5 mt-3 px-3 text-xs font-black text-slate-400">
-                    <button 
-                      onClick={() => handleCommentLike(comment.id)}
-                      className={`flex items-center gap-1.5 transition-all ${comment.isLiked ? 'text-red-600 scale-105' : 'hover:text-red-600'}`}
-                    >
-                      <ThumbsUp size={14} className={comment.isLiked ? 'fill-current' : ''} />
-                      <span>{comment.likes}</span>
-                    </button>
-                    <button className="hover:text-[#09264d] transition-colors">رد</button>
-                  </div>
                 </div>
               </div>
-            ))}
+            )) : (
+              <p className="text-center text-slate-400 font-bold py-10">لا توجد آراء بعد. كن أول من يشارك!</p>
+            )}
           </div>
-          
-          {comments.length > 0 && (
-            <button className="w-full mt-10 py-4 bg-white border-2 border-slate-50 rounded-2xl text-[#09264d] font-black hover:bg-slate-50 transition-colors text-sm shadow-sm">
-              عرض المزيد من الآراء
-            </button>
-          )}
         </div>
         
       </div>

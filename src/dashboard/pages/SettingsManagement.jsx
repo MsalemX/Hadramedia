@@ -1,8 +1,69 @@
-import React from 'react';
-import { Save, Globe, Mail, Smartphone, Upload } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Save, Globe, Mail, Smartphone, Upload, Loader2, AlertCircle } from 'lucide-react';
 import { FacebookIcon, InstagramIcon, YoutubeIcon, XIcon as Twitter } from '../../components/Footer';
+import { supabase } from '../../lib/supabase';
 
 const SettingsManagement = () => {
+  const [settings, setSettings] = useState({
+    site_name: '',
+    site_description: '',
+    official_email: '',
+    contact_number: '',
+    twitter_url: '',
+    facebook_url: '',
+    instagram_url: '',
+    youtube_url: '',
+    maintenance_mode: false
+  });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  const fetchSettings = async () => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('settings')
+        .select('*')
+        .single();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      if (data) setSettings(data);
+    } catch (err) {
+      console.error("Error fetching settings:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSettings();
+  }, []);
+
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      const { error } = await supabase
+        .from('settings')
+        .upsert({ id: settings.id || 1, ...settings });
+
+      if (error) throw error;
+      alert('تم حفظ الإعدادات بنجاح');
+    } catch (err) {
+      console.error("Error saving settings:", err);
+      alert('خطأ أثناء الحفظ');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
       <div className="flex items-center justify-between">
@@ -10,8 +71,12 @@ const SettingsManagement = () => {
           <h1 className="text-2xl font-black text-slate-800">إعدادات الموقع</h1>
           <p className="text-slate-400 text-sm font-bold mt-1">الرئيسية {'>'} الإعدادات</p>
         </div>
-        <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-2xl font-black flex items-center gap-2 shadow-lg shadow-blue-600/20 transition-all active:scale-95">
-          <Save size={20} />
+        <button 
+          onClick={handleSave}
+          disabled={saving}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-2xl font-black flex items-center gap-2 shadow-lg shadow-blue-600/20 transition-all active:scale-95 disabled:opacity-50"
+        >
+          {saving ? <Loader2 size={20} className="animate-spin" /> : <Save size={20} />}
           حفظ التغييرات
         </button>
       </div>
@@ -24,19 +89,39 @@ const SettingsManagement = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
                 <label className="text-xs font-black text-slate-500 uppercase">اسم الموقع</label>
-                <input type="text" defaultValue="حضرميديا" className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-3.5 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600/20 transition-all" />
+                <input 
+                  type="text" 
+                  value={settings.site_name} 
+                  onChange={(e) => setSettings({...settings, site_name: e.target.value})}
+                  className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-3.5 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600/20 transition-all" 
+                />
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-black text-slate-500 uppercase">وصف الموقع (SEO)</label>
-                <input type="text" defaultValue="المنصة الإخبارية الأولى في حضرموت" className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-3.5 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600/20 transition-all" />
+                <input 
+                  type="text" 
+                  value={settings.site_description} 
+                  onChange={(e) => setSettings({...settings, site_description: e.target.value})}
+                  className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-3.5 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600/20 transition-all" 
+                />
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-black text-slate-500 uppercase">البريد الإلكتروني الرسمي</label>
-                <input type="email" defaultValue="info@hadramedia.com" className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-3.5 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600/20 transition-all" />
+                <input 
+                  type="email" 
+                  value={settings.official_email} 
+                  onChange={(e) => setSettings({...settings, official_email: e.target.value})}
+                  className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-3.5 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600/20 transition-all" 
+                />
               </div>
               <div className="space-y-2">
                 <label className="text-xs font-black text-slate-500 uppercase">رقم التواصل</label>
-                <input type="text" defaultValue="+967 5 300000" className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-3.5 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600/20 transition-all" />
+                <input 
+                  type="text" 
+                  value={settings.contact_number} 
+                  onChange={(e) => setSettings({...settings, contact_number: e.target.value})}
+                  className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-3.5 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600/20 transition-all" 
+                />
               </div>
             </div>
           </div>
@@ -46,16 +131,22 @@ const SettingsManagement = () => {
             <h3 className="text-lg font-black text-slate-800 mb-8 border-b border-gray-50 pb-4">روابط التواصل الاجتماعي</h3>
             <div className="space-y-4">
               {[
-                { icon: Twitter, label: 'Twitter / X', color: 'text-blue-400' },
-                { icon: FacebookIcon, label: 'Facebook', color: 'text-blue-600' },
-                { icon: InstagramIcon, label: 'Instagram', color: 'text-pink-600' },
-                { icon: YoutubeIcon, label: 'YouTube', color: 'text-red-600' },
+                { icon: Twitter, label: 'Twitter / X', color: 'text-blue-400', key: 'twitter_url' },
+                { icon: FacebookIcon, label: 'Facebook', color: 'text-blue-600', key: 'facebook_url' },
+                { icon: InstagramIcon, label: 'Instagram', color: 'text-pink-600', key: 'instagram_url' },
+                { icon: YoutubeIcon, label: 'YouTube', color: 'text-red-600', key: 'youtube_url' },
               ].map((social, i) => (
                 <div key={i} className="flex items-center gap-4">
                   <div className={`w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center ${social.color}`}>
                     <social.icon size={20} />
                   </div>
-                  <input type="text" placeholder={`رابط ${social.label}`} className="flex-1 bg-gray-50 border border-gray-100 rounded-2xl px-5 py-3.5 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-blue-600/5" />
+                  <input 
+                    type="text" 
+                    value={settings[social.key] || ''} 
+                    onChange={(e) => setSettings({...settings, [social.key]: e.target.value})}
+                    placeholder={`رابط ${social.label}`} 
+                    className="flex-1 bg-gray-50 border border-gray-100 rounded-2xl px-5 py-3.5 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-blue-600/5" 
+                  />
                 </div>
               ))}
             </div>
@@ -78,9 +169,12 @@ const SettingsManagement = () => {
             <p className="text-xs font-bold text-blue-200 mb-6 opacity-70">عند تفعيل وضع الصيانة، لن يتمكن الزوار من تصفح الموقع</p>
             <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl">
               <span className="text-sm font-black">وضع الصيانة</span>
-              <div className="w-12 h-6 bg-slate-700 rounded-full relative">
-                <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all"></div>
-              </div>
+              <button 
+                onClick={() => setSettings({...settings, maintenance_mode: !settings.maintenance_mode})}
+                className={`w-12 h-6 rounded-full relative transition-colors ${settings.maintenance_mode ? 'bg-blue-600' : 'bg-slate-700'}`}
+              >
+                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${settings.maintenance_mode ? 'right-1' : 'left-1'}`}></div>
+              </button>
             </div>
           </div>
         </div>

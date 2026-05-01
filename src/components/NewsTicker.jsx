@@ -1,7 +1,25 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { supabase } from "../lib/supabase";
 
 function NewsTicker() {
   const [isPaused, setIsPaused] = useState(false);
+  const [urgentNews, setUrgentNews] = useState([]);
+
+  useEffect(() => {
+    const fetchUrgent = async () => {
+      const { data } = await supabase
+        .from('news')
+        .select('title')
+        .eq('is_urgent', true)
+        .order('created_at', { ascending: false });
+      
+      if (data) setUrgentNews(data.map(n => n.title));
+    };
+
+    fetchUrgent();
+  }, []);
+
+  if (urgentNews.length === 0) return null;
 
   return (
     <div className="bg-[#e00013] h-9 w-full flex items-center overflow-hidden relative shadow-md z-30" dir="rtl">
@@ -21,11 +39,12 @@ function NewsTicker() {
             className="inline-block animate-marquee-rtl"
             style={{ animationPlayState: isPaused ? 'paused' : 'running' }}
           >
-            <span className="mx-10">مجلس القيادة الرئاسي يقر حزمة من القرارات الهادفة إلى تحسين الأوضاع الاقتصادية والخدمية في العاصمة المؤقتة عدن والمحافظات المحررة</span>
-            <span className="mx-10 font-black opacity-30">|</span>
-            <span className="mx-10">إطلاق مبادرة لدعم المشاريع الصغيرة في حضرموت وتوفير فرص عمل للشباب وتدشين المرحلة الأولى من مشروع مياه تريم</span>
-            <span className="mx-10 font-black opacity-30">|</span>
-            <span className="mx-10">وصول شحنات الوقود المخصصة لمحطات الكهرباء في ساحل حضرموت لتعزيز استقرار الخدمة وتخفيف معاناة المواطنين</span>
+            {urgentNews.map((title, i) => (
+              <React.Fragment key={i}>
+                <span className="mx-10">{title}</span>
+                {i < urgentNews.length - 1 && <span className="mx-10 font-black opacity-30">|</span>}
+              </React.Fragment>
+            ))}
           </div>
         </div>
       </div>
@@ -45,3 +64,4 @@ function NewsTicker() {
 }
 
 export default NewsTicker;
+

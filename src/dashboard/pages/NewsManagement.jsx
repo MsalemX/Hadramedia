@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { NavLink } from 'react-router-dom';
 import {
   Plus,
   Search,
@@ -8,20 +9,94 @@ import {
   Trash2,
   Eye,
   ChevronRight,
-  ChevronLeft
+  ChevronLeft,
+  Loader2,
+  AlertCircle,
+  Send
 } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
 
 const NewsManagement = () => {
-  const newsData = [
-    { id: 1, title: 'بدء العمل في مشروع طريق ساحلي جديد يربط المكلا بالشحر', category: 'أخبار محلية', region: 'حضرموت', status: 'منشور', date: '20 مايو 2024', views: '2,450', img: '/images/image.jpg' },
-    { id: 2, title: 'ارتفاع أسعار النفط عالمياً بعد توقعات بزيادة الطلب', category: 'اقتصاد', region: 'حضرموت', status: 'منشور', date: '20 مايو 2024', views: '1,890', img: '/images/image.jpg' },
-    { id: 3, title: 'وزارة التعليم تعلن عن خطة تطوير شاملة للمناهج الدراسية', category: 'تعليم', region: 'حضرموت', status: 'منشور', date: '20 مايو 2024', views: '1,320', img: '/images/image.jpg' },
-    { id: 4, title: 'فريق الهلال الحضرمي يفوز في المباراة النهائية للبطولة', category: 'رياضة', region: 'حضرموت', status: 'منشور', date: '19 مايو 2024', views: '3,210', img: '/images/image.jpg' },
-    { id: 5, title: 'تقرير خاص: التحولات الاقتصادية في حضرموت 2024', category: 'تقارير', region: 'حضرموت', status: 'مسودة', date: '19 مايو 2024', views: '1,150', img: '/images/image.jpg' },
-    { id: 6, title: 'افتتاح مستشفى بروم الجديد لخدمة أهالي المديرية', category: 'صحة', region: 'المهرة', status: 'منشور', date: '18 مايو 2024', views: '980', img: '/images/image.jpg' },
-    { id: 7, title: 'مهرجان البلدة السياحي يجذب آلاف الزوار هذا العام', category: 'مجتمع', region: 'حضرموت', status: 'منشور', date: '18 مايو 2024', views: '1,780', img: '/images/image.jpg' },
-    { id: 8, title: 'توقعات بأمطار غزيرة على سواحل حضرموت خلال الأيام القادمة', category: 'الطقس', region: 'حضرموت', status: 'مسودة', date: '17 مايو 2024', views: '650', img: '/images/image.jpg' },
-  ];
+  const [news, setNews] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const pageSize = 8;
+
+  const fetchNews = async () => {
+    try {
+      setLoading(true);
+      let query = supabase
+        .from('news')
+        .select('*', { count: 'exact' });
+
+      if (searchTerm) {
+        query = query.ilike('title', `%${searchTerm}%`);
+      }
+      if (statusFilter !== 'all') {
+        query = query.eq('status', statusFilter);
+      }
+      if (categoryFilter !== 'all') {
+        query = query.eq('category', categoryFilter);
+      }
+
+      const { data, count, error } = await query
+        .order('created_at', { ascending: false })
+        .range((page - 1) * pageSize, page * pageSize - 1);
+
+      if (error) throw error;
+      setNews(data || []);
+      setTotalCount(count || 0);
+    } catch (err) {
+      console.error("Error fetching news:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchNews();
+  }, [page, statusFilter, categoryFilter]);
+
+  const handleSearch = (e) => {
+    if (e.key === 'Enter') {
+      setPage(1);
+      fetchNews();
+    }
+  };
+
+  const handlePublish = async (id) => {
+    try {
+      const { error } = await supabase
+        .from('news')
+        .update({ status: 'منشور' })
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      setNews(news.map(item => 
+        item.id === id ? { ...item, status: 'منشور' } : item
+      ));
+    } catch (err) {
+      alert('خطأ أثناء النشر');
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm('هل أنت متأكد من حذف هذا الخبر؟')) {
+      try {
+        const { error } = await supabase.from('news').delete().eq('id', id);
+        if (error) throw error;
+        setNews(news.filter(n => n.id !== id));
+        setTotalCount(prev => prev - 1);
+      } catch (err) {
+        alert('خطأ أثناء الحذف');
+      }
+    }
+  };
 
   return (
     <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
@@ -31,10 +106,13 @@ const NewsManagement = () => {
           <h1 className="text-2xl font-black text-slate-800">إدارة الأخبار / الأحداث</h1>
           <p className="text-slate-400 text-sm font-bold mt-1">الرئيسية {'>'} الأخبار</p>
         </div>
-        <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-black flex items-center gap-2 shadow-lg shadow-blue-600/20 transition-all active:scale-95">
+        <NavLink 
+          to="/dashboard/content/add?type=news"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-black flex items-center gap-2 shadow-lg shadow-blue-600/20 transition-all active:scale-95"
+        >
           <Plus size={20} />
           إضافة خبر جديد
-        </button>
+        </NavLink>
       </div>
 
       {/* Filters Bar */}
@@ -43,102 +121,139 @@ const NewsManagement = () => {
           <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
           <input
             type="text"
-            placeholder="بحث عن خبر..."
+            placeholder="بحث عن خبر (اضغط Enter)..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={handleSearch}
             className="w-full bg-gray-50 border border-gray-100 rounded-2xl pr-12 pl-4 py-3 text-sm focus:outline-none focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600/20 transition-all font-bold"
           />
         </div>
-        <select className="bg-gray-50 border border-gray-100 rounded-2xl px-6 py-3 text-sm font-black text-slate-600 focus:outline-none focus:ring-4 focus:ring-blue-600/5">
-          <option>كل الحالات</option>
-          <option>منشور</option>
-          <option>مسودة</option>
+        <select 
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="bg-gray-50 border border-gray-100 rounded-2xl px-6 py-3 text-sm font-black text-slate-600 focus:outline-none focus:ring-4 focus:ring-blue-600/5"
+        >
+          <option value="all">كل الحالات</option>
+          <option value="منشور">منشور</option>
+          <option value="مسودة">مسودة</option>
         </select>
-        <select className="bg-gray-50 border border-gray-100 rounded-2xl px-6 py-3 text-sm font-black text-slate-600 focus:outline-none focus:ring-4 focus:ring-blue-600/5">
-          <option>كل التصنيفات</option>
+        <select 
+          value={categoryFilter}
+          onChange={(e) => setCategoryFilter(e.target.value)}
+          className="bg-gray-50 border border-gray-100 rounded-2xl px-6 py-3 text-sm font-black text-slate-600 focus:outline-none focus:ring-4 focus:ring-blue-600/5"
+        >
+          <option value="all">كل التصنيفات</option>
+          <option value="أخبار">أخبار</option>
+          <option value="تحقيقات">تحقيقات</option>
+          <option value="تقارير">تقارير</option>
+          <option value="قصص">قصص</option>
+          <option value="دراسات">دراسات</option>
+          <option value="مقالات">مقالات</option>
         </select>
-        <button className="p-3 bg-gray-50 text-slate-500 rounded-2xl hover:bg-gray-100 transition-colors">
-          <Filter size={20} />
-        </button>
       </div>
 
       {/* Table Section */}
-      <div className="bg-white rounded-[40px] border border-gray-100 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-right">
-            <thead className="bg-gray-50/50">
-              <tr>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">الصورة</th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">العنوان</th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">التصنيف</th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">المحافظة</th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">الحالة</th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">تاريخ النشر</th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">المشاهدات</th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">إجراءات</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {newsData.map((news) => (
-                <tr key={news.id} className="hover:bg-gray-50/30 transition-colors group">
-                  <td className="px-8 py-5">
-                    <img src={news.img} className="w-16 h-12 rounded-xl object-cover shadow-sm border-2 border-white" alt="" />
-                  </td>
-                  <td className="px-8 py-5">
-                    <span className="text-sm font-black text-slate-700 line-clamp-2 max-w-xs">{news.title}</span>
-                  </td>
-                  <td className="px-8 py-5">
-                    <span className={`px-3 py-1 rounded-full text-[10px] font-black ${news.category === 'أخبار محلية' ? 'bg-blue-50 text-blue-600' :
-                        news.category === 'اقتصاد' ? 'bg-green-50 text-green-600' :
-                          news.category === 'تعليم' ? 'bg-purple-50 text-purple-600' :
-                            news.category === 'رياضة' ? 'bg-orange-50 text-orange-600' :
-                              news.category === 'صحة' ? 'bg-red-50 text-red-600' :
-                                'bg-gray-50 text-gray-600'
-                      }`}>
-                      {news.category}
-                    </span>
-                  </td>
-                  <td className="px-8 py-5 text-sm font-bold text-slate-500">{news.region}</td>
-                  <td className="px-8 py-5">
-                    <span className={`px-3 py-1 rounded-full text-[10px] font-black ${news.status === 'منشور' ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-600'
-                      }`}>
-                      {news.status}
-                    </span>
-                  </td>
-                  <td className="px-8 py-5 text-slate-400 text-[11px] font-bold">{news.date}</td>
-                  <td className="px-8 py-5 text-sm font-black text-slate-700">{news.views}</td>
-                  <td className="px-8 py-5">
-                    <div className="flex items-center justify-center gap-2">
-                      <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"><Edit3 size={16} /></button>
-                      <button className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"><Trash2 size={16} /></button>
-                      <button className="p-2 text-slate-400 hover:text-slate-600 hover:bg-gray-100 rounded-lg transition-all"><MoreVertical size={16} /></button>
-                    </div>
-                  </td>
+      <div className="bg-white rounded-[40px] border border-gray-100 shadow-sm overflow-hidden min-h-[400px]">
+        {loading ? (
+          <div className="flex items-center justify-center h-64">
+            <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
+          </div>
+        ) : news.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-right">
+              <thead className="bg-gray-50/50">
+                <tr>
+                  <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">الصورة</th>
+                  <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">العنوان</th>
+                  <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">التصنيف</th>
+                  <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">الحالة</th>
+                  <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">تاريخ النشر</th>
+                  <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">إجراءات</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {news.map((item) => (
+                  <tr key={item.id} className="hover:bg-gray-50/30 transition-colors group">
+                    <td className="px-8 py-5">
+                      <img src={item.main_image || '/images/image.jpg'} className="w-16 h-12 rounded-xl object-cover shadow-sm border-2 border-white" alt="" />
+                    </td>
+                    <td className="px-8 py-5">
+                      <span className="text-sm font-black text-slate-700 line-clamp-2 max-w-xs">{item.title}</span>
+                    </td>
+                    <td className="px-8 py-5">
+                      <span className="px-3 py-1 rounded-full text-[10px] font-black bg-blue-50 text-blue-600">
+                        {item.category}
+                      </span>
+                    </td>
+                    <td className="px-8 py-5">
+                      <span className={`px-3 py-1 rounded-full text-[10px] font-black ${item.status === 'منشور' ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-600'}`}>
+                        {item.status}
+                      </span>
+                    </td>
+                    <td className="px-8 py-5 text-slate-400 text-[11px] font-bold">
+                      {new Date(item.created_at).toLocaleDateString('ar-YE')}
+                    </td>
+                    <td className="px-8 py-5">
+                      <div className="flex items-center justify-center gap-2">
+                        {item.status === 'مسودة' && (
+                           <button 
+                             onClick={() => handlePublish(item.id)}
+                             className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-all flex items-center gap-1 text-[10px] font-black"
+                             title="نشر الآن"
+                           >
+                             <Send size={14} className="rotate-180" />
+                             نشر
+                           </button>
+                        )}
+                        <NavLink 
+                          to={`/dashboard/content/edit/${item.id}`}
+                          className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                        >
+                          <Edit3 size={16} />
+                        </NavLink>
+                        <button 
+                          onClick={() => handleDelete(item.id)}
+                          className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center h-64 gap-4">
+            <AlertCircle className="w-12 h-12 text-slate-300" />
+            <p className="text-slate-400 font-bold">لا توجد نتائج مطابقة</p>
+          </div>
+        )}
 
         {/* Pagination */}
         <div className="p-8 border-t border-gray-50 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <span className="text-sm font-bold text-slate-400">لكل صفحة</span>
-            <select className="bg-gray-50 border border-gray-100 rounded-xl px-4 py-2 text-sm font-black text-slate-600">
-              <option>8</option>
-              <option>16</option>
-              <option>32</option>
-            </select>
-            <span className="text-sm font-bold text-slate-400">عرض 1 - 8 من 200 خبر</span>
+            <span className="text-sm font-bold text-slate-400">عدد النتائج الكلي: {totalCount}</span>
           </div>
           <div className="flex items-center gap-2">
-            <button className="p-2 text-slate-400 hover:text-blue-600"><ChevronRight size={20} /></button>
-            <button className="w-10 h-10 rounded-xl bg-blue-600 text-white font-black text-sm shadow-lg shadow-blue-600/20">1</button>
-            <button className="w-10 h-10 rounded-xl hover:bg-gray-100 text-slate-600 font-black text-sm">2</button>
-            <button className="w-10 h-10 rounded-xl hover:bg-gray-100 text-slate-600 font-black text-sm">3</button>
-            <button className="w-10 h-10 rounded-xl hover:bg-gray-100 text-slate-600 font-black text-sm">4</button>
-            <button className="w-10 h-10 rounded-xl hover:bg-gray-100 text-slate-600 font-black text-sm">5</button>
-            <span className="text-slate-300">...</span>
-            <button className="w-10 h-10 rounded-xl hover:bg-gray-100 text-slate-600 font-black text-sm">25</button>
-            <button className="p-2 text-slate-400 hover:text-blue-600"><ChevronLeft size={20} /></button>
+            <button 
+              disabled={page === 1}
+              onClick={() => setPage(p => p - 1)}
+              className="p-2 text-slate-400 hover:text-blue-600 disabled:opacity-30"
+            >
+              <ChevronRight size={20} />
+            </button>
+            <span className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-black text-sm">
+              {page}
+            </span>
+            <button 
+              disabled={page * pageSize >= totalCount}
+              onClick={() => setPage(p => p + 1)}
+              className="p-2 text-slate-400 hover:text-blue-600 disabled:opacity-30"
+            >
+              <ChevronLeft size={20} />
+            </button>
           </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Mail, 
   Send, 
@@ -6,16 +6,51 @@ import {
   Trash2, 
   Download,
   Plus,
-  CheckCircle2
+  CheckCircle2,
+  Loader2,
+  AlertCircle
 } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
 
 const NewsletterManagement = () => {
-  const subscribers = [
-    { id: 1, email: 'user1@example.com', date: '20 مايو 2024', status: 'نشط' },
-    { id: 2, email: 'user2@example.com', date: '19 مايو 2024', status: 'نشط' },
-    { id: 3, email: 'user3@example.com', date: '18 مايو 2024', status: 'غير مؤكد' },
-    { id: 4, email: 'user4@example.com', date: '17 مايو 2024', status: 'نشط' },
-  ];
+  const [subscribers, setSubscribers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [totalCount, setTotalCount] = useState(0);
+
+  const fetchSubscribers = async () => {
+    try {
+      setLoading(true);
+      const { data, count, error } = await supabase
+        .from('newsletter')
+        .select('*', { count: 'exact' })
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setSubscribers(data || []);
+      setTotalCount(count || 0);
+    } catch (err) {
+      console.error("Error fetching subscribers:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchSubscribers();
+  }, []);
+
+  const handleDelete = async (id) => {
+    if (window.confirm('هل أنت متأكد من حذف هذا المشترك؟')) {
+      try {
+        const { error } = await supabase.from('newsletter').delete().eq('id', id);
+        if (error) throw error;
+        setSubscribers(subscribers.filter(s => s.id !== id));
+        setTotalCount(prev => prev - 1);
+      } catch (err) {
+        alert('خطأ أثناء الحذف');
+      }
+    }
+  };
 
   return (
     <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
@@ -37,7 +72,7 @@ const NewsletterManagement = () => {
           </div>
           <div>
             <p className="text-xs font-black text-slate-400 uppercase">إجمالي المشتركين</p>
-            <h3 className="text-3xl font-black text-slate-800">1,450</h3>
+            <h3 className="text-3xl font-black text-slate-800">{totalCount}</h3>
           </div>
         </div>
         <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm flex items-center gap-6">
@@ -46,7 +81,7 @@ const NewsletterManagement = () => {
           </div>
           <div>
             <p className="text-xs font-black text-slate-400 uppercase">حملات مرسلة</p>
-            <h3 className="text-3xl font-black text-slate-800">12</h3>
+            <h3 className="text-3xl font-black text-slate-800">0</h3>
           </div>
         </div>
         <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm flex items-center gap-6">
@@ -54,54 +89,65 @@ const NewsletterManagement = () => {
             <CheckCircle2 size={32} />
           </div>
           <div>
-            <p className="text-xs font-black text-slate-400 uppercase">نسبة التفاعل</p>
-            <h3 className="text-3xl font-black text-slate-800">24.5%</h3>
+            <p className="text-xs font-black text-slate-400 uppercase">الحالة</p>
+            <h3 className="text-3xl font-black text-slate-800">نشط</h3>
           </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-[40px] border border-gray-100 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-[40px] border border-gray-100 shadow-sm overflow-hidden min-h-[400px]">
         <div className="p-8 border-b border-gray-50 flex items-center justify-between">
           <h3 className="text-lg font-black text-slate-800">قائمة المشتركين</h3>
           <button className="text-blue-600 text-xs font-black flex items-center gap-2 hover:bg-blue-50 px-4 py-2 rounded-xl transition-all">
             <Download size={16} /> تصدير القائمة (CSV)
           </button>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-right">
-            <thead className="bg-gray-50/50">
-              <tr>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">البريد الإلكتروني</th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">تاريخ الاشتراك</th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">الحالة</th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">إجراءات</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {subscribers.map((item) => (
-                <tr key={item.id} className="hover:bg-gray-50/30 transition-colors">
-                  <td className="px-8 py-5">
-                    <div className="flex items-center gap-3">
-                      <Mail size={16} className="text-slate-400" />
-                      <span className="text-sm font-bold text-slate-700">{item.email}</span>
-                    </div>
-                  </td>
-                  <td className="px-8 py-5 text-slate-400 text-[11px] font-bold">{item.date}</td>
-                  <td className="px-8 py-5">
-                    <span className={`px-3 py-1 rounded-full text-[10px] font-black ${
-                      item.status === 'نشط' ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-600'
-                    }`}>
-                      {item.status}
-                    </span>
-                  </td>
-                  <td className="px-8 py-5 text-center">
-                    <button className="p-2 text-slate-300 hover:text-red-500 transition-all"><Trash2 size={18} /></button>
-                  </td>
+        
+        {loading ? (
+          <div className="flex items-center justify-center h-64">
+            <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
+          </div>
+        ) : subscribers.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-right">
+              <thead className="bg-gray-50/50">
+                <tr>
+                  <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">البريد الإلكتروني</th>
+                  <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">تاريخ الاشتراك</th>
+                  <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">إجراءات</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {subscribers.map((item) => (
+                  <tr key={item.id} className="hover:bg-gray-50/30 transition-colors">
+                    <td className="px-8 py-5">
+                      <div className="flex items-center gap-3">
+                        <Mail size={16} className="text-slate-400" />
+                        <span className="text-sm font-bold text-slate-700">{item.email}</span>
+                      </div>
+                    </td>
+                    <td className="px-8 py-5 text-slate-400 text-[11px] font-bold">
+                      {new Date(item.created_at).toLocaleDateString('ar-YE')}
+                    </td>
+                    <td className="px-8 py-5 text-center">
+                      <button 
+                        onClick={() => handleDelete(item.id)}
+                        className="p-2 text-slate-300 hover:text-red-500 transition-all"
+                      >
+                        <Trash2 size={18} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center h-64 gap-4">
+            <AlertCircle className="w-12 h-12 text-slate-300" />
+            <p className="text-slate-400 font-bold">لا يوجد مشتركين حالياً</p>
+          </div>
+        )}
       </div>
     </div>
   );

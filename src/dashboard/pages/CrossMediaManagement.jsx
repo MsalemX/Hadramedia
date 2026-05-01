@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { NavLink } from 'react-router-dom';
 import {
   Plus,
   Search,
@@ -11,20 +12,91 @@ import {
   ChevronLeft,
   Video,
   FileBarChart,
-  Clock
+  Clock,
+  Loader2,
+  AlertCircle,
+  Send
 } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
 
 const CrossMediaManagement = () => {
-  const mediaData = [
-    { id: 1, title: 'رحلة النفط من الاستخراج إلى التصدير', type: 'فيديو تفاعلي', status: 'منشور', date: '20 مايو 2024', views: '24,560', clicks: '3,240', img: '/images/image.jpg' },
-    { id: 2, title: 'خريطة تفاعلية: التوزيع السكاني في اليمن', type: 'خرائط تفاعلية', status: 'منشور', date: '19 مايو 2024', views: '18,230', clicks: '2,150', img: '/images/image.jpg' },
-    { id: 3, title: 'إنفوجرافيك: مؤشرات الاقتصاد اليمني 2024', type: 'إنفوجرافيك', status: 'منشور', date: '18 مايو 2024', views: '15,890', clicks: '1,980', img: '/images/image.jpg' },
-    { id: 4, title: 'تحديات المياه في حضرموت', type: 'فيديو تفاعلي', status: 'منشور', date: '17 مايو 2024', views: '12,450', clicks: '1,780', img: '/images/image.jpg' },
-    { id: 5, title: 'تطورات الصراع في اليمن (2015 - 2024)', type: 'خرائط تفاعلية', status: 'منشور', date: '16 مايو 2024', views: '10,320', clicks: '1,240', img: '/images/image.jpg' },
-    { id: 6, title: 'التعليم في اليمن بالأرقام', type: 'إنفوجرافيك', status: 'منشور', date: '15 مايو 2024', views: '8,760', clicks: '950', img: '/images/image.jpg' },
-    { id: 7, title: 'ثروات البحر الأحمر', type: 'فيديو تفاعلي', status: 'مسودة', date: '14 مايو 2024', views: '-', clicks: '-', img: '/images/image.jpg' },
-    { id: 8, title: 'مستقبل المدن الذكية في اليمن', type: 'فيديو تفاعلي', status: 'مسودة', date: '13 مايو 2024', views: '-', clicks: '-', img: '/images/image.jpg' },
-  ];
+  const [media, setMedia] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [page, setPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const pageSize = 8;
+
+  const fetchMedia = async () => {
+    try {
+      setLoading(true);
+      let query = supabase
+        .from('news')
+        .select('*', { count: 'exact' })
+        .eq('is_cross_media', true);
+
+      if (searchTerm) {
+        query = query.ilike('title', `%${searchTerm}%`);
+      }
+      if (statusFilter !== 'all') {
+        query = query.eq('status', statusFilter);
+      }
+
+      const { data, count, error } = await query
+        .order('created_at', { ascending: false })
+        .range((page - 1) * pageSize, page * pageSize - 1);
+
+      if (error) throw error;
+      setMedia(data || []);
+      setTotalCount(count || 0);
+    } catch (err) {
+      console.error("Error fetching cross media:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchMedia();
+  }, [page, statusFilter]);
+
+  const handleSearch = (e) => {
+    if (e.key === 'Enter') {
+      setPage(1);
+      fetchMedia();
+    }
+  };
+
+  const handlePublish = async (id) => {
+    try {
+      const { error } = await supabase
+        .from('news')
+        .update({ status: 'منشور' })
+        .eq('id', id);
+
+      if (error) throw error;
+      
+      setMedia(media.map(item => 
+        item.id === id ? { ...item, status: 'منشور' } : item
+      ));
+    } catch (err) {
+      alert('خطأ أثناء النشر');
+    }
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm('هل أنت متأكد من حذف هذا المحتوى؟')) {
+      try {
+        const { error } = await supabase.from('news').delete().eq('id', id);
+        if (error) throw error;
+        setMedia(media.filter(m => m.id !== id));
+        setTotalCount(prev => prev - 1);
+      } catch (err) {
+        alert('خطأ أثناء الحذف');
+      }
+    }
+  };
 
   return (
     <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
@@ -33,27 +105,13 @@ const CrossMediaManagement = () => {
           <h1 className="text-2xl font-black text-slate-800">إدارة الكروس ميديا</h1>
           <p className="text-slate-400 text-sm font-bold mt-1">الرئيسية {'>'} الكروس ميديا</p>
         </div>
-        <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-black flex items-center gap-2 shadow-lg shadow-blue-600/20 transition-all active:scale-95">
+        <NavLink 
+          to="/dashboard/content/add?type=cross-media"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-black flex items-center gap-2 shadow-lg shadow-blue-600/20 transition-all active:scale-95"
+        >
           <Plus size={20} />
           إضافة كروس ميديا جديد
-        </button>
-      </div>
-
-      {/* Stats row for CrossMedia */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-        {[
-          { label: 'إجمالي الكروس ميديا', value: '87', trend: '+18.7%', color: 'bg-red-50 text-red-600' },
-          { label: 'إجمالي المشاهدات', value: '125,430', trend: '+22.4%', color: 'bg-green-50 text-green-600' },
-          { label: 'إجمالي النقرات', value: '18,620', trend: '+15.3%', color: 'bg-blue-50 text-blue-600' },
-          { label: 'متوسط مدة التفاعل', value: '04:32', trend: 'دقيقة لكل محتوى', color: 'bg-purple-50 text-purple-600' },
-          { label: 'مسودة', value: '9', trend: 'لم يتم النشر', color: 'bg-orange-50 text-orange-600' },
-        ].map((stat, i) => (
-          <div key={i} className="bg-white p-4 rounded-3xl border border-gray-100 shadow-sm text-center">
-            <p className="text-[10px] font-black text-slate-400 mb-2 uppercase">{stat.label}</p>
-            <h3 className="text-xl font-black text-slate-800">{stat.value}</h3>
-            <p className={`text-[10px] font-bold mt-1 ${stat.color.split(' ')[1]}`}>{stat.trend}</p>
-          </div>
-        ))}
+        </NavLink>
       </div>
 
       <div className="bg-white p-4 rounded-3xl border border-gray-100 shadow-sm flex flex-wrap items-center gap-4">
@@ -61,74 +119,131 @@ const CrossMediaManagement = () => {
           <Search className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
           <input
             type="text"
-            placeholder="بحث عن محتوى..."
+            placeholder="بحث عن محتوى (اضغط Enter)..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onKeyDown={handleSearch}
             className="w-full bg-gray-50 border border-gray-100 rounded-2xl pr-12 pl-4 py-3 text-sm focus:outline-none focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600/20 transition-all font-bold"
           />
         </div>
-        <select className="bg-gray-50 border border-gray-100 rounded-2xl px-6 py-3 text-sm font-black text-slate-600 focus:outline-none focus:ring-4 focus:ring-blue-600/5">
-          <option>كل الحالات</option>
-        </select>
-        <select className="bg-gray-50 border border-gray-100 rounded-2xl px-6 py-3 text-sm font-black text-slate-600 focus:outline-none focus:ring-4 focus:ring-blue-600/5">
-          <option>كل الأنواع</option>
+        <select 
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="bg-gray-50 border border-gray-100 rounded-2xl px-6 py-3 text-sm font-black text-slate-600 focus:outline-none focus:ring-4 focus:ring-blue-600/5"
+        >
+          <option value="all">كل الحالات</option>
+          <option value="منشور">منشور</option>
+          <option value="مسودة">مسودة</option>
         </select>
       </div>
 
-      <div className="bg-white rounded-[40px] border border-gray-100 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-right">
-            <thead className="bg-gray-50/50">
-              <tr>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">المصغرة</th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">العنوان</th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">نوع المحتوى</th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">الحالة</th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">تاريخ النشر</th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">المشاهدات</th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">النقرات</th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">إجراءات</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {mediaData.map((media) => (
-                <tr key={media.id} className="hover:bg-gray-50/30 transition-colors group">
-                  <td className="px-8 py-5">
-                    <div className="relative w-16 h-12">
-                      <img src={media.img} className="w-full h-full rounded-xl object-cover shadow-sm border-2 border-white" alt="" />
-                      <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-xl group-hover:bg-black/0 transition-all">
-                        <PlayCircle size={20} className="text-white drop-shadow-md" />
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-8 py-5">
-                    <span className="text-sm font-black text-slate-700 line-clamp-2 max-w-xs">{media.title}</span>
-                  </td>
-                  <td className="px-8 py-5">
-                    <span className={`px-3 py-1 rounded-full text-[10px] font-black ${media.type === 'فيديو تفاعلي' ? 'bg-blue-50 text-blue-600' :
-                        media.type === 'خرائط تفاعلية' ? 'bg-purple-50 text-purple-600' : 'bg-orange-50 text-orange-600'
-                      }`}>
-                      {media.type}
-                    </span>
-                  </td>
-                  <td className="px-8 py-5">
-                    <span className={`px-3 py-1 rounded-full text-[10px] font-black ${media.status === 'منشور' ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-600'
-                      }`}>
-                      {media.status}
-                    </span>
-                  </td>
-                  <td className="px-8 py-5 text-slate-400 text-[11px] font-bold">{media.date}</td>
-                  <td className="px-8 py-5 text-sm font-black text-slate-700">{media.views}</td>
-                  <td className="px-8 py-5 text-sm font-black text-slate-700">{media.clicks}</td>
-                  <td className="px-8 py-5">
-                    <div className="flex items-center justify-center gap-2">
-                      <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"><Edit3 size={16} /></button>
-                      <button className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"><Trash2 size={16} /></button>
-                      <button className="p-2 text-slate-400 hover:text-slate-600 hover:bg-gray-100 rounded-lg transition-all"><MoreVertical size={16} /></button>
-                    </div>
-                  </td>
+      <div className="bg-white rounded-[40px] border border-gray-100 shadow-sm overflow-hidden min-h-[400px]">
+        {loading ? (
+          <div className="flex items-center justify-center h-64">
+            <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
+          </div>
+        ) : media.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-right">
+              <thead className="bg-gray-50/50">
+                <tr>
+                  <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">المصغرة</th>
+                  <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">العنوان</th>
+                  <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">التصنيف</th>
+                  <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">الحالة</th>
+                  <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">تاريخ النشر</th>
+                  <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">إجراءات</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {media.map((item) => (
+                  <tr key={item.id} className="hover:bg-gray-50/30 transition-colors group">
+                    <td className="px-8 py-5">
+                      <div className="relative w-16 h-12">
+                        <img src={item.main_image || '/images/image.jpg'} className="w-full h-full rounded-xl object-cover shadow-sm border-2 border-white" alt="" />
+                        <div className="absolute inset-0 flex items-center justify-center bg-black/20 rounded-xl group-hover:bg-black/0 transition-all">
+                          <PlayCircle size={20} className="text-white drop-shadow-md" />
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-8 py-5">
+                      <span className="text-sm font-black text-slate-700 line-clamp-2 max-w-xs">{item.title}</span>
+                    </td>
+                    <td className="px-8 py-5">
+                      <span className="px-3 py-1 rounded-full text-[10px] font-black bg-blue-50 text-blue-600">
+                        {item.category}
+                      </span>
+                    </td>
+                    <td className="px-8 py-5">
+                      <span className={`px-3 py-1 rounded-full text-[10px] font-black ${item.status === 'منشور' ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-600'}`}>
+                        {item.status}
+                      </span>
+                    </td>
+                    <td className="px-8 py-5 text-slate-400 text-[11px] font-bold">
+                      {new Date(item.created_at).toLocaleDateString('ar-YE')}
+                    </td>
+                    <td className="px-8 py-5">
+                      <div className="flex items-center justify-center gap-2">
+                        {item.status === 'مسودة' && (
+                           <button 
+                             onClick={() => handlePublish(item.id)}
+                             className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-all flex items-center gap-1 text-[10px] font-black"
+                             title="نشر الآن"
+                           >
+                             <Send size={14} className="rotate-180" />
+                             نشر
+                           </button>
+                        )}
+                        <NavLink 
+                          to={`/dashboard/content/edit/${item.id}`}
+                          className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                        >
+                          <Edit3 size={16} />
+                        </NavLink>
+                        <button 
+                          onClick={() => handleDelete(item.id)}
+                          className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center h-64 gap-4">
+            <AlertCircle className="w-12 h-12 text-slate-300" />
+            <p className="text-slate-400 font-bold">لا توجد نتائج مطابقة</p>
+          </div>
+        )}
+
+        {/* Pagination */}
+        <div className="p-8 border-t border-gray-50 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <span className="text-sm font-bold text-slate-400">عدد النتائج الكلي: {totalCount}</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button 
+              disabled={page === 1}
+              onClick={() => setPage(p => p - 1)}
+              className="p-2 text-slate-400 hover:text-blue-600 disabled:opacity-30"
+            >
+              <ChevronRight size={20} />
+            </button>
+            <span className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-black text-sm">
+              {page}
+            </span>
+            <button 
+              disabled={page * pageSize >= totalCount}
+              onClick={() => setPage(p => p + 1)}
+              className="p-2 text-slate-400 hover:text-blue-600 disabled:opacity-30"
+            >
+              <ChevronLeft size={20} />
+            </button>
+          </div>
         </div>
       </div>
     </div>

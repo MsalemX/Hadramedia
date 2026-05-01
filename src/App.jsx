@@ -25,6 +25,7 @@ import CartoonsDetailsPage from './pages/CartoonsDetailsPage';
 import ArticleDetailsPage from './pages/ArticleDetailsPage';
 import StudyDetailsPage from './pages/StudyDetailsPage';
 import CrossMediaDetailsPage from './pages/CrossMediaDetailsPage';
+import SearchPage from './pages/SearchPage';
 
 // Static
 import AboutPage from './pages/AboutPage';
@@ -54,14 +55,38 @@ import AdsManagement from './dashboard/pages/AdsManagement';
 import StatsManagement from './dashboard/pages/StatsManagement';
 import SettingsManagement from './dashboard/pages/SettingsManagement';
 import NewsletterManagement from './dashboard/pages/NewsletterManagement';
+import ContentEditor from './dashboard/pages/ContentEditor';
+
+import { supabase } from './lib/supabase';
 
 const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem('token');
-  if (!token) {
+  const [session, setSession] = React.useState(undefined);
+
+  React.useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  if (session === undefined) {
+    return <div className="min-h-screen flex items-center justify-center bg-[#f7f8fb]">
+      <div className="w-8 h-8 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
+    </div>;
+  }
+
+  if (!session) {
     return <Navigate to="/login" replace />;
   }
+
   return children;
 };
+
 
 function App() {
   const PublicLayout = () => (
@@ -107,7 +132,8 @@ function App() {
         <Route path="/cartoon/:id" element={<CartoonsDetailsPage />} />
         <Route path="/article/:id" element={<ArticleDetailsPage />} />
         <Route path="/study/:id" element={<StudyDetailsPage />} />
-        <Route path="/report/:id" element={<CrossMediaDetailsPage />} />
+        <Route path="/cross-media/:id" element={<CrossMediaDetailsPage />} />
+        <Route path="/search" element={<SearchPage />} />
 
         <Route path="/login" element={<Login />} />
 
@@ -139,6 +165,8 @@ function App() {
         <Route path="stats" element={<StatsManagement />} />
         <Route path="settings" element={<SettingsManagement />} />
         <Route path="newsletter" element={<NewsletterManagement />} />
+        <Route path="content/add" element={<ContentEditor />} />
+        <Route path="content/edit/:id" element={<ContentEditor />} />
       </Route>
     </Routes>
   );

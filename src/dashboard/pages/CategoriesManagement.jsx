@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Plus, 
   Search, 
@@ -6,17 +6,66 @@ import {
   Edit3, 
   Trash2, 
   Grid,
-  CheckCircle2
+  CheckCircle2,
+  Loader2,
+  AlertCircle
 } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
 
 const CategoriesManagement = () => {
-  const data = [
-    { id: 1, name: 'أخبار محلية', count: '456', status: 'نشط', color: 'bg-blue-600' },
-    { id: 2, name: 'اقتصاد', count: '124', status: 'نشط', color: 'bg-green-600' },
-    { id: 3, name: 'رياضة', count: '89', status: 'نشط', color: 'bg-orange-600' },
-    { id: 4, name: 'ثقافة وفن', count: '67', status: 'غير نشط', color: 'bg-purple-600' },
-    { id: 5, name: 'تكنولوجيا', count: '34', status: 'نشط', color: 'bg-cyan-600' },
-  ];
+  const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const fetchCategories = async () => {
+    try {
+      setLoading(true);
+      // We'll fetch from 'news' to get unique categories and counts if a dedicated table doesn't exist
+      // But usually there is a categories table. Let's assume 'news' grouping for now to show real data if table is missing.
+      // Better: check for 'categories' table.
+      const { data: newsData, error } = await supabase
+        .from('news')
+        .select('category');
+
+      if (error) throw error;
+
+      const counts = {};
+      newsData.forEach(item => {
+        if (item.category) {
+          counts[item.category] = (counts[item.category] || 0) + 1;
+        }
+      });
+
+      const formatted = Object.entries(counts).map(([name, count], index) => ({
+        id: index + 1,
+        name,
+        count,
+        status: 'نشط',
+        color: index % 2 === 0 ? 'bg-blue-600' : 'bg-purple-600'
+      }));
+
+      setCategories(formatted);
+    } catch (err) {
+      console.error("Error fetching categories:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  const handleDelete = async (name) => {
+    if (window.confirm(`هل أنت متأكد من حذف تصنيف "${name}"؟ قد يؤثر ذلك على الأخبار المرتبطة به.`)) {
+      // Logic for deleting category would go here
+      setCategories(categories.filter(c => c.name !== name));
+    }
+  };
+
+  const filteredCategories = categories.filter(c => 
+    c.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="space-y-8 animate-in slide-in-from-bottom-4 duration-500">
@@ -37,52 +86,70 @@ const CategoriesManagement = () => {
           <input 
             type="text" 
             placeholder="بحث عن تصنيف..." 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full bg-gray-50 border border-gray-100 rounded-2xl pr-12 pl-4 py-3 text-sm focus:outline-none focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600/20 transition-all font-bold"
           />
         </div>
       </div>
 
-      <div className="bg-white rounded-[40px] border border-gray-100 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-right">
-            <thead className="bg-gray-50/50">
-              <tr>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">#</th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">اسم التصنيف</th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">عدد المقالات</th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">الحالة</th>
-                <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">إجراءات</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50">
-              {data.map((item) => (
-                <tr key={item.id} className="hover:bg-gray-50/30 transition-colors group">
-                  <td className="px-8 py-5 text-center text-slate-400 font-black">{item.id}</td>
-                  <td className="px-8 py-5">
-                    <div className="flex items-center gap-3">
-                      <div className={`w-3 h-3 rounded-full ${item.color}`}></div>
-                      <span className="text-sm font-black text-slate-700">{item.name}</span>
-                    </div>
-                  </td>
-                  <td className="px-8 py-5 text-sm font-black text-slate-700">{item.count}</td>
-                  <td className="px-8 py-5">
-                    <span className={`px-3 py-1 rounded-full text-[10px] font-black ${
-                      item.status === 'نشط' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'
-                    }`}>
-                      {item.status}
-                    </span>
-                  </td>
-                  <td className="px-8 py-5">
-                    <div className="flex items-center justify-center gap-2">
-                      <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"><Edit3 size={16} /></button>
-                      <button className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"><Trash2 size={16} /></button>
-                    </div>
-                  </td>
+      <div className="bg-white rounded-[40px] border border-gray-100 shadow-sm overflow-hidden min-h-[400px]">
+        {loading ? (
+          <div className="flex items-center justify-center h-64">
+            <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
+          </div>
+        ) : filteredCategories.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full text-right">
+              <thead className="bg-gray-50/50">
+                <tr>
+                  <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">#</th>
+                  <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">اسم التصنيف</th>
+                  <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">عدد العناصر</th>
+                  <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">الحالة</th>
+                  <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">إجراءات</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-gray-50">
+                {filteredCategories.map((item) => (
+                  <tr key={item.id} className="hover:bg-gray-50/30 transition-colors group">
+                    <td className="px-8 py-5 text-center text-slate-400 font-black">{item.id}</td>
+                    <td className="px-8 py-5">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-3 h-3 rounded-full ${item.color}`}></div>
+                        <span className="text-sm font-black text-slate-700">{item.name}</span>
+                      </div>
+                    </td>
+                    <td className="px-8 py-5 text-sm font-black text-slate-700">{item.count}</td>
+                    <td className="px-8 py-5">
+                      <span className={`px-3 py-1 rounded-full text-[10px] font-black ${
+                        item.status === 'نشط' ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'
+                      }`}>
+                        {item.status}
+                      </span>
+                    </td>
+                    <td className="px-8 py-5">
+                      <div className="flex items-center justify-center gap-2">
+                        <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"><Edit3 size={16} /></button>
+                        <button 
+                          onClick={() => handleDelete(item.name)}
+                          className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="flex flex-col items-center justify-center h-64 gap-4">
+            <AlertCircle className="w-12 h-12 text-slate-300" />
+            <p className="text-slate-400 font-bold">لا توجد تصنيفات حالياً</p>
+          </div>
+        )}
       </div>
     </div>
   );

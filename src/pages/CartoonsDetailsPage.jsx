@@ -1,63 +1,111 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, useParams } from 'react-router-dom';
-import { ChevronLeft, Heart, MessageSquare, Share2, Bookmark, User, Send, ThumbsUp, MoreHorizontal, Download, Calendar } from 'lucide-react';
+import { ChevronLeft, Heart, MessageSquare, Share2, Bookmark, User, Send, ThumbsUp, MoreHorizontal, Download, Calendar, Loader2 } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 const CartoonsDetailsPage = () => {
   const { id } = useParams();
-  const [likes, setLikes] = useState(1500);
+  const [post, setPost] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [likes, setLikes] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
-  const [comments, setComments] = useState([
-    {
-      id: 1,
-      author: 'علي صالح',
-      avatar: '/images/image.jpg',
-      content: 'تعبير دقيق ومضحك عن واقعنا المرير! ريشة مبدعة كالعادة.',
-      date: 'منذ ساعتين',
-      likes: 124,
-      isLiked: false
-    }
-  ]);
+  const [comments, setComments] = useState([]);
   const [commentName, setCommentName] = useState('');
   const [commentEmail, setCommentEmail] = useState('');
   const [newComment, setNewComment] = useState('');
+  const [submittingComment, setSubmittingComment] = useState(false);
+
+  useEffect(() => {
+    const fetchCartoonData = async () => {
+      try {
+        setLoading(true);
+        // Fetch post
+        const { data: postData, error: postError } = await supabase
+          .from('news')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (postError) throw postError;
+        setPost(postData);
+        setLikes(postData.views_count ? Math.floor(postData.views_count / 10) : 0);
+
+        // Fetch comments
+        const { data: commentsData } = await supabase
+          .from('comments')
+          .select('*')
+          .eq('post_id', id)
+          .order('created_at', { ascending: false });
+
+        setComments(commentsData || []);
+
+        // Increment views
+        await supabase.rpc('increment_views', { post_id: id }).catch(() => {
+          supabase.from('news').update({ views_count: (postData.views_count || 0) + 1 }).eq('id', id);
+        });
+
+      } catch (err) {
+        console.error("Error fetching cartoon data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCartoonData();
+  }, [id]);
 
   const handleLike = () => {
     setIsLiked(!isLiked);
     setLikes(isLiked ? likes - 1 : likes + 1);
   };
 
-  const handleCommentLike = (commentId) => {
-    setComments(comments.map(comment => {
-      if (comment.id === commentId) {
-        return {
-          ...comment,
-          isLiked: !comment.isLiked,
-          likes: comment.isLiked ? comment.likes - 1 : comment.likes + 1
-        };
-      }
-      return comment;
-    }));
-  };
-
-  const handleAddComment = (e) => {
+  const handleAddComment = async (e) => {
     e.preventDefault();
     if (!newComment.trim() || !commentName.trim() || !commentEmail.trim()) return;
     
-    const comment = {
-      id: comments.length + 1,
-      author: commentName,
-      avatar: '/images/image.jpg',
-      content: newComment,
-      date: 'الآن',
-      likes: 0,
-      isLiked: false
-    };
-    
-    setComments([comment, ...comments]);
-    setNewComment('');
-    setCommentName('');
-    setCommentEmail('');
+    try {
+      setSubmittingComment(true);
+      const { data, error } = await supabase
+        .from('comments')
+        .insert([{
+          post_id: id,
+          author_name: commentName,
+          author_email: commentEmail,
+          content: newComment
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+      setComments([data, ...comments]);
+      setNewComment('');
+      setCommentName('');
+      setCommentEmail('');
+    } catch (err) {
+      console.error("Error adding comment:", err);
+    } finally {
+      setSubmittingComment(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#f7f8fb] flex items-center justify-center font-cairo" dir="rtl">
+        <Loader2 className="w-10 h-10 text-red-600 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!post) {
+    return (
+      <div className="min-h-screen bg-[#f7f8fb] flex items-center justify-center font-cairo" dir="rtl">
+        <div className="text-center">
+          <h1 className="text-2xl font-black text-[#09264d] mb-4">الكاريكاتير غير موجود</h1>
+          <NavLink to="/cartoons" className="text-red-600 font-bold hover:underline">العودة لصفحة الكاريكاتير</NavLink>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-[#f7f8fb] min-h-screen pb-20 font-cairo" dir="rtl">
@@ -69,30 +117,30 @@ const CartoonsDetailsPage = () => {
           <ChevronLeft size={14} />
           <NavLink to="/cartoons" className="hover:text-blue-600 transition-colors">كاريكاتير</NavLink>
           <ChevronLeft size={14} />
-          <span className="text-slate-600 truncate max-w-[200px]">تفاصيل الكاريكاتير</span>
+          <span className="text-slate-600 truncate max-w-[200px]">{post.title}</span>
         </div>
 
         {/* Cartoon Header */}
         <div className="mb-10 text-center">
-          <span className="bg-red-100 text-red-700 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest mb-6 inline-block">كاريكاتير اليوم</span>
+          <span className="bg-red-100 text-red-700 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest mb-6 inline-block">{post.category || 'كاريكاتير اليوم'}</span>
           <h1 className="text-4xl md:text-5xl font-black text-[#09264d] leading-tight mb-6">
-            ارتفاع الأسعار وحلم "القفة" المملوءة
+            {post.title}
           </h1>
           <p className="text-slate-500 font-bold text-base flex items-center justify-center gap-2">
             <Calendar size={16} className="text-red-600" />
-            20 مايو 2024
+            {new Date(post.created_at).toLocaleDateString('ar-YE')}
           </p>
         </div>
 
         {/* Cartoon Image Container */}
         <div className="bg-white rounded-[3rem] overflow-hidden border border-gray-100 shadow-2xl p-4 md:p-8 mb-12">
            <div className="relative rounded-[2rem] overflow-hidden bg-slate-50 border-8 border-slate-100 shadow-inner group flex justify-center items-center">
-              <img src="/images/hero.png" className="w-full max-h-[700px] object-contain transition-transform duration-700 group-hover:scale-105" alt="Cartoon" onError={(e) => { e.target.onerror = null; e.target.src = 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'; }} />
+              <img src={post.main_image || "/images/hero.png"} className="w-full max-h-[700px] object-contain transition-transform duration-700 group-hover:scale-105" alt="Cartoon" />
               
               <div className="absolute top-6 left-6 flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                 <button className="bg-white/90 backdrop-blur-md p-3 rounded-xl shadow-lg text-[#09264d] hover:bg-red-600 hover:text-white transition-all">
+                 <a href={post.main_image} download className="bg-white/90 backdrop-blur-md p-3 rounded-xl shadow-lg text-[#09264d] hover:bg-red-600 hover:text-white transition-all">
                     <Download size={20} />
-                 </button>
+                 </a>
               </div>
            </div>
         </div>
@@ -167,10 +215,10 @@ const CartoonsDetailsPage = () => {
                 />
                 <button
                   type="submit"
-                  disabled={!newComment.trim() || !commentName.trim() || !commentEmail.trim()}
+                  disabled={submittingComment || !newComment.trim() || !commentName.trim() || !commentEmail.trim()}
                   className="absolute left-4 bottom-4 bg-[#09264d] hover:bg-blue-900 disabled:bg-slate-300 text-white p-3 rounded-xl transition-all shadow-lg shadow-blue-900/30"
                 >
-                  <Send size={20} className="rtl:-scale-x-100" />
+                  {submittingComment ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} className="rtl:-scale-x-100" />}
                 </button>
               </div>
             </div>
@@ -178,41 +226,28 @@ const CartoonsDetailsPage = () => {
 
           {/* Comments List */}
           <div className="space-y-6">
-            {comments.map(comment => (
+            {comments.length > 0 ? comments.map(comment => (
               <div key={comment.id} className="flex gap-4">
-                <div className="w-12 h-12 rounded-full bg-slate-200 shrink-0 overflow-hidden shadow-sm">
-                  <img src={comment.avatar} alt={comment.author} className="w-full h-full object-cover" onError={(e) => { e.target.onerror = null; e.target.src = 'https://via.placeholder.com/150'; }} />
+                <div className="w-12 h-12 rounded-full bg-slate-200 shrink-0 overflow-hidden flex items-center justify-center shadow-sm">
+                  <User size={24} className="text-slate-400" />
                 </div>
                 <div className="flex-1">
                   <div className="bg-slate-50/80 p-5 md:p-6 rounded-[2rem] rounded-tr-none border border-gray-100/50">
                     <div className="flex justify-between items-start mb-3">
                       <div>
-                        <h4 className="text-sm font-black text-[#09264d]">{comment.author}</h4>
-                        <span className="text-[10px] text-slate-400 font-bold">{comment.date}</span>
+                        <h4 className="text-sm font-black text-[#09264d]">{comment.author_name}</h4>
+                        <span className="text-[10px] text-slate-400 font-bold">{new Date(comment.created_at).toLocaleDateString('ar-YE')}</span>
                       </div>
-                      <button className="text-slate-300 hover:text-slate-600 transition-colors">
-                        <MoreHorizontal size={18} />
-                      </button>
                     </div>
                     <p className="text-slate-600 text-sm font-medium leading-relaxed">
                       {comment.content}
                     </p>
                   </div>
-                  
-                  {/* Comment Actions */}
-                  <div className="flex items-center gap-5 mt-3 px-3 text-xs font-black text-slate-400">
-                    <button 
-                      onClick={() => handleCommentLike(comment.id)}
-                      className={`flex items-center gap-1.5 transition-all ${comment.isLiked ? 'text-red-600 scale-105' : 'hover:text-red-600'}`}
-                    >
-                      <ThumbsUp size={14} className={comment.isLiked ? 'fill-current' : ''} />
-                      <span>{comment.likes}</span>
-                    </button>
-                    <button className="hover:text-[#09264d] transition-colors">رد</button>
-                  </div>
                 </div>
               </div>
-            ))}
+            )) : (
+              <p className="text-center text-slate-400 font-bold py-10">لا توجد تعليقات بعد. كن أول من يعلق!</p>
+            )}
           </div>
         </div>
         

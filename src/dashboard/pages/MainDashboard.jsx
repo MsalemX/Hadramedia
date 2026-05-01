@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Eye, 
   Users, 
@@ -12,8 +12,10 @@ import {
   LayoutDashboard,
   MessageSquare,
   MessageCircle,
-  Layout
+  Layout,
+  Loader2
 } from 'lucide-react';
+import { supabase } from '../../lib/supabase';
 
 const StatCard = ({ label, value, trend, trendValue, icon: Icon, color }) => (
   <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex items-center gap-5">
@@ -34,6 +36,92 @@ const StatCard = ({ label, value, trend, trendValue, icon: Icon, color }) => (
 );
 
 const MainDashboard = () => {
+  const [stats, setStats] = useState({
+    totalViews: 0,
+    totalUsers: 0,
+    totalNews: 0,
+    newComments: 0
+  });
+  const [latestNews, setLatestNews] = useState([]);
+  const [mostViewed, setMostViewed] = useState(null);
+  const [recentComments, setRecentComments] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        setLoading(true);
+
+        // Fetch Total News Count
+        const { count: newsCount } = await supabase
+          .from('news')
+          .select('*', { count: 'exact', head: true });
+
+        // Fetch Total Views
+        const { data: viewsData } = await supabase
+          .from('news')
+          .select('views_count');
+        const totalViews = viewsData?.reduce((acc, curr) => acc + (curr.views_count || 0), 0) || 0;
+
+        // Fetch Total Subscribers (as "Users" for dashboard)
+        const { count: subscribersCount } = await supabase
+          .from('newsletter')
+          .select('*', { count: 'exact', head: true });
+
+        // Fetch Total Comments
+        const { count: commentsCount } = await supabase
+          .from('comments')
+          .select('*', { count: 'exact', head: true });
+
+        setStats({
+          totalViews: totalViews.toLocaleString(),
+          totalUsers: (subscribersCount || 0).toLocaleString(),
+          totalNews: (newsCount || 0).toLocaleString(),
+          newComments: (commentsCount || 0).toLocaleString()
+        });
+
+        // Fetch Latest News
+        const { data: newsData } = await supabase
+          .from('news')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(5);
+        setLatestNews(newsData || []);
+
+        // Fetch Most Viewed News
+        const { data: viewedData } = await supabase
+          .from('news')
+          .select('*')
+          .order('views_count', { ascending: false })
+          .limit(1);
+        if (viewedData && viewedData.length > 0) setMostViewed(viewedData[0]);
+
+        // Fetch Recent Comments
+        const { data: commentsData } = await supabase
+          .from('comments')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .limit(3);
+        setRecentComments(commentsData || []);
+
+      } catch (err) {
+        console.error("Error fetching dashboard data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-[400px] flex items-center justify-center">
+        <Loader2 className="w-10 h-10 text-blue-600 animate-spin" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       {/* Header */}
@@ -44,15 +132,15 @@ const MainDashboard = () => {
         </div>
         <div className="flex items-center gap-3 bg-white p-2 rounded-2xl border border-gray-100 shadow-sm">
           <Calendar size={18} className="text-slate-400" />
-          <span className="text-sm font-black text-slate-700">20 مايو 2024</span>
+          <span className="text-sm font-black text-slate-700">{new Date().toLocaleDateString('ar-YE', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
         </div>
       </div>
 
       {/* Welcome Banner */}
       <div className="bg-[#eef2ff] p-8 rounded-[40px] relative overflow-hidden flex items-center justify-between border border-blue-100/50">
         <div className="relative z-10">
-          <h2 className="text-3xl font-black text-[#09264d] mb-2">مرحباً بك، أحمد 👋 المدير</h2>
-          <p className="text-slate-500 font-bold">إليك ملخص أداء الموقع اليوم</p>
+          <h2 className="text-3xl font-black text-[#09264d] mb-2">مرحباً بك في لوحة التحكم 👋</h2>
+          <p className="text-slate-500 font-bold">إليك ملخص أداء الموقع اليوم من Supabase</p>
         </div>
         <div className="absolute left-10 -bottom-10 opacity-10">
           <LayoutDashboard size={200} className="text-[#09264d]" />
@@ -63,35 +151,35 @@ const MainDashboard = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard 
           label="إجمالي المشاهدات" 
-          value="245,890" 
+          value={stats.totalViews} 
           trend="up" 
-          trendValue="+18.6%" 
+          trendValue="+12%" 
           icon={Eye} 
           color="bg-orange-500" 
         />
         <StatCard 
-          label="إجمالي المستخدمين" 
-          value="12,450" 
+          label="المشتركون" 
+          value={stats.totalUsers} 
           trend="up" 
-          trendValue="+5.4%" 
+          trendValue="+5%" 
           icon={Users} 
           color="bg-purple-500" 
         />
         <StatCard 
-          label="إجمالي المقالات" 
-          value="1,248" 
+          label="إجمالي المنشورات" 
+          value={stats.totalNews} 
           trend="up" 
-          trendValue="+8.7%" 
+          trendValue="+8%" 
           icon={FileText} 
           color="bg-green-500" 
         />
         <StatCard 
-          label="البلاغات الجديدة" 
-          value="23" 
-          trend="down" 
-          trendValue="-4%" 
-          icon={AlertCircle} 
-          color="bg-red-500" 
+          label="إجمالي التعليقات" 
+          value={stats.newComments} 
+          trend="up" 
+          trendValue="+15%" 
+          icon={MessageSquare} 
+          color="bg-blue-500" 
         />
       </div>
 
@@ -101,44 +189,40 @@ const MainDashboard = () => {
         <div className="lg:col-span-4 space-y-8">
           <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm">
             <div className="flex items-center justify-between mb-8">
-              <h3 className="text-lg font-black text-slate-800">أكثر الأخبار مشاهدة</h3>
+              <h3 className="text-lg font-black text-slate-800">الأكثر مشاهدة</h3>
               <TrendingUp size={20} className="text-blue-600" />
             </div>
-            <div className="rounded-3xl overflow-hidden relative group">
-              <img src="/images/hero.png" className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500" alt="News" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent p-6 flex flex-col justify-end">
-                <span className="bg-blue-600 text-[10px] px-2 py-1 rounded-md text-white font-black w-fit mb-2">أخبار محلية</span>
-                <h4 className="text-white font-black text-sm leading-6">تنمية حضرموت: مشاريع جديدة لتعزيز البنية التحتية ودعم الاقتصاد</h4>
+            {mostViewed ? (
+              <div className="rounded-3xl overflow-hidden relative group">
+                <img src={mostViewed.main_image || "/images/hero.png"} className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-500" alt="News" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent p-6 flex flex-col justify-end">
+                  <span className="bg-blue-600 text-[10px] px-2 py-1 rounded-md text-white font-black w-fit mb-2">{mostViewed.category}</span>
+                  <h4 className="text-white font-black text-sm leading-6 line-clamp-2">{mostViewed.title}</h4>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="h-48 bg-gray-50 rounded-3xl flex items-center justify-center text-slate-300 font-bold">لا توجد بيانات</div>
+            )}
             <div className="mt-6 flex items-center justify-between">
               <div className="flex items-center gap-2 text-slate-400 text-[11px] font-bold">
                 <Eye size={14} className="text-blue-600" />
-                <span>24,560 مشاهدة</span>
+                <span>{mostViewed?.views_count || 0} مشاهدة</span>
               </div>
-              <span className="text-slate-300 text-[11px] font-bold">20 مايو 2024</span>
+              <span className="text-slate-300 text-[11px] font-bold">{mostViewed ? new Date(mostViewed.created_at).toLocaleDateString('ar-YE') : ''}</span>
             </div>
           </div>
 
           <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm">
-            <h3 className="text-lg font-black text-slate-800 mb-8">توزيع المشاهدات</h3>
-            <div className="flex flex-col items-center">
-               {/* Simplified SVG Donut Chart */}
-               <svg viewBox="0 0 36 36" className="w-48 h-48">
-                  <path className="text-gray-100 stroke-current" strokeWidth="3" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                  <path className="text-blue-600 stroke-current" strokeWidth="3" strokeDasharray="45, 100" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-                  <path className="text-orange-500 stroke-current" strokeWidth="3" strokeDasharray="25, 100" strokeDashoffset="-45" fill="none" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-               </svg>
-               <div className="grid grid-cols-2 gap-4 mt-8 w-full">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-blue-600"></div>
-                    <span className="text-[10px] font-black text-slate-600">أخبار محلية (45%)</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-orange-500"></div>
-                    <span className="text-[10px] font-black text-slate-600">اقتصاد (25%)</span>
-                  </div>
-               </div>
+            <h3 className="text-lg font-black text-slate-800 mb-8">إحصائيات سريعة</h3>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
+                <span className="text-sm font-black text-slate-600">المشتركون الجدد</span>
+                <span className="text-lg font-black text-blue-600">{stats.totalUsers}</span>
+              </div>
+              <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
+                <span className="text-sm font-black text-slate-600">التعليقات الكلية</span>
+                <span className="text-lg font-black text-green-600">{stats.newComments}</span>
+              </div>
             </div>
           </div>
         </div>
@@ -147,8 +231,8 @@ const MainDashboard = () => {
         <div className="lg:col-span-8">
           <div className="bg-white rounded-[40px] border border-gray-100 shadow-sm overflow-hidden">
             <div className="p-8 border-b border-gray-50 flex items-center justify-between">
-              <h3 className="text-lg font-black text-slate-800">آخر الأخبار المضافة</h3>
-              <button className="text-blue-600 text-xs font-black flex items-center gap-1 hover:underline">عرض الكل <ChevronLeft size={16} /></button>
+              <h3 className="text-lg font-black text-slate-800">آخر المنشورات المضافة</h3>
+              <a href="/dashboard/news" className="text-blue-600 text-xs font-black flex items-center gap-1 hover:underline">عرض الكل <ChevronLeft size={16} /></a>
             </div>
             <div className="overflow-x-auto">
               <table className="w-full text-right">
@@ -157,27 +241,21 @@ const MainDashboard = () => {
                     <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">العنوان</th>
                     <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">التصنيف</th>
                     <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">التاريخ</th>
-                    <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">الإجراءات</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50">
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <tr key={i} className="hover:bg-gray-50/30 transition-colors group">
+                  {latestNews.map((item) => (
+                    <tr key={item.id} className="hover:bg-gray-50/30 transition-colors group">
                       <td className="px-8 py-5">
                         <div className="flex items-center gap-4">
-                          <img src="/images/image.jpg" className="w-12 h-10 rounded-lg object-cover shadow-sm" alt="" />
-                          <span className="text-sm font-black text-slate-700 line-clamp-1">بدء العمل في مشروع طريق ساحلي جديد يربط المكلا بالشحر</span>
+                          <img src={item.main_image || "/images/image.jpg"} className="w-12 h-10 rounded-lg object-cover shadow-sm" alt="" />
+                          <span className="text-sm font-black text-slate-700 line-clamp-1">{item.title}</span>
                         </div>
                       </td>
                       <td className="px-8 py-5">
-                        <span className="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-[10px] font-black">أخبار محلية</span>
+                        <span className="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-[10px] font-black">{item.category}</span>
                       </td>
-                      <td className="px-8 py-5 text-slate-400 text-[11px] font-bold">20 مايو 2024</td>
-                      <td className="px-8 py-5">
-                        <div className="flex items-center justify-center gap-2">
-                           <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"><ExternalLink size={16} /></button>
-                        </div>
-                      </td>
+                      <td className="px-8 py-5 text-slate-400 text-[11px] font-bold">{new Date(item.created_at).toLocaleDateString('ar-YE')}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -185,30 +263,32 @@ const MainDashboard = () => {
             </div>
           </div>
           
-          {/* Reports Summary */}
+          {/* Comments Summary */}
           <div className="bg-white mt-8 rounded-[40px] border border-gray-100 shadow-sm overflow-hidden">
             <div className="p-8 border-b border-gray-50 flex items-center justify-between">
-              <h3 className="text-lg font-black text-slate-800">البلاغات والتقارير الأخيرة</h3>
-              <AlertCircle size={20} className="text-red-500" />
+              <h3 className="text-lg font-black text-slate-800">آخر التعليقات</h3>
+              <MessageCircle size={20} className="text-blue-500" />
             </div>
             <div className="p-4 space-y-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="flex items-center justify-between p-4 bg-gray-50/50 rounded-2xl hover:bg-gray-50 transition-colors cursor-pointer">
+              {recentComments.length > 0 ? recentComments.map((comment) => (
+                <div key={comment.id} className="flex items-center justify-between p-4 bg-gray-50/50 rounded-2xl hover:bg-gray-50 transition-colors cursor-pointer">
                   <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-red-500 shadow-sm">
-                      <MessageCircle size={18} />
+                    <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center text-blue-500 shadow-sm">
+                      <MessageSquare size={18} />
                     </div>
                     <div>
-                      <h4 className="text-sm font-black text-slate-700">مقال: عنوان مضلل وغير صحيح</h4>
-                      <p className="text-[10px] text-slate-400 font-bold">محتوى غير لائق</p>
+                      <h4 className="text-sm font-black text-slate-700 line-clamp-1">{comment.content}</h4>
+                      <p className="text-[10px] text-slate-400 font-bold">بواسطة: {comment.author_name}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-6">
-                    <span className="text-[11px] text-slate-400 font-bold">20 مايو 2024</span>
-                    <span className="bg-red-50 text-red-600 px-3 py-1 rounded-full text-[10px] font-black">جديد</span>
+                    <span className="text-[11px] text-slate-400 font-bold">{new Date(comment.created_at).toLocaleDateString('ar-YE')}</span>
+                    <span className="bg-blue-50 text-blue-600 px-3 py-1 rounded-full text-[10px] font-black">جديد</span>
                   </div>
                 </div>
-              ))}
+              )) : (
+                <div className="p-10 text-center text-slate-300 font-bold">لا توجد تعليقات حالياً</div>
+              )}
             </div>
           </div>
         </div>

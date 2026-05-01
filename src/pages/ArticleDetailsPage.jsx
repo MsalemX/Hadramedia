@@ -1,63 +1,111 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, useParams } from 'react-router-dom';
-import { ChevronLeft, Heart, MessageSquare, Share2, Bookmark, User, Send, ThumbsUp, MoreHorizontal, Clock, Quote } from 'lucide-react';
+import { ChevronLeft, Heart, MessageSquare, Share2, Bookmark, User, Send, ThumbsUp, MoreHorizontal, Clock, Quote, Loader2 } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 const ArticleDetailsPage = () => {
   const { id } = useParams();
-  const [likes, setLikes] = useState(840);
+  const [post, setPost] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [likes, setLikes] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
-  const [comments, setComments] = useState([
-    {
-      id: 1,
-      author: 'محمد عبدالله',
-      avatar: '/images/image.jpg',
-      content: 'مقال أكثر من رائع يلامس واقعنا اليوم. شكراً للكاتب على هذا التحليل العميق.',
-      date: 'منذ ساعة',
-      likes: 32,
-      isLiked: false
-    }
-  ]);
+  const [comments, setComments] = useState([]);
   const [commentName, setCommentName] = useState('');
   const [commentEmail, setCommentEmail] = useState('');
   const [newComment, setNewComment] = useState('');
+  const [submittingComment, setSubmittingComment] = useState(false);
+
+  useEffect(() => {
+    const fetchArticleData = async () => {
+      try {
+        setLoading(true);
+        // Fetch post
+        const { data: postData, error: postError } = await supabase
+          .from('news')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (postError) throw postError;
+        setPost(postData);
+        setLikes(postData.views_count ? Math.floor(postData.views_count / 12) : 0);
+
+        // Fetch comments
+        const { data: commentsData } = await supabase
+          .from('comments')
+          .select('*')
+          .eq('post_id', id)
+          .order('created_at', { ascending: false });
+
+        setComments(commentsData || []);
+
+        // Increment views
+        await supabase.rpc('increment_views', { post_id: id }).catch(() => {
+          supabase.from('news').update({ views_count: (postData.views_count || 0) + 1 }).eq('id', id);
+        });
+
+      } catch (err) {
+        console.error("Error fetching article data:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchArticleData();
+  }, [id]);
 
   const handleLike = () => {
     setIsLiked(!isLiked);
     setLikes(isLiked ? likes - 1 : likes + 1);
   };
 
-  const handleCommentLike = (commentId) => {
-    setComments(comments.map(comment => {
-      if (comment.id === commentId) {
-        return {
-          ...comment,
-          isLiked: !comment.isLiked,
-          likes: comment.isLiked ? comment.likes - 1 : comment.likes + 1
-        };
-      }
-      return comment;
-    }));
-  };
-
-  const handleAddComment = (e) => {
+  const handleAddComment = async (e) => {
     e.preventDefault();
     if (!newComment.trim() || !commentName.trim() || !commentEmail.trim()) return;
     
-    const comment = {
-      id: comments.length + 1,
-      author: commentName,
-      avatar: '/images/image.jpg',
-      content: newComment,
-      date: 'الآن',
-      likes: 0,
-      isLiked: false
-    };
-    
-    setComments([comment, ...comments]);
-    setNewComment('');
-    setCommentName('');
-    setCommentEmail('');
+    try {
+      setSubmittingComment(true);
+      const { data, error } = await supabase
+        .from('comments')
+        .insert([{
+          post_id: id,
+          author_name: commentName,
+          author_email: commentEmail,
+          content: newComment
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+      setComments([data, ...comments]);
+      setNewComment('');
+      setCommentName('');
+      setCommentEmail('');
+    } catch (err) {
+      console.error("Error adding comment:", err);
+    } finally {
+      setSubmittingComment(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#f7f8fb] flex items-center justify-center font-cairo" dir="rtl">
+        <Loader2 className="w-10 h-10 text-red-600 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!post) {
+    return (
+      <div className="min-h-screen bg-[#f7f8fb] flex items-center justify-center font-cairo" dir="rtl">
+        <div className="text-center">
+          <h1 className="text-2xl font-black text-[#09264d] mb-4">المقال غير موجود</h1>
+          <NavLink to="/articles" className="text-red-600 font-bold hover:underline">العودة لصفحة المقالات</NavLink>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-[#f7f8fb] min-h-screen pb-20 font-cairo" dir="rtl">
@@ -69,14 +117,14 @@ const ArticleDetailsPage = () => {
           <ChevronLeft size={14} />
           <NavLink to="/articles" className="hover:text-blue-600 transition-colors">مقالات</NavLink>
           <ChevronLeft size={14} />
-          <span className="text-slate-600 truncate max-w-[200px]">تفاصيل المقال</span>
+          <span className="text-slate-600 truncate max-w-[200px]">{post.title}</span>
         </div>
 
         {/* Article Header */}
         <div className="mb-10 text-center border-b border-gray-200 pb-10">
-          <span className="bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-xs font-black shadow-sm uppercase tracking-widest mb-6 inline-block">تنمية</span>
+          <span className="bg-slate-200 text-slate-700 px-4 py-2 rounded-xl text-xs font-black shadow-sm uppercase tracking-widest mb-6 inline-block">{post.category || 'مقال'}</span>
           <h1 className="text-4xl md:text-5xl font-black text-[#09264d] leading-tight mb-8">
-            الإدارة المحلية في حضرموت.. نحو نموذج تنموي فاعل
+            {post.title}
           </h1>
           
           <div className="flex flex-wrap items-center justify-center gap-8 text-sm font-bold text-slate-500">
@@ -90,44 +138,21 @@ const ArticleDetailsPage = () => {
               </div>
             </div>
             <div className="h-8 w-px bg-gray-200 hidden md:block"></div>
-            <span className="flex items-center gap-2 text-red-600"><Clock size={18} /> 20 مايو 2024</span>
+            <span className="flex items-center gap-2 text-red-600"><Clock size={18} /> {new Date(post.created_at).toLocaleDateString('ar-YE')}</span>
             <div className="h-8 w-px bg-gray-200 hidden md:block"></div>
-            <span className="flex items-center gap-2"><Quote size={18} /> 6 دقائق قراءة</span>
+            <span className="flex items-center gap-2"><Eye size={18} /> {post.views_count || 0} مشاهدة</span>
           </div>
         </div>
 
         {/* Article Image */}
         <div className="rounded-[3rem] overflow-hidden mb-12 shadow-2xl h-[300px] md:h-[500px] border-4 border-white">
-          <img src="/images/hero.png" alt="Cover" className="w-full h-full object-cover" onError={(e) => { e.target.onerror = null; e.target.src = 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80'; }} />
+          <img src={post.main_image || "/images/hero.png"} alt="Cover" className="w-full h-full object-cover" />
         </div>
 
         {/* Content */}
         <div className="bg-white rounded-[3rem] p-8 md:p-14 shadow-sm border border-gray-100 mb-12 relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-slate-50 rounded-full -translate-y-32 translate-x-32 blur-3xl"></div>
-          
-          <div className="prose prose-lg prose-slate text-slate-700 font-medium leading-loose max-w-none relative z-10 text-justify">
-            <p className="text-2xl text-[#09264d] font-black mb-8 leading-relaxed">
-              تطوير أداء الإدارة المحلية وتفعيل دور السلطات المحلية يمثل ركيزة أساسية لتحقيق التنمية المستدامة وتحسين مستوى الخدمات.
-            </p>
-            
-            <p className="mb-6 text-lg first-letter:text-5xl first-letter:font-black first-letter:text-red-600 first-letter:mr-2 first-letter:float-right">
-              إن التحديات التي تواجه السلطة المحلية في إدارة شؤون المحافظة تتطلب نهجاً جديداً يعتمد على اللامركزية الإدارية والمالية، مما يمنح المديريات صلاحيات أوسع في اتخاذ القرارات التي تمس حياة المواطن بشكل مباشر.
-            </p>
-            
-            <blockquote className="border-r-4 border-[#09264d] pr-8 my-12 py-4 bg-slate-50 rounded-l-2xl shadow-inner relative">
-              <Quote className="absolute -top-4 -right-4 text-red-600/20" size={60} />
-              <p className="text-xl font-bold text-slate-800 italic m-0 relative z-10">"اللامركزية ليست مجرد نقل للصلاحيات، بل هي إشراك حقيقي للمجتمع المحلي في التخطيط وصنع القرار التنموي."</p>
-            </blockquote>
-            
-            <h3 className="text-2xl font-black text-[#09264d] mt-10 mb-6">أهمية التخطيط الاستراتيجي</h3>
-            <p className="mb-6 text-lg">
-              لا يمكن تحقيق تنمية حقيقية دون وجود خطط استراتيجية واضحة المعالم ومحددة الأهداف، تستند إلى قراءة واقعية للاحتياجات والإمكانيات. هذا يتطلب تفعيل دور المجالس المحلية لتكون رقيباً فاعلاً وشريكاً أساسياً.
-            </p>
-            
-            <p className="mb-6 text-lg">
-              وفي الختام، يظل الرهان الأكبر على وعي المجتمع وإرادته في التغيير، جنباً إلى جنب مع إرادة سياسية جادة للإصلاح المؤسسي وتفعيل مبدأ الثواب والعقاب.
-            </p>
-          </div>
+          <div className="prose prose-lg prose-slate text-slate-700 font-medium leading-loose max-w-none relative z-10 article-content"
+               dangerouslySetInnerHTML={{ __html: post.content }} />
         </div>
 
         {/* Engagement Actions */}
@@ -200,10 +225,10 @@ const ArticleDetailsPage = () => {
                 />
                 <button
                   type="submit"
-                  disabled={!newComment.trim() || !commentName.trim() || !commentEmail.trim()}
+                  disabled={submittingComment || !newComment.trim() || !commentName.trim() || !commentEmail.trim()}
                   className="absolute left-4 bottom-4 bg-[#09264d] hover:bg-blue-900 disabled:bg-slate-300 text-white p-3 rounded-xl transition-all shadow-lg shadow-blue-900/30"
                 >
-                  <Send size={20} className="rtl:-scale-x-100" />
+                  {submittingComment ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} className="rtl:-scale-x-100" />}
                 </button>
               </div>
             </div>
@@ -211,41 +236,28 @@ const ArticleDetailsPage = () => {
 
           {/* Comments List */}
           <div className="space-y-6">
-            {comments.map(comment => (
+            {comments.length > 0 ? comments.map(comment => (
               <div key={comment.id} className="flex gap-4">
-                <div className="w-12 h-12 rounded-full bg-slate-200 shrink-0 overflow-hidden shadow-sm">
-                  <img src={comment.avatar} alt={comment.author} className="w-full h-full object-cover" onError={(e) => { e.target.onerror = null; e.target.src = 'https://via.placeholder.com/150'; }} />
+                <div className="w-12 h-12 rounded-full bg-slate-200 shrink-0 overflow-hidden flex items-center justify-center shadow-sm">
+                  <User size={24} className="text-slate-400" />
                 </div>
                 <div className="flex-1">
                   <div className="bg-slate-50/80 p-5 md:p-6 rounded-[2rem] rounded-tr-none border border-gray-100/50">
                     <div className="flex justify-between items-start mb-3">
                       <div>
-                        <h4 className="text-sm font-black text-[#09264d]">{comment.author}</h4>
-                        <span className="text-[10px] text-slate-400 font-bold">{comment.date}</span>
+                        <h4 className="text-sm font-black text-[#09264d]">{comment.author_name}</h4>
+                        <span className="text-[10px] text-slate-400 font-bold">{new Date(comment.created_at).toLocaleDateString('ar-YE')}</span>
                       </div>
-                      <button className="text-slate-300 hover:text-slate-600 transition-colors">
-                        <MoreHorizontal size={18} />
-                      </button>
                     </div>
                     <p className="text-slate-600 text-sm font-medium leading-relaxed">
                       {comment.content}
                     </p>
                   </div>
-                  
-                  {/* Comment Actions */}
-                  <div className="flex items-center gap-5 mt-3 px-3 text-xs font-black text-slate-400">
-                    <button 
-                      onClick={() => handleCommentLike(comment.id)}
-                      className={`flex items-center gap-1.5 transition-all ${comment.isLiked ? 'text-red-600 scale-105' : 'hover:text-red-600'}`}
-                    >
-                      <ThumbsUp size={14} className={comment.isLiked ? 'fill-current' : ''} />
-                      <span>{comment.likes}</span>
-                    </button>
-                    <button className="hover:text-[#09264d] transition-colors">رد</button>
-                  </div>
                 </div>
               </div>
-            ))}
+            )) : (
+              <p className="text-center text-slate-400 font-bold py-10">لا توجد تعليقات بعد. كن أول من يعلق!</p>
+            )}
           </div>
         </div>
         
