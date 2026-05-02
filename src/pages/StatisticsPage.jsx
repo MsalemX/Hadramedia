@@ -20,6 +20,7 @@ const StatisticsPage = () => {
           .from('news')
           .select('*')
           .eq('category', 'إحصائيات')
+          .eq('status', 'منشور')
           .order('created_at', { ascending: false });
 
         if (error) throw error;

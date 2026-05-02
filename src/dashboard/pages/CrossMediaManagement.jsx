@@ -132,8 +132,9 @@ const CrossMediaManagement = () => {
           className="bg-gray-50 border border-gray-100 rounded-2xl px-6 py-3 text-sm font-black text-slate-600 focus:outline-none focus:ring-4 focus:ring-blue-600/5"
         >
           <option value="all">كل الحالات</option>
-          <option value="منشور">منشور</option>
           <option value="مسودة">مسودة</option>
+          <option value="منشور">منشور</option>
+          <option value="مؤرشف">مؤرشف</option>
         </select>
       </div>
 
@@ -176,7 +177,7 @@ const CrossMediaManagement = () => {
                     </td>
                     <td className="px-8 py-5">
                       <span className={`px-3 py-1 rounded-full text-[10px] font-black ${item.status === 'منشور' ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-600'}`}>
-                        {item.status}
+                        {item.status === 'منشور' ? 'منشور' : 'مؤرشف'}
                       </span>
                     </td>
                     <td className="px-8 py-5 text-slate-400 text-[11px] font-bold">
@@ -184,7 +185,7 @@ const CrossMediaManagement = () => {
                     </td>
                     <td className="px-8 py-5">
                       <div className="flex items-center justify-center gap-2">
-                        {item.status === 'مسودة' && (
+                        {item.status === 'مؤرشف' && (
                            <button 
                              onClick={() => handlePublish(item.id)}
                              className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-all flex items-center gap-1 text-[10px] font-black"

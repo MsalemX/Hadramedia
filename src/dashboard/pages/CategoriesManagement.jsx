@@ -16,35 +16,27 @@ const CategoriesManagement = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [saving, setSaving] = useState(false);
 
   const fetchCategories = async () => {
     try {
       setLoading(true);
-      // We'll fetch from 'news' to get unique categories and counts if a dedicated table doesn't exist
-      // But usually there is a categories table. Let's assume 'news' grouping for now to show real data if table is missing.
-      // Better: check for 'categories' table.
-      const { data: newsData, error } = await supabase
-        .from('news')
-        .select('category');
+      // جلب البيانات من جدول categories
+      const { data, error } = await supabase
+        .from('categories')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        // إذا كان الجدول غير موجود، سنعرض بيانات وهمية أو فارغة
+        console.error("Error fetching categories:", error);
+        setCategories([]);
+        return;
+      }
 
-      const counts = {};
-      newsData.forEach(item => {
-        if (item.category) {
-          counts[item.category] = (counts[item.category] || 0) + 1;
-        }
-      });
-
-      const formatted = Object.entries(counts).map(([name, count], index) => ({
-        id: index + 1,
-        name,
-        count,
-        status: 'نشط',
-        color: index % 2 === 0 ? 'bg-blue-600' : 'bg-purple-600'
-      }));
-
-      setCategories(formatted);
+      setCategories(data || []);
     } catch (err) {
       console.error("Error fetching categories:", err);
     } finally {
@@ -52,14 +44,44 @@ const CategoriesManagement = () => {
     }
   };
 
-  useEffect(() => {
-    fetchCategories();
-  }, []);
+  const handleAddCategory = async (e) => {
+    e.preventDefault();
+    if (!newCategoryName.trim()) return;
 
-  const handleDelete = async (name) => {
-    if (window.confirm(`هل أنت متأكد من حذف تصنيف "${name}"؟ قد يؤثر ذلك على الأخبار المرتبطة به.`)) {
-      // Logic for deleting category would go here
-      setCategories(categories.filter(c => c.name !== name));
+    try {
+      setSaving(true);
+      const { error } = await supabase
+        .from('categories')
+        .insert([{ 
+          name: newCategoryName,
+          color: `bg-${['blue', 'red', 'purple', 'green', 'amber', 'slate'][Math.floor(Math.random() * 6)]}-600`
+        }]);
+
+      if (error) throw error;
+      
+      setNewCategoryName('');
+      setIsModalOpen(false);
+      fetchCategories();
+    } catch (err) {
+      alert(`خطأ في الإضافة: ${err.message}`);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (id, name) => {
+    if (window.confirm(`هل أنت متأكد من حذف تصنيف "${name}"؟`)) {
+      try {
+        const { error } = await supabase
+          .from('categories')
+          .delete()
+          .eq('id', id);
+        
+        if (error) throw error;
+        fetchCategories();
+      } catch (err) {
+        alert(`خطأ في الحذف: ${err.message}`);
+      }
     }
   };
 
@@ -74,7 +96,10 @@ const CategoriesManagement = () => {
           <h1 className="text-2xl font-black text-slate-800">إدارة التصنيفات</h1>
           <p className="text-slate-400 text-sm font-bold mt-1">الرئيسية {'>'} التصنيفات</p>
         </div>
-        <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-black flex items-center gap-2 shadow-lg shadow-blue-600/20 transition-all active:scale-95">
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-black flex items-center gap-2 shadow-lg shadow-blue-600/20 transition-all active:scale-95"
+        >
           <Plus size={20} />
           إضافة تصنيف جديد
         </button>
@@ -132,7 +157,7 @@ const CategoriesManagement = () => {
                       <div className="flex items-center justify-center gap-2">
                         <button className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"><Edit3 size={16} /></button>
                         <button 
-                          onClick={() => handleDelete(item.name)}
+                          onClick={() => handleDelete(item.id, item.name)}
                           className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
                         >
                           <Trash2 size={16} />
@@ -151,6 +176,45 @@ const CategoriesManagement = () => {
           </div>
         )}
       </div>
+
+      {/* Modal إضافة تصنيف */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div className="bg-white rounded-[32px] w-full max-w-md p-8 shadow-2xl animate-in zoom-in-95 duration-200">
+            <h3 className="text-xl font-black text-[#09264d] mb-6">إضافة تصنيف جديد</h3>
+            <form onSubmit={handleAddCategory} className="space-y-6">
+              <div>
+                <label className="block text-xs font-black text-slate-400 uppercase mb-2">اسم التصنيف</label>
+                <input 
+                  autoFocus
+                  type="text" 
+                  value={newCategoryName}
+                  onChange={(e) => setNewCategoryName(e.target.value)}
+                  placeholder="مثال: اقتصاد، تكنولوجيا..." 
+                  className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-6 py-4 font-bold focus:outline-none focus:ring-4 focus:ring-blue-600/5 transition-all"
+                  required
+                />
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button 
+                  type="submit"
+                  disabled={saving}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-600/20 transition-all disabled:opacity-50"
+                >
+                  {saving ? 'جاري الحفظ...' : 'حفظ التصنيف'}
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-8 bg-gray-50 hover:bg-gray-100 text-slate-500 font-black py-4 rounded-2xl transition-all"
+                >
+                  إلغاء
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -18,6 +18,7 @@ const EventsPage = () => {
           .from('news')
           .select('*')
           .eq('category', 'أخبار') // Events are often tagged as news in the DB, or specifically 'أحداث'
+          .eq('status', 'منشور')
           .order('created_at', { ascending: false });
 
         const { data, error } = await query;

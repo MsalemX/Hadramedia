@@ -13,33 +13,26 @@ const TagsManagement = () => {
   const [tags, setTags] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newTagName, setNewTagName] = useState('');
+  const [saving, setSaving] = useState(false);
 
   const fetchTags = async () => {
     try {
       setLoading(true);
-      // Fetch news to extract tags if no dedicated tags table exists
-      const { data: newsData, error } = await supabase
-        .from('news')
-        .select('tags');
+      // جلب الوسوم من جدول tags
+      const { data, error } = await supabase
+        .from('tags')
+        .select('*')
+        .order('name', { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching tags:", error);
+        setTags([]);
+        return;
+      }
 
-      const tagCounts = {};
-      newsData.forEach(item => {
-        if (item.tags && Array.isArray(item.tags)) {
-          item.tags.forEach(t => {
-            tagCounts[t] = (tagCounts[t] || 0) + 1;
-          });
-        }
-      });
-
-      const formatted = Object.entries(tagCounts).map(([name, count], index) => ({
-        id: index + 1,
-        name,
-        count
-      })).sort((a, b) => b.count - a.count);
-
-      setTags(formatted);
+      setTags(data || []);
     } catch (err) {
       console.error("Error fetching tags:", err);
     } finally {
@@ -47,13 +40,42 @@ const TagsManagement = () => {
     }
   };
 
-  useEffect(() => {
-    fetchTags();
-  }, []);
+  const handleAddTag = async (e) => {
+    e.preventDefault();
+    if (!newTagName.trim()) return;
 
-  const handleDelete = (name) => {
-    if (window.confirm(`هل أنت متأكد من حذف الوسم #${name}؟ سيتم إزالته من جميع الأخبار المرتبطة.`)) {
-      setTags(tags.filter(t => t.name !== name));
+    try {
+      setSaving(true);
+      const cleanedTag = newTagName.replace('#', '').trim();
+      const { error } = await supabase
+        .from('tags')
+        .insert([{ name: cleanedTag }]);
+
+      if (error) throw error;
+      
+      setNewTagName('');
+      setIsModalOpen(false);
+      fetchTags();
+    } catch (err) {
+      alert(`خطأ في الإضافة: ${err.message}`);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (id, name) => {
+    if (window.confirm(`هل أنت متأكد من حذف الوسم #${name}؟`)) {
+      try {
+        const { error } = await supabase
+          .from('tags')
+          .delete()
+          .eq('id', id);
+        
+        if (error) throw error;
+        fetchTags();
+      } catch (err) {
+        alert(`خطأ في الحذف: ${err.message}`);
+      }
     }
   };
 
@@ -68,7 +90,10 @@ const TagsManagement = () => {
           <h1 className="text-2xl font-black text-slate-800">إدارة الوسوم (Tags)</h1>
           <p className="text-slate-400 text-sm font-bold mt-1">الرئيسية {'>'} الوسوم</p>
         </div>
-        <button className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-black flex items-center gap-2 shadow-lg shadow-blue-600/20 transition-all active:scale-95">
+        <button 
+          onClick={() => setIsModalOpen(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-black flex items-center gap-2 shadow-lg shadow-blue-600/20 transition-all active:scale-95"
+        >
           <Plus size={20} />
           إضافة وسم جديد
         </button>
@@ -100,10 +125,10 @@ const TagsManagement = () => {
               </div>
               <div>
                 <h3 className="text-sm font-black text-slate-700">#{item.name}</h3>
-                <p className="text-[10px] text-slate-400 font-bold">{item.count} مقال</p>
+                <p className="text-[10px] text-slate-400 font-bold">{item.count || 0} مقال</p>
               </div>
               <button 
-                onClick={() => handleDelete(item.name)}
+                onClick={() => handleDelete(item.id, item.name)}
                 className="p-2 text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
               >
                 <Trash2 size={16} />
@@ -115,6 +140,47 @@ const TagsManagement = () => {
         <div className="flex flex-col items-center justify-center h-64 gap-4 bg-white rounded-[40px] border border-gray-100 shadow-sm">
           <AlertCircle className="w-12 h-12 text-slate-300" />
           <p className="text-slate-400 font-bold">لا توجد وسوم حالياً</p>
+        </div>
+      )}
+
+      {/* Modal إضافة وسم */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div className="bg-white rounded-[32px] w-full max-w-md p-8 shadow-2xl animate-in zoom-in-95 duration-200">
+            <h3 className="text-xl font-black text-[#09264d] mb-6 flex items-center gap-2">
+              <Tag className="text-blue-600" size={24} /> إضافة وسم جديد
+            </h3>
+            <form onSubmit={handleAddTag} className="space-y-6">
+              <div>
+                <label className="block text-xs font-black text-slate-400 uppercase mb-2">اسم الوسم (بدون #)</label>
+                <input 
+                  autoFocus
+                  type="text" 
+                  value={newTagName}
+                  onChange={(e) => setNewTagName(e.target.value)}
+                  placeholder="مثال: حضرموت، أخبار_اليمن..." 
+                  className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-6 py-4 font-bold focus:outline-none focus:ring-4 focus:ring-blue-600/5 transition-all"
+                  required
+                />
+              </div>
+              <div className="flex gap-3 pt-4">
+                <button 
+                  type="submit"
+                  disabled={saving}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-2xl shadow-lg shadow-blue-600/20 transition-all disabled:opacity-50"
+                >
+                  {saving ? 'جاري الحفظ...' : 'حفظ الوسم'}
+                </button>
+                <button 
+                  type="button"
+                  onClick={() => setIsModalOpen(false)}
+                  className="px-8 bg-gray-50 hover:bg-gray-100 text-slate-500 font-black py-4 rounded-2xl transition-all"
+                >
+                  إلغاء
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
     </div>

@@ -13,8 +13,12 @@ const SettingsManagement = () => {
     facebook_url: '',
     instagram_url: '',
     youtube_url: '',
-    maintenance_mode: false
+    maintenance_mode: false,
+    breaking_news: '',
+    top_news_label: '',
+    logo_url: ''
   });
+  const [logoFile, setLogoFile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -39,18 +43,48 @@ const SettingsManagement = () => {
     fetchSettings();
   }, []);
 
+  const uploadLogo = async (file) => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `logo-${Date.now()}.${fileExt}`;
+    const filePath = `site/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('images')
+      .upload(filePath, file);
+
+    if (uploadError) throw uploadError;
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('images')
+      .getPublicUrl(filePath);
+
+    return publicUrl;
+  };
+
   const handleSave = async () => {
     try {
       setSaving(true);
+      
+      let finalLogoUrl = settings.logo_url;
+      if (logoFile) {
+        finalLogoUrl = await uploadLogo(logoFile);
+      }
+
+      // محاولة التحديث أو الإضافة
       const { error } = await supabase
         .from('settings')
-        .upsert({ id: settings.id || 1, ...settings });
+        .upsert({ 
+          id: settings.id || 1, 
+          ...settings,
+          logo_url: finalLogoUrl 
+        }, { onConflict: 'id' });
 
       if (error) throw error;
       alert('تم حفظ الإعدادات بنجاح');
+      fetchSettings();
     } catch (err) {
       console.error("Error saving settings:", err);
-      alert('خطأ أثناء الحفظ');
+      alert(`خطأ أثناء الحفظ: ${err.message}`);
     } finally {
       setSaving(false);
     }
@@ -87,15 +121,7 @@ const SettingsManagement = () => {
           <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm">
             <h3 className="text-lg font-black text-slate-800 mb-8 border-b border-gray-50 pb-4">الإعدادات العامة</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-xs font-black text-slate-500 uppercase">اسم الموقع</label>
-                <input 
-                  type="text" 
-                  value={settings.site_name} 
-                  onChange={(e) => setSettings({...settings, site_name: e.target.value})}
-                  className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-3.5 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600/20 transition-all" 
-                />
-              </div>
+              {/* Site Name removed as requested */}
               <div className="space-y-2">
                 <label className="text-xs font-black text-slate-500 uppercase">وصف الموقع (SEO)</label>
                 <input 
@@ -121,6 +147,26 @@ const SettingsManagement = () => {
                   value={settings.contact_number} 
                   onChange={(e) => setSettings({...settings, contact_number: e.target.value})}
                   className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-3.5 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600/20 transition-all" 
+                />
+              </div>
+              <div className="space-y-2 md:col-span-2">
+                <label className="text-xs font-black text-slate-500 uppercase">نص شريط الأخبار (العاجل)</label>
+                <textarea 
+                  rows={3}
+                  value={settings.breaking_news} 
+                  onChange={(e) => setSettings({...settings, breaking_news: e.target.value})}
+                  className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-3.5 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600/20 transition-all resize-none" 
+                  placeholder="اكتب الخبر العاجل هنا..."
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-black text-slate-500 uppercase">تسمية أهم الأخبار (بجانب الشعار)</label>
+                <input 
+                  type="text" 
+                  value={settings.top_news_label} 
+                  onChange={(e) => setSettings({...settings, top_news_label: e.target.value})}
+                  className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-3.5 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600/20 transition-all" 
+                  placeholder="مثال: أهم الأخبار:"
                 />
               </div>
             </div>
@@ -157,26 +203,32 @@ const SettingsManagement = () => {
         <div className="lg:col-span-4 space-y-8">
           <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm text-center">
             <h3 className="text-sm font-black text-slate-800 mb-6">شعار الموقع</h3>
-            <div className="w-32 h-32 bg-gray-50 rounded-[32px] mx-auto flex flex-col items-center justify-center border-2 border-dashed border-gray-200 group hover:border-blue-600 transition-all cursor-pointer">
-              <Upload className="text-slate-300 group-hover:text-blue-600 mb-2" size={32} />
-              <span className="text-[10px] font-black text-slate-400">تحميل الشعار</span>
+            <div className="relative group mx-auto w-32 h-32">
+              <input 
+                type="file" 
+                accept="image/*"
+                onChange={(e) => setLogoFile(e.target.files[0])}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+              />
+              <div className="w-full h-full bg-gray-50 rounded-[32px] flex flex-col items-center justify-center border-2 border-dashed border-gray-200 group-hover:border-blue-600 transition-all overflow-hidden">
+                {logoFile || settings.logo_url ? (
+                  <img 
+                    src={logoFile ? URL.createObjectURL(logoFile) : settings.logo_url} 
+                    className="w-full h-full object-contain p-2" 
+                    alt="Logo" 
+                  />
+                ) : (
+                  <>
+                    <Upload className="text-slate-300 group-hover:text-blue-600 mb-2" size={32} />
+                    <span className="text-[10px] font-black text-slate-400">تحميل الشعار</span>
+                  </>
+                )}
+              </div>
             </div>
             <p className="text-[10px] text-slate-400 mt-4 font-bold">يفضل بصيغة PNG أو SVG بمقاس 200x200</p>
           </div>
 
-          <div className="bg-[#09264d] p-8 rounded-[40px] shadow-lg shadow-blue-900/20 text-white">
-            <h3 className="text-sm font-black mb-4">حالة الموقع</h3>
-            <p className="text-xs font-bold text-blue-200 mb-6 opacity-70">عند تفعيل وضع الصيانة، لن يتمكن الزوار من تصفح الموقع</p>
-            <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl">
-              <span className="text-sm font-black">وضع الصيانة</span>
-              <button 
-                onClick={() => setSettings({...settings, maintenance_mode: !settings.maintenance_mode})}
-                className={`w-12 h-6 rounded-full relative transition-colors ${settings.maintenance_mode ? 'bg-blue-600' : 'bg-slate-700'}`}
-              >
-                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${settings.maintenance_mode ? 'right-1' : 'left-1'}`}></div>
-              </button>
-            </div>
-          </div>
+          {/* Site Status removed as requested */}
         </div>
       </div>
     </div>

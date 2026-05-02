@@ -24,6 +24,7 @@ const ArticleDetailsPage = () => {
           .from('news')
           .select('*')
           .eq('id', id)
+          .eq('status', 'منشور')
           .single();
 
         if (postError) throw postError;
@@ -145,9 +146,37 @@ const ArticleDetailsPage = () => {
         </div>
 
         {/* Article Image */}
-        <div className="rounded-[3rem] overflow-hidden mb-12 shadow-2xl h-[300px] md:h-[500px] border-4 border-white">
+        <div className="rounded-[3rem] overflow-hidden mb-12 shadow-2xl h-[300px] md:h-[500px] border-4 border-white relative group">
           <img src={post.main_image || "/images/hero.png"} alt="Cover" className="w-full h-full object-cover" />
+          {post.pdf_url && (
+            <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all">
+              <a href={post.pdf_url} download className="bg-white text-[#09264d] px-8 py-4 rounded-2xl font-black flex items-center gap-3 shadow-2xl active:scale-95 transition-all">
+                <Quote size={20} className="rotate-180" />
+                تحميل المقال (PDF)
+              </a>
+            </div>
+          )}
         </div>
+
+        {post.pdf_url && (
+          <div className="mb-12 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <a 
+              href={post.pdf_url} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="w-full bg-white border-2 border-[#09264d] text-[#09264d] font-black py-6 rounded-[2rem] transition-all shadow-xl flex items-center justify-center gap-4 hover:bg-blue-50"
+            >
+              <BookOpen size={24} /> قراءة المقال (PDF)
+            </a>
+            <a 
+              href={post.pdf_url} 
+              download 
+              className="w-full bg-[#09264d] hover:bg-blue-900 text-white font-black py-6 rounded-[2rem] transition-all shadow-xl shadow-blue-900/20 flex items-center justify-center gap-4"
+            >
+              <Download size={24} /> تحميل المقال (PDF)
+            </a>
+          </div>
+        )}
 
         {/* Content */}
         <div className="bg-white rounded-[3rem] p-8 md:p-14 shadow-sm border border-gray-100 mb-12 relative overflow-hidden">

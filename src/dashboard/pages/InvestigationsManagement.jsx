@@ -111,8 +111,9 @@ const InvestigationsManagement = () => {
           className="bg-gray-50 border border-gray-100 rounded-2xl px-6 py-3 text-sm font-black text-slate-600 focus:outline-none"
         >
           <option value="all">كل الحالات</option>
-          <option value="published">منشور</option>
-          <option value="draft">مسودة</option>
+          <option value="مسودة">مسودة</option>
+          <option value="منشور">منشور</option>
+          <option value="مؤرشف">مؤرشف</option>
         </select>
       </div>
 
@@ -142,8 +143,8 @@ const InvestigationsManagement = () => {
                       <span className="text-sm font-black text-slate-700 line-clamp-2 max-w-xs">{item.title}</span>
                     </td>
                     <td className="px-8 py-5">
-                      <span className={`px-3 py-1 rounded-full text-[10px] font-black ${item.status === 'published' ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-600'}`}>
-                        {item.status === 'published' ? 'منشور' : 'مسودة'}
+                      <span className={`px-3 py-1 rounded-full text-[10px] font-black ${item.status === 'منشور' ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-600'}`}>
+                        {item.status === 'منشور' ? 'منشور' : 'مؤرشف'}
                       </span>
                     </td>
                     <td className="px-8 py-5">

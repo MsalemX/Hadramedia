@@ -1,5 +1,7 @@
+import React, { useState, useEffect } from "react";
 import { Send, Mail, Phone, MapPin } from "lucide-react";
 import { Link } from "react-router-dom";
+import { supabase } from "../lib/supabase";
 
 // Custom SVG Icons for brands not available in current lucide version
 export const FacebookIcon = ({ size = 20 }) => (
@@ -30,7 +32,78 @@ export const XIcon = ({ size = 20 }) => (
   </svg>
 );
 
+const NewsletterForm = () => {
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!email) return;
+    setLoading(true);
+    try {
+      const { error } = await supabase.from('newsletter').insert([{ email }]);
+      if (error) {
+        if (error.code === '23505') alert('هذا البريد مشترك بالفعل');
+        else throw error;
+      } else {
+        alert('تم الاشتراك بنجاح!');
+        setEmail("");
+      }
+    } catch (err) {
+      alert('حدث خطأ أثناء الاشتراك');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="relative">
+        <input 
+          type="email" 
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          placeholder="أدخل بريدك الإلكتروني" 
+          className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-red-600 transition-all placeholder:text-blue-100/30 font-bold" 
+        />
+      </div>
+      <button 
+        disabled={loading}
+        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl transition-all shadow-lg shadow-blue-900/40 disabled:opacity-50"
+      >
+        {loading ? 'جاري الاشتراك...' : 'اشتراك'}
+      </button>
+    </form>
+  );
+};
+
 function Footer() {
+  const [socialLinks, setSocialLinks] = useState({
+    facebook_url: '#',
+    twitter_url: '#',
+    youtube_url: '#',
+    instagram_url: '#'
+  });
+
+  useEffect(() => {
+    const fetchSocial = async () => {
+      const { data } = await supabase
+        .from('settings')
+        .select('facebook_url, twitter_url, youtube_url, instagram_url')
+        .single();
+      if (data) setSocialLinks(data);
+    };
+    fetchSocial();
+  }, []);
+
+  const socialItems = [
+    { icon: FacebookIcon, color: "hover:bg-[#3b5998]", url: socialLinks.facebook_url },
+    { icon: XIcon, color: "hover:bg-black", url: socialLinks.twitter_url },
+    { icon: YoutubeIcon, color: "hover:bg-[#ff0000]", url: socialLinks.youtube_url },
+    { icon: InstagramIcon, color: "hover:bg-[#e1306c]", url: socialLinks.instagram_url }
+  ];
+
   return (
     <footer className="bg-[#09264d] text-white pt-20 pb-10 mt-20" dir="rtl">
       <div className="max-w-7xl mx-auto px-6">
@@ -42,13 +115,14 @@ function Footer() {
               منصة إخبارية حضرمية مستقلة تهتم بنقل الخبر والتحقيقات المعمقة في حضرموت والمهجر واليمن والعالم.
             </p>
             <div className="flex gap-4">
-              {[
-                { icon: FacebookIcon, color: "hover:bg-[#3b5998]" },
-                { icon: XIcon, color: "hover:bg-black" },
-                { icon: YoutubeIcon, color: "hover:bg-[#ff0000]" },
-                { icon: InstagramIcon, color: "hover:bg-[#e1306c]" }
-              ].map((item, i) => (
-                <a key={i} href="#" className={`w-12 h-12 rounded-xl border border-white/10 flex items-center justify-center transition-all ${item.color} hover:border-transparent group`}>
+              {socialItems.map((item, i) => (
+                <a 
+                  key={i} 
+                  href={item.url} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className={`w-12 h-12 rounded-xl border border-white/10 flex items-center justify-center transition-all ${item.color} hover:border-transparent group`}
+                >
                   <item.icon size={22} className="group-hover:scale-110 transition-transform" />
                 </a>
               ))}
@@ -97,12 +171,7 @@ function Footer() {
           <div className="space-y-8">
             <h3 className="text-xl font-black border-r-4 border-red-600 pr-4">النشرة البريدية</h3>
             <p className="text-blue-100/60 font-bold leading-7">اشترك في نشرتنا البريدية ليصلك كل جديد</p>
-            <div className="space-y-4">
-              <div className="relative">
-                <input type="email" placeholder="أدخل بريدك الإلكتروني" className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-red-600 transition-all placeholder:text-blue-100/30 font-bold" />
-              </div>
-              <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl transition-all shadow-lg shadow-blue-900/40">اشتراك</button>
-            </div>
+            <NewsletterForm />
           </div>
         </div>
 

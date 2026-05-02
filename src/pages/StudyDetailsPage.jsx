@@ -24,6 +24,7 @@ const StudyDetailsPage = () => {
           .from('news')
           .select('*')
           .eq('id', id)
+          .eq('status', 'منشور')
           .single();
 
         if (postError) throw postError;
@@ -127,9 +128,23 @@ const StudyDetailsPage = () => {
                 <img src={post.main_image || "/images/port.png"} className="w-56 h-72 object-cover rounded-lg border-l-8 border-red-600 shadow-2xl" alt="Study Cover" />
              </div>
              {post.pdf_url && (
-               <a href={post.pdf_url} download className="w-full bg-red-600 hover:bg-red-700 text-white font-black py-4 rounded-xl transition-all shadow-xl shadow-red-900/20 flex items-center justify-center gap-3">
-                  <Download size={20} /> تحميل الدراسة PDF
-               </a>
+               <div className="w-full space-y-3">
+                 <a 
+                   href={post.pdf_url} 
+                   target="_blank" 
+                   rel="noopener noreferrer"
+                   className="w-full bg-white text-[#09264d] font-black py-4 rounded-xl transition-all shadow-xl flex items-center justify-center gap-3 hover:bg-blue-50"
+                 >
+                    <BookOpen size={20} /> قراءة الدراسة الآن
+                 </a>
+                 <a 
+                   href={post.pdf_url} 
+                   download 
+                   className="w-full bg-red-600 hover:bg-red-700 text-white font-black py-4 rounded-xl transition-all shadow-xl shadow-red-900/20 flex items-center justify-center gap-3"
+                 >
+                    <Download size={20} /> تحميل الملف PDF
+                 </a>
+               </div>
              )}
           </div>
           

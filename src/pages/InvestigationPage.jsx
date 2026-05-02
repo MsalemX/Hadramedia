@@ -20,6 +20,7 @@ const InvestigationPage = () => {
           .from('news')
           .select('*')
           .eq('category', 'تحقيقات')
+          .eq('status', 'منشور')
           .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -147,16 +148,7 @@ const InvestigationPage = () => {
           {/* Sidebar */}
           <aside className="lg:col-span-3 space-y-8 order-2 lg:order-1">
             
-            {/* Important Alert Box */}
-            <div className="bg-red-600 rounded-[2rem] p-8 text-white relative overflow-hidden shadow-xl shadow-red-600/20">
-               <div className="relative z-10">
-                  <ShieldAlert size={40} className="mb-6 opacity-50" />
-                  <h3 className="text-xl font-black mb-4">أرسل لنا بلاغاً</h3>
-                  <p className="text-red-100 text-xs font-bold leading-relaxed mb-8 opacity-80">إذا كان لديك وثائق أو معلومات حول ملف فساد، يمكنك مراسلتنا بسرية تامة عبر القنوات المشفرة.</p>
-                  <button className="w-full bg-white text-red-600 font-black py-4 rounded-xl text-sm hover:bg-red-50 transition-all shadow-lg">تواصل مع وحدة التحقيق</button>
-               </div>
-               <div className="absolute -left-10 -bottom-10 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
-            </div>
+            {/* Sidebar content removed (Reports Box) */}
 
           </aside>
 

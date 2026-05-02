@@ -29,8 +29,9 @@ const ContentEditor = () => {
     category: type === 'stories' ? 'قصص' : type === 'studies' ? 'دراسات' : type === 'investigations' ? 'تحقيقات' : type === 'articles' ? 'مقالات' : type === 'cartoons' ? 'كاريكاتير' : type === 'cross-media' ? 'كروس ميديا' : 'أخبار',
     main_image: '',
     gallery: [],
+    pdf_url: '',
     content: '',
-    status: 'منشور',
+    status: 'مسودة',
     is_cross_media: type === 'cross-media',
     sections: []
   });
@@ -74,30 +75,26 @@ const ContentEditor = () => {
     }
   };
 
-  const uploadImage = async (file) => {
+  const uploadFile = async (file, bucket = 'images') => {
     try {
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 10)}.${fileExt}`;
       const filePath = `${fileName}`;
 
-      // محاولة الرفع
       const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('images') 
+        .from(bucket) 
         .upload(filePath, file);
 
       if (uploadError) {
-        console.error('Detailed Storage Error:', uploadError);
-        // إرجاع رسالة خطأ واضحة
-        throw new Error(`Supabase Error: ${uploadError.message} (Status: ${uploadError.status || 'unknown'})`);
+        throw new Error(`Supabase Error: ${uploadError.message}`);
       }
 
       const { data } = supabase.storage
-        .from('images')
+        .from(bucket)
         .getPublicUrl(filePath);
 
       return data.publicUrl;
     } catch (err) {
-      console.error('Full Catch Error:', err);
       throw err;
     }
   };
@@ -109,10 +106,26 @@ const ContentEditor = () => {
     try {
       setSaving(true);
       setError(null);
-      const url = await uploadImage(file);
+      const url = await uploadFile(file);
       setFormData({ ...formData, main_image: url });
     } catch (err) {
       setError(err.message);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handlePdfUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    try {
+      setSaving(true);
+      setError(null);
+      const url = await uploadFile(file, 'images'); // نستخدم نفس الباكيت أو باكيت آخر إذا فضلت
+      setFormData({ ...formData, pdf_url: url });
+    } catch (err) {
+      setError(`خطأ في رفع الملف: ${err.message}`);
     } finally {
       setSaving(false);
     }
@@ -125,7 +138,7 @@ const ContentEditor = () => {
     try {
       setSaving(true);
       setError(null);
-      const uploadPromises = files.map(file => uploadImage(file));
+      const uploadPromises = files.map(file => uploadFile(file));
       const urls = await Promise.all(uploadPromises);
       setFormData({ 
         ...formData, 
@@ -143,7 +156,7 @@ const ContentEditor = () => {
     try {
       setSaving(true);
       setError(null);
-      const url = await uploadImage(file);
+      const url = await uploadFile(file);
       updateSection(index, 'image', url);
     } catch (err) {
       setError(`خطأ في رفع القسم: ${err.message}`);
@@ -174,6 +187,7 @@ const ContentEditor = () => {
         category: formData.category,
         main_image: formData.main_image,
         gallery: formData.gallery || [],
+        pdf_url: formData.pdf_url || '',
         content: finalContent,
         status: formData.status,
         is_cross_media: formData.is_cross_media,
@@ -283,15 +297,49 @@ const ContentEditor = () => {
               />
             </div>
 
+            {(formData.category === 'مقالات' || formData.category === 'دراسات') && (
+              <div className="bg-blue-50/50 p-6 rounded-3xl border border-blue-100/50 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="block text-xs font-black text-blue-600 uppercase tracking-widest mb-1">ملف المحتوى (PDF / DOC)</label>
+                    <p className="text-[10px] text-blue-400 font-bold">ارفع الملف الخاص بالمقال أو الدراسة هنا</p>
+                  </div>
+                  {formData.pdf_url && (
+                     <span className="bg-green-100 text-green-600 px-3 py-1 rounded-lg text-[10px] font-black flex items-center gap-1">
+                        <CheckCircle2 size={12} /> تم الرفع
+                     </span>
+                  )}
+                </div>
+                <div className="relative h-14">
+                  <div className="absolute inset-0 bg-white border border-blue-100 rounded-2xl flex items-center px-6 text-sm font-bold text-slate-500 shadow-sm">
+                    {formData.pdf_url ? 'تغيير الملف المرفوع' : 'اضغط هنا لرفع ملف'}
+                  </div>
+                  <input 
+                    type="file" 
+                    onChange={handlePdfUpload}
+                    className="absolute inset-0 opacity-0 cursor-pointer z-10"
+                    accept=".pdf,.doc,.docx"
+                  />
+                </div>
+                {formData.pdf_url && (
+                  <div className="text-[10px] font-bold text-slate-400 truncate">
+                    رابط الملف: <a href={formData.pdf_url} target="_blank" className="text-blue-600 underline">{formData.pdf_url}</a>
+                  </div>
+                )}
+              </div>
+            )}
+
             {!formData.is_cross_media ? (
               <div>
-                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">المحتوى</label>
+                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">
+                  {formData.category === 'مقالات' ? 'نص إضافي (اختياري)' : 'المحتوى'}
+                </label>
                 <textarea 
-                  rows={15}
+                  rows={formData.category === 'مقالات' ? 8 : 15}
                   value={formData.content}
                   onChange={(e) => setFormData({...formData, content: e.target.value})}
                   className="w-full bg-gray-50 border border-gray-100 rounded-[32px] px-6 py-6 font-bold text-slate-600 focus:outline-none focus:ring-4 focus:ring-blue-600/5 transition-all"
-                  placeholder="اكتب تفاصيل المحتوى هنا..."
+                  placeholder={formData.category === 'مقالات' ? "يمكنك ترك هذا الحقل فارغاً إذا قمت برفع ملف..." : "اكتب تفاصيل المحتوى هنا..."}
                 />
               </div>
             ) : (
@@ -418,8 +466,9 @@ const ContentEditor = () => {
                 onChange={(e) => setFormData({...formData, status: e.target.value})}
                 className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-6 py-4 text-sm font-black text-slate-700 focus:outline-none"
               >
-                <option value="منشور">منشور</option>
-                <option value="مسودة">مسودة</option>
+                <option value="مسودة">مسودة (Draft)</option>
+                <option value="منشور">منشور (Published)</option>
+                <option value="مؤرشف">مؤرشف (Archived)</option>
               </select>
             </div>
 

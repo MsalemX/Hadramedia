@@ -24,6 +24,7 @@ const ArticlesPage = () => {
           .from('news')
           .select('*')
           .eq('category', 'مقالات')
+          .eq('status', 'منشور')
           .order('created_at', { ascending: false });
 
         if (error) throw error;

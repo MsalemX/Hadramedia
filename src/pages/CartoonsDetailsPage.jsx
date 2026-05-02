@@ -24,6 +24,7 @@ const CartoonsDetailsPage = () => {
           .from('news')
           .select('*')
           .eq('id', id)
+          .eq('status', 'منشور')
           .single();
 
         if (postError) throw postError;

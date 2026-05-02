@@ -20,6 +20,7 @@ const CartoonsPage = () => {
           .from('news')
           .select('*')
           .eq('category', 'كاريكاتير')
+          .eq('status', 'منشور')
           .order('created_at', { ascending: false });
 
         if (error) throw error;

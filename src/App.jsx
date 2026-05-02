@@ -49,8 +49,6 @@ import CartoonsManagement from './dashboard/pages/CartoonsManagement';
 import CategoriesManagement from './dashboard/pages/CategoriesManagement';
 import TagsManagement from './dashboard/pages/TagsManagement';
 import UsersManagement from './dashboard/pages/UsersManagement';
-import PermissionsManagement from './dashboard/pages/PermissionsManagement';
-import NotificationsManagement from './dashboard/pages/NotificationsManagement';
 import AdsManagement from './dashboard/pages/AdsManagement';
 import StatsManagement from './dashboard/pages/StatsManagement';
 import SettingsManagement from './dashboard/pages/SettingsManagement';
@@ -158,9 +156,6 @@ function App() {
         <Route path="categories" element={<CategoriesManagement />} />
         <Route path="tags" element={<TagsManagement />} />
         <Route path="users" element={<UsersManagement />} />
-        <Route path="permissions" element={<PermissionsManagement />} />
-        <Route path="notifications" element={<NotificationsManagement />} />
-        <Route path="reports" element={<NotificationsManagement />} />
         <Route path="ads" element={<AdsManagement />} />
         <Route path="stats" element={<StatsManagement />} />
         <Route path="settings" element={<SettingsManagement />} />

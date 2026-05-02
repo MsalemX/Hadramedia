@@ -134,8 +134,9 @@ const NewsManagement = () => {
           className="bg-gray-50 border border-gray-100 rounded-2xl px-6 py-3 text-sm font-black text-slate-600 focus:outline-none focus:ring-4 focus:ring-blue-600/5"
         >
           <option value="all">كل الحالات</option>
-          <option value="منشور">منشور</option>
           <option value="مسودة">مسودة</option>
+          <option value="منشور">منشور</option>
+          <option value="مؤرشف">مؤرشف</option>
         </select>
         <select 
           value={categoryFilter}
@@ -195,7 +196,7 @@ const NewsManagement = () => {
                     </td>
                     <td className="px-8 py-5">
                       <div className="flex items-center justify-center gap-2">
-                        {item.status === 'مسودة' && (
+                        {item.status === 'مؤرشف' && (
                            <button 
                              onClick={() => handlePublish(item.id)}
                              className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-all flex items-center gap-1 text-[10px] font-black"

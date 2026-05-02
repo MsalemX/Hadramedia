@@ -11,9 +11,12 @@ import {
   ThumbsUp,
   Loader2,
   Image as ImageIcon,
-  Heart
+  Heart,
+  Download,
+  BookOpen
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import AdBanner from '../components/AdBanner';
 
 const PostDetailsPage = () => {
   const { id } = useParams();
@@ -172,6 +175,28 @@ const PostDetailsPage = () => {
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
 
+            <AdBanner position="content" className="mt-12" />
+
+            {post.pdf_url && (
+              <div className="mt-12 grid grid-cols-1 md:grid-cols-2 gap-6">
+                <a 
+                  href={post.pdf_url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="w-full bg-white border-2 border-[#09264d] text-[#09264d] font-black py-4 rounded-2xl transition-all shadow-xl flex items-center justify-center gap-3 hover:bg-blue-50"
+                >
+                  <BookOpen size={20} /> قراءة الملف (PDF)
+                </a>
+                <a 
+                  href={post.pdf_url} 
+                  download 
+                  className="w-full bg-[#09264d] hover:bg-blue-900 text-white font-black py-4 rounded-2xl transition-all shadow-xl shadow-blue-900/20 flex items-center justify-center gap-3"
+                >
+                  <Download size={20} /> تحميل الملف (PDF)
+                </a>
+              </div>
+            )}
+
             {/* Gallery Section if exists */}
             {post.gallery && post.gallery.length > 0 && (
               <div className="mt-12 space-y-8">
@@ -291,6 +316,8 @@ const PostDetailsPage = () => {
                   </div>
                </div>
             </div>
+
+            <AdBanner position="sidebar" />
           </aside>
 
         </div>

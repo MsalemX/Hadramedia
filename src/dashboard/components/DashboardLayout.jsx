@@ -85,14 +85,11 @@ const DashboardLayout = () => {
       title: "إدارة المستخدمين",
       items: [
         { to: "/dashboard/users", icon: Users, label: "المستخدمين" },
-        { to: "/dashboard/permissions", icon: ShieldCheck, label: "الصلاحيات" },
       ]
     },
     {
       title: "التقارير والإعدادات",
       items: [
-        { to: "/dashboard/reports", icon: Flag, label: "البلاغات", badge: 23 },
-        { to: "/dashboard/notifications", icon: Bell, label: "الإشعارات" },
         { to: "/dashboard/ads", icon: Newspaper, label: "الإعلانات" },
         { to: "/dashboard/stats", icon: BarChart3, label: "الإحصائيات" },
         { to: "/dashboard/settings", icon: Settings, label: "إعدادات الموقع" },
@@ -181,11 +178,6 @@ const DashboardLayout = () => {
             </div>
 
             <div className="flex items-center gap-2 md:gap-6">
-              <button className="relative p-2.5 bg-gray-50 rounded-xl text-slate-500 hover:bg-gray-100 transition-colors">
-                <Bell size={20} />
-                <span className="absolute top-2 left-2 w-2 h-2 bg-red-600 rounded-full border-2 border-white"></span>
-              </button>
-
               <div className="h-10 w-[1px] bg-gray-100 hidden sm:block"></div>
 
               <div className="flex items-center gap-3">

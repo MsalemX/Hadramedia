@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Eye, Clock, ChevronRight, ChevronLeft, Mail, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { supabase } from "../lib/supabase";
+import AdBanner from "../components/AdBanner";
 
 // Image Assets
 const heroImg = "images/hero.png";
@@ -91,23 +92,7 @@ function Hero({ sidebarNews, featuredNews }) {
   );
 }
 
-function AdBanner() {
-  return (
-    <div className="relative rounded-2xl overflow-hidden h-48 md:h-40 mb-10 md:mb-16 shadow-2xl border border-white/5">
-      <img src={adImg} className="absolute inset-0 w-full h-full object-cover" alt="Ad" />
-      <div className="absolute inset-0 bg-[#09264d]/60 backdrop-blur-[2px] flex flex-col md:flex-row items-center px-6 md:px-16 justify-center md:justify-between text-center md:text-right gap-6">
-        <div className="relative z-10">
-          <h2 className="text-2xl md:text-4xl font-black text-white mb-2 tracking-tight">مساحة إعلانية</h2>
-          <p className="text-blue-100 text-sm md:text-xl font-bold opacity-90">ضع إعلانك هنا ووصل إلى آلاف القراء يومياً</p>
-        </div>
-        <div className="flex flex-col md:flex-row items-center gap-4 md:gap-8 relative z-10">
-          <button className="bg-blue-600 hover:bg-blue-700 text-white px-8 md:px-10 py-3 md:py-4 rounded-xl font-black transition-all text-base md:text-lg shadow-xl shadow-blue-900/40">اعرف المزيد</button>
-          <div className="hidden md:block text-white/20 text-sm font-mono self-end pb-2">728x90</div>
-        </div>
-      </div>
-    </div>
-  );
-}
+
 
 function NewsletterCard() {
   const [email, setEmail] = useState("");
@@ -118,12 +103,20 @@ function NewsletterCard() {
     setStatus("loading");
     try {
       const { error } = await supabase.from('newsletter').insert([{ email }]);
-      if (error) throw error;
-      setStatus("success");
-      setEmail("");
+      if (error) {
+        if (error.code === '23505') {
+          alert('هذا البريد مشترك بالفعل');
+          setStatus("error");
+        } else throw error;
+      } else {
+        setStatus("success");
+        setEmail("");
+        alert('تم الاشتراك بنجاح!');
+      }
     } catch (err) {
       console.error(err);
       setStatus("error");
+      alert('حدث خطأ أثناء الاشتراك');
     }
   };
 
@@ -158,24 +151,49 @@ function NewsletterCard() {
 }
 
 function SocialCard() {
+  const [socialLinks, setSocialLinks] = useState({
+    facebook_url: '#',
+    twitter_url: '#',
+    instagram_url: '#',
+    youtube_url: '#'
+  });
+
+  useEffect(() => {
+    const fetchSocial = async () => {
+      const { data } = await supabase
+        .from('settings')
+        .select('facebook_url, twitter_url, instagram_url, youtube_url')
+        .single();
+      if (data) setSocialLinks(data);
+    };
+    fetchSocial();
+  }, []);
+
   const socials = [
-    { name: "فيسبوك", count: "125K", color: "bg-[#3b5998]", icon: "f" },
-    { name: "تويتر", count: "89K", color: "bg-black", icon: "𝕏" },
-    { name: "انستغرام", count: "74K", color: "bg-[#e1306c]", icon: "📸" },
-    { name: "يوتيوب", count: "45K", color: "bg-[#ff0000]", icon: "▶" }
+    { name: "فيسبوك", count: "125K", color: "bg-[#3b5998]", icon: "f", url: socialLinks.facebook_url },
+    { name: "تويتر", count: "89K", color: "bg-black", icon: "𝕏", url: socialLinks.twitter_url },
+    { name: "انستغرام", count: "74K", color: "bg-[#e1306c]", icon: "📸", url: socialLinks.instagram_url },
+    { name: "يوتيوب", count: "45K", color: "bg-[#ff0000]", icon: "▶", url: socialLinks.youtube_url }
   ];
+
   return (
     <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-lg mt-10">
       <h3 className="text-2xl font-black text-slate-800 mb-8 border-r-8 border-red-600 pr-4">تابعونا</h3>
       <div className="grid grid-cols-2 gap-4">
         {socials.map((s) => (
-          <button key={s.name} className={`${s.color} text-white rounded-2xl py-5 flex flex-col items-center justify-center gap-2 transition-all hover:scale-105 hover:shadow-xl group`}>
+          <a 
+            key={s.name} 
+            href={s.url} 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className={`${s.color} text-white rounded-2xl py-5 flex flex-col items-center justify-center gap-2 transition-all hover:scale-105 hover:shadow-xl group block`}
+          >
             <span className="text-xl font-bold group-hover:scale-110 transition-transform">{s.icon}</span>
             <div className="text-center">
               <span className="text-[10px] font-black uppercase opacity-70 block">{s.name}</span>
               <span className="text-sm font-black">{s.count} متابع</span>
             </div>
-          </button>
+          </a>
         ))}
       </div>
     </div>
@@ -311,16 +329,17 @@ const HomePage = () => {
     <div className="bg-[#f7f8fb] min-h-screen font-cairo text-right overflow-x-hidden pb-20" dir="rtl">
       <main className="max-w-7xl mx-auto px-6 py-12">
         <Hero sidebarNews={sidebarNews} featuredNews={featuredNews} />
-        <AdBanner />
+        <AdBanner position="content" className="mb-12" />
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-          <div className="lg:col-span-3 lg:sticky lg:top-24 order-2 lg:order-1">
+          <div className="lg:col-span-3 lg:sticky lg:top-24 order-2 lg:order-1 space-y-8">
             <NewsletterCard />
+            <AdBanner position="sidebar" />
             <SocialCard />
           </div>
           <div className="lg:col-span-9">
             <ReportsSection reports={reports} />
-            <button className="mt-16 w-full py-5 bg-white border border-gray-200 rounded-3xl text-slate-700 font-black hover:bg-gray-50 hover:shadow-md transition-all text-lg shadow-sm">عرض كل المحافظات</button>
+            {/* View all governorates button removed as requested */}
           </div>
         </div>
       </main>

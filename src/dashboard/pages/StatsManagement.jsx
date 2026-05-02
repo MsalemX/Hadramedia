@@ -31,7 +31,7 @@ const StatsManagement = () => {
       // Fetch news categorized
       const { data: newsData, error: newsError } = await supabase
         .from('news')
-        .select('category, is_cross_media, views_count');
+        .select('category, is_cross_media, views');
 
       if (newsError) throw newsError;
 
@@ -61,11 +61,11 @@ const StatsManagement = () => {
       const catMap = {};
 
       newsData.forEach(item => {
-        counts.totalViews += (item.views_count || 0);
+        counts.totalViews += (item.views || 0);
         
         if (item.is_cross_media) counts.crossMedia++;
         
-        if (item.category === 'مقالات') counts.articles++;
+        if (item.category === 'مقالات' || item.category === 'مقال') counts.articles++;
         else if (item.category === 'أخبار' || item.category === 'أحداث') counts.news++;
         else if (item.category === 'قصص') counts.stories++;
         else if (item.category === 'دراسات') counts.studies++;
@@ -98,6 +98,31 @@ const StatsManagement = () => {
     }
   };
 
+  const handleExport = () => {
+    const csvRows = [
+      ['Category', 'Count'],
+      ['Total News', stats.newsCount],
+      ['Total Articles', stats.articlesCount],
+      ['Cross Media', stats.crossMediaCount],
+      ['Total Views', stats.totalViews],
+      ['Subscribers', stats.subscribersCount],
+      ['Comments', stats.commentsCount],
+      [''],
+      ['Category Distribution', 'Percentage'],
+      ...stats.categoryDistribution.map(c => [c.label, c.value])
+    ];
+
+    const csvContent = csvRows.map(e => e.join(",")).join("\n");
+    const blob = new Blob(["\ufeff" + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `Hardmedia_Stats_${new Date().toLocaleDateString()}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   useEffect(() => {
     fetchStats();
   }, []);
@@ -118,8 +143,11 @@ const StatsManagement = () => {
           <p className="text-slate-400 text-sm font-bold mt-1">الرئيسية {'>'} الإحصائيات</p>
         </div>
         <div className="flex gap-3">
-          <button className="bg-blue-600 text-white px-6 py-3 rounded-2xl font-black text-sm shadow-lg shadow-blue-600/20">
-            تصدير تقرير PDF
+          <button 
+            onClick={handleExport}
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-black text-sm shadow-lg shadow-blue-600/20 transition-all active:scale-95"
+          >
+            تصدير التقرير (Excel)
           </button>
         </div>
       </div>
