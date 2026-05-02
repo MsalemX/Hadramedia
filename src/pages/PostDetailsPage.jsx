@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import AdBanner from '../components/AdBanner';
+import ReaderTools from '../components/ReaderTools';
 
 const PostDetailsPage = () => {
   const { id } = useParams();
@@ -317,6 +318,7 @@ const PostDetailsPage = () => {
                </div>
             </div>
 
+            <ReaderTools />
             <AdBanner position="sidebar" />
           </aside>
 

@@ -27,6 +27,8 @@ import ArticleDetailsPage from './pages/ArticleDetailsPage';
 import StudyDetailsPage from './pages/StudyDetailsPage';
 import CrossMediaDetailsPage from './pages/CrossMediaDetailsPage';
 import SearchPage from './pages/SearchPage';
+import ToolsPage from './pages/ToolsPage';
+import PodcastsPage from './pages/PodcastsPage';
 
 // Static
 import AboutPage from './pages/AboutPage';
@@ -54,6 +56,7 @@ import AdsManagement from './dashboard/pages/AdsManagement';
 import StatsManagement from './dashboard/pages/StatsManagement';
 import SettingsManagement from './dashboard/pages/SettingsManagement';
 import NewsletterManagement from './dashboard/pages/NewsletterManagement';
+import PodcastsManagement from './dashboard/pages/PodcastsManagement';
 import ContentEditor from './dashboard/pages/ContentEditor';
 
 import { supabase } from './lib/supabase';
@@ -135,6 +138,8 @@ function App() {
         <Route path="/study/:id" element={<StudyDetailsPage />} />
         <Route path="/cross-media/:id" element={<CrossMediaDetailsPage />} />
         <Route path="/search" element={<SearchPage />} />
+        <Route path="/tools" element={<ToolsPage />} />
+        <Route path="/podcasts" element={<PodcastsPage />} />
 
         <Route path="/login" element={<Login />} />
 
@@ -163,6 +168,7 @@ function App() {
         <Route path="stats" element={<StatsManagement />} />
         <Route path="settings" element={<SettingsManagement />} />
         <Route path="newsletter" element={<NewsletterManagement />} />
+        <Route path="podcasts" element={<PodcastsManagement />} />
         <Route path="content/add" element={<ContentEditor />} />
         <Route path="content/edit/:id" element={<ContentEditor />} />
       </Route>

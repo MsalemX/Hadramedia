@@ -146,7 +146,8 @@ const AdsManagement = () => {
         if (error) throw error;
         fetchAds();
       } catch (err) {
-        alert('خطأ أثناء الحذف');
+        console.error("Delete error:", err);
+        alert(`خطأ أثناء الحذف: ${err.message || 'فشل في العملية'}`);
       }
     }
   };

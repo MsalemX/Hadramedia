@@ -21,7 +21,8 @@ import {
   BarChart3,
   Settings,
   Mail,
-  MessageCircle
+  MessageCircle,
+  Mic
 } from 'lucide-react';
 
 const SidebarLink = ({ to, icon: Icon, label, badge, onClick }) => (
@@ -72,6 +73,7 @@ const DashboardLayout = () => {
         { to: "/dashboard/articles", icon: Newspaper, label: "المقالات" },
         { to: "/dashboard/cartoons", icon: TrendingUp, label: "الكاريكاتير" },
         { to: "/dashboard/cross-media", icon: PlayCircle, label: "الكروس ميديا" },
+        { to: "/dashboard/podcasts", icon: Mic, label: "البودكاست" },
       ]
     },
     {

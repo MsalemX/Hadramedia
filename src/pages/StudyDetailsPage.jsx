@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { NavLink, useParams } from 'react-router-dom';
 import { ChevronLeft, Heart, MessageSquare, Share2, Bookmark, User, Send, ThumbsUp, MoreHorizontal, Download, FileText, BookOpen, Clock, Tag, Loader2, Eye } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import ReaderTools from '../components/ReaderTools';
 
 const StudyDetailsPage = () => {
   const { id } = useParams();
@@ -195,6 +196,8 @@ const StudyDetailsPage = () => {
           <div className="prose prose-lg prose-slate text-slate-700 font-medium leading-loose max-w-none text-justify article-content"
                dangerouslySetInnerHTML={{ __html: post.content }} />
         </div>
+        
+        <ReaderTools />
 
         {/* Comments Section */}
         <div id="comments" className="bg-white rounded-[3rem] p-6 md:p-10 shadow-sm border border-gray-100">

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Save, Globe, Mail, Smartphone, Upload, Loader2, AlertCircle } from 'lucide-react';
-import { FacebookIcon, InstagramIcon, YoutubeIcon, XIcon as Twitter } from '../../components/Footer';
+import { FacebookIcon, InstagramIcon, YoutubeIcon, XIcon as Twitter, WhatsAppIcon } from '../../components/Footer';
 import { supabase } from '../../lib/supabase';
 
 const SettingsManagement = () => {
@@ -13,6 +13,7 @@ const SettingsManagement = () => {
     facebook_url: '',
     instagram_url: '',
     youtube_url: '',
+    whatsapp_url: '',
     maintenance_mode: false,
     breaking_news: '',
     top_news_label: '',
@@ -181,6 +182,7 @@ const SettingsManagement = () => {
                 { icon: FacebookIcon, label: 'Facebook', color: 'text-blue-600', key: 'facebook_url' },
                 { icon: InstagramIcon, label: 'Instagram', color: 'text-pink-600', key: 'instagram_url' },
                 { icon: YoutubeIcon, label: 'YouTube', color: 'text-red-600', key: 'youtube_url' },
+                { icon: WhatsAppIcon, label: 'WhatsApp', color: 'text-green-500', key: 'whatsapp_url' },
               ].map((social, i) => (
                 <div key={i} className="flex items-center gap-4">
                   <div className={`w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center ${social.color}`}>

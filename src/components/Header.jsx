@@ -1,21 +1,24 @@
 import React, { useState } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
-import { Home, FileText, PenLine, Search, BarChart, BookOpen, CirclePlus, BarChart3, Menu, X } from "lucide-react";
+import { Home, FileText, PenLine, Search, BarChart, BookOpen, CirclePlus, BarChart3, Menu, X, LayoutGrid, Headphones } from "lucide-react";
 import { supabase } from "../lib/supabase";
 
 const navItems = [
   { label: "أحداث", icon: Home, to: "/events" },
-  { label: "تقارير كرس ميديا", icon: CirclePlus, to: "/reports" },
+  { label: "تقارير كروس ميديا", icon: CirclePlus, to: "/reports" },
   { label: "قصص", icon: BookOpen, to: "/stories" },
   { label: "تحقيق", icon: Search, to: "/investigation" },
   { label: "استطلاعات", icon: BarChart3, to: "/statistics" },
   { label: "كاريكاتير", icon: () => <span className="text-lg font-bold">®</span>, to: "/cartoons" },
   { label: "مقال", icon: PenLine, to: "/article" },
   { label: "الدراسات", icon: FileText, to: "/studies" },
+  { label: "الأدوات", icon: LayoutGrid, to: "/tools" },
+  { label: "البودكاست", icon: Headphones, to: "/podcasts" },
 ];
 
 function TopHeader({ toggleMenu, isOpen }) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
   const [topNewsLabel, setTopNewsLabel] = useState("");
   const [logoUrl, setLogoUrl] = useState("");
   const navigate = useNavigate();
@@ -39,33 +42,46 @@ function TopHeader({ toggleMenu, isOpen }) {
     if (searchQuery.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
       setSearchQuery("");
+      setShowSearch(false);
     }
   };
 
-  const currentDate = new Intl.DateTimeFormat('ar-YE', {
+  const [now, setNow] = useState(new Date());
+
+  React.useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 60000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const formattedDate = new Intl.DateTimeFormat('ar-YE', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
     day: 'numeric'
-  }).format(new Date());
+  }).format(now);
+
+  const formattedTime = new Intl.DateTimeFormat('ar-YE', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  }).format(now);
 
   return (
     <div className="bg-white border-b border-gray-100 w-full overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 md:h-24 flex items-center justify-between gap-4">
         {/* RIGHT: Mobile Menu Toggle & Logo */}
         <div className="flex items-center gap-3">
-          <button 
+          <button
             onClick={toggleMenu}
             className="md:hidden p-2 text-[#09264d] hover:bg-slate-100 rounded-xl transition-colors"
           >
             {isOpen ? <X size={28} /> : <Menu size={28} />}
           </button>
-          <Link to="/" className="flex items-center gap-3 group shrink-0">
-            {logoUrl && <img src={logoUrl} alt="Logo" className="h-10 md:h-14 w-auto object-contain" />}
-            <span className="text-2xl md:text-3xl font-black text-[#09264d] tracking-tighter group-hover:text-blue-900 transition-colors">حضرميديا</span>
+          <Link to="/" className="flex items-center group shrink-0">
+            {logoUrl && <img src={logoUrl} alt="Logo" className="h-14 md:h-24 w-auto object-contain transition-transform group-hover:scale-105" />}
           </Link>
         </div>
-        
+
         {/* MIDDLE: Top News Label */}
         <div className="hidden md:flex flex-1 justify-center items-center px-6">
           {topNewsLabel && (
@@ -75,11 +91,33 @@ function TopHeader({ toggleMenu, isOpen }) {
             </div>
           )}
         </div>
-        
-        {/* LEFT: Date */}
-        <div className="hidden lg:flex items-center">
-          <div className="text-slate-500 font-bold text-[11px] whitespace-nowrap">
-            {currentDate}
+
+        {/* LEFT: Search & Date */}
+        <div className="flex items-center gap-2 md:gap-4">
+          <div className="relative flex items-center">
+            <div className={`overflow-hidden transition-all duration-300 flex items-center ${showSearch ? 'w-40 md:w-64 opacity-100 ml-2' : 'w-0 opacity-0'}`}>
+              <form onSubmit={handleSearch} className="w-full">
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="ابحث هنا..."
+                  className="w-full bg-slate-100 border-none rounded-full px-4 py-1.5 text-sm focus:ring-1 focus:ring-red-600 text-right font-bold"
+                  dir="rtl"
+                />
+              </form>
+            </div>
+            <button
+              onClick={() => setShowSearch(!showSearch)}
+              className="p-2 text-[#09264d] hover:bg-slate-100 rounded-full transition-colors shrink-0"
+            >
+              {showSearch ? <X size={20} /> : <Search size={20} />}
+            </button>
+          </div>
+          <div className="hidden lg:flex items-center gap-3 text-slate-600 font-bold text-sm whitespace-nowrap border-r border-gray-100 pr-4">
+            <span>{formattedDate}</span>
+            <span className="w-1 h-1 bg-slate-300 rounded-full"></span>
+            <span className="text-red-600 font-black">{formattedTime}</span>
           </div>
         </div>
       </div>
@@ -100,8 +138,7 @@ function Navbar({ isOpen, toggleMenu }) {
               key={item.label}
               to={item.to}
               className={({ isActive }) =>
-                `flex items-center gap-2 px-5 h-full text-sm font-bold transition-all border-b-2 whitespace-nowrap hover:bg-white/5 ${
-                  isActive ? "border-red-600 bg-white/10 text-white" : "border-transparent text-gray-300"
+                `flex items-center gap-2 px-5 h-full text-sm font-bold transition-all border-b-2 whitespace-nowrap hover:bg-white/5 ${isActive ? "border-red-600 bg-white/10 text-white" : "border-transparent text-gray-300"
                 }`
               }
             >
@@ -114,10 +151,9 @@ function Navbar({ isOpen, toggleMenu }) {
         </div>
       </div>
 
-      <div 
-        className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
-          isOpen ? "max-h-[500px] border-t border-white/5 shadow-2xl" : "max-h-0"
-        }`}
+      <div
+        className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? "max-h-[500px] border-t border-white/5 shadow-2xl" : "max-h-0"
+          }`}
       >
         <div className="flex flex-col py-4 bg-[#09264d]">
           {navItems.map((item) => (
@@ -126,8 +162,7 @@ function Navbar({ isOpen, toggleMenu }) {
               to={item.to}
               onClick={toggleMenu}
               className={({ isActive }) =>
-                `flex items-center gap-4 px-8 py-4 text-sm font-bold transition-all border-r-4 ${
-                  isActive ? "border-red-600 bg-white/10 text-white" : "border-transparent text-gray-300 hover:bg-white/5"
+                `flex items-center gap-4 px-8 py-4 text-sm font-bold transition-all border-r-4 ${isActive ? "border-red-600 bg-white/10 text-white" : "border-transparent text-gray-300 hover:bg-white/5"
                 }`
               }
             >

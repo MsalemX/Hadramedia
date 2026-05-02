@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { NavLink, useParams } from 'react-router-dom';
 import { ChevronLeft, Clock, Eye, Heart, MessageCircle, Share2, Bookmark, User, Send, ThumbsUp, MoreHorizontal, FileSearch, ShieldAlert, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+import ReaderTools from '../components/ReaderTools';
 
 const InvestigationDetailsPage = () => {
   const { id } = useParams();
@@ -159,6 +160,8 @@ const InvestigationDetailsPage = () => {
           <div className="prose prose-lg prose-slate text-slate-700 font-medium leading-loose max-w-none relative z-10 article-content"
                dangerouslySetInnerHTML={{ __html: post.content }} />
         </div>
+        
+        <ReaderTools />
 
         {/* Engagement Actions */}
         <div className="flex flex-wrap items-center justify-between gap-4 bg-white rounded-[2rem] p-4 shadow-sm border border-gray-100 mb-16">

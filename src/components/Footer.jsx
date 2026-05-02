@@ -32,6 +32,12 @@ export const XIcon = ({ size = 20 }) => (
   </svg>
 );
 
+export const WhatsAppIcon = ({ size = 20 }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M17.472 14.382c-.301-.15-1.767-.872-2.04-.971-.272-.1-.47-.15-.665.15-.197.3-.763.971-.934 1.171-.172.2-.344.225-.644.075-.3-.15-1.27-.468-2.42-1.493-.895-.798-1.498-1.785-1.674-2.085-.175-.3-.018-.463.132-.612.134-.134.3-.35.45-.525.15-.175.2-.3.3-.5.1-.2.05-.375-.025-.525-.075-.15-.665-1.603-.91-2.193-.24-.577-.482-.5-.665-.51-.173-.01-.371-.012-.57-.012-.198 0-.52.075-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.767-.721 2.016-1.417.247-.695.247-1.291.173-1.417-.074-.125-.272-.2-.573-.351zM12.004 2c-5.523 0-10 4.477-10 10 0 1.767.459 3.427 1.264 4.873l-1.344 4.914 5.033-1.32c1.405.766 3.006 1.205 4.706 1.205 5.522 0 10-4.477 10-10s-4.478-10-10-10zm0 18.067c-1.579 0-3.041-.418-4.305-1.144l-.31-.18-3.197.838.851-3.111-.197-.313c-.792-1.258-1.211-2.715-1.211-4.218 0-4.444 3.618-8.061 8.062-8.061s8.061 3.617 8.061 8.061-3.617 8.061-8.061 8.061z"/>
+  </svg>
+);
+
 const NewsletterForm = () => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -59,16 +65,16 @@ const NewsletterForm = () => {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="relative">
-        <input 
-          type="email" 
+        <input
+          type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          placeholder="أدخل بريدك الإلكتروني" 
-          className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-red-600 transition-all placeholder:text-blue-100/30 font-bold" 
+          placeholder="أدخل بريدك الإلكتروني"
+          className="w-full bg-white/5 border border-white/10 rounded-xl px-5 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-red-600 transition-all placeholder:text-blue-100/30 font-bold"
         />
       </div>
-      <button 
+      <button
         disabled={loading}
         className="w-full bg-blue-600 hover:bg-blue-700 text-white font-black py-4 rounded-xl transition-all shadow-lg shadow-blue-900/40 disabled:opacity-50"
       >
@@ -83,26 +89,41 @@ function Footer() {
     facebook_url: '#',
     twitter_url: '#',
     youtube_url: '#',
-    instagram_url: '#'
+    instagram_url: '#',
+    whatsapp_url: '#'
   });
 
   useEffect(() => {
     const fetchSocial = async () => {
-      const { data } = await supabase
-        .from('settings')
-        .select('facebook_url, twitter_url, youtube_url, instagram_url')
-        .single();
-      if (data) setSocialLinks(data);
+      try {
+        const { data, error } = await supabase
+          .from('settings')
+          .select('*');
+        
+        if (data && data.length > 0) {
+          setSocialLinks(data[0]);
+        }
+      } catch (err) {
+        console.error("Error fetching social links:", err);
+      }
     };
     fetchSocial();
   }, []);
 
+  const getValidUrl = (url) => {
+    if (!url || url === '#') return '#';
+    // Remove any single quotes if they exist (common data entry error)
+    const cleanUrl = url.replace(/'/g, '').trim();
+    if (cleanUrl.startsWith('http')) return cleanUrl;
+    return `https://${cleanUrl}`;
+  };
 
   const socialItems = [
-    { icon: FacebookIcon, color: "hover:bg-[#3b5998]", url: socialLinks.facebook_url },
-    { icon: XIcon, color: "hover:bg-black", url: socialLinks.twitter_url },
-    { icon: YoutubeIcon, color: "hover:bg-[#ff0000]", url: socialLinks.youtube_url },
-    { icon: InstagramIcon, color: "hover:bg-[#e1306c]", url: socialLinks.instagram_url }
+    { icon: FacebookIcon, color: "hover:bg-[#3b5998]", url: getValidUrl(socialLinks.facebook_url) },
+    { icon: XIcon, color: "hover:bg-black", url: getValidUrl(socialLinks.twitter_url) },
+    { icon: YoutubeIcon, color: "hover:bg-[#ff0000]", url: getValidUrl(socialLinks.youtube_url) },
+    { icon: InstagramIcon, color: "hover:bg-[#e1306c]", url: getValidUrl(socialLinks.instagram_url) },
+    { icon: WhatsAppIcon, color: "hover:bg-[#25d366]", url: getValidUrl(socialLinks.whatsapp_url) }
   ];
 
   return (
@@ -117,11 +138,11 @@ function Footer() {
             </p>
             <div className="flex gap-4">
               {socialItems.map((item, i) => (
-                <a 
-                  key={i} 
-                  href={item.url} 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
+                <a
+                  key={i}
+                  href={item.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className={`w-12 h-12 rounded-xl border border-white/10 flex items-center justify-center transition-all ${item.color} hover:border-transparent group`}
                 >
                   <item.icon size={22} className="group-hover:scale-110 transition-transform" />
@@ -136,7 +157,7 @@ function Footer() {
               {[
                 { label: "الرئيسية", to: "/" },
                 { label: "أحداث", to: "/events" },
-                { label: "تقارير كرس ميديا", to: "/reports" },
+                { label: "تقارير كروس ميديا", to: "/reports" },
                 { label: "قصص", to: "/stories" },
                 { label: "استطلاعات", to: "/statistics" },
                 { label: "كاريكاتير", to: "/cartoons" },
