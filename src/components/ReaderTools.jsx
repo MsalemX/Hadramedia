@@ -4,7 +4,6 @@ import { Mic, ShieldCheck, ChevronLeft, Upload, Loader2, Play, Pause, RotateCcw,
 const ReaderTools = () => {
   const [activeTool, setActiveTool] = useState(null); // 'transcription' or 'verification'
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isRecording, setIsRecording] = useState(false);
   const [progress, setProgress] = useState(0);
   const [result, setResult] = useState('');
   const [copied, setCopied] = useState(false);
@@ -13,60 +12,14 @@ const ReaderTools = () => {
   const [imageMeta, setImageMeta] = useState(null);
   const fileInputRef = useRef(null);
   const imageInputRef = useRef(null);
-  const recognitionRef = useRef(null);
 
-  useEffect(() => {
-    // Initialize Web Speech API
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      recognitionRef.current = new SpeechRecognition();
-      recognitionRef.current.continuous = true;
-      recognitionRef.current.interimResults = true;
-      recognitionRef.current.lang = 'ar-SA';
 
-      recognitionRef.current.onresult = (event) => {
-        let interimTranscript = '';
-        let finalTranscript = '';
-
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-          if (event.results[i].isFinal) {
-            finalTranscript += event.results[i][0].transcript;
-          } else {
-            interimTranscript += event.results[i][0].transcript;
-          }
-        }
-        setResult(prev => prev + finalTranscript);
-      };
-
-      recognitionRef.current.onerror = (event) => {
-        console.error("Speech recognition error:", event.error);
-        setIsRecording(false);
-      };
-    }
-  }, []);
-
-  const startRecording = () => {
-    if (recognitionRef.current) {
-      setResult('');
-      setIsRecording(true);
-      recognitionRef.current.start();
-    } else {
-      alert("متصفحك لا يدعم التعرف على الصوت المباشر.");
-    }
-  };
-
-  const stopRecording = () => {
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-      setIsRecording(false);
-    }
-  };
 
   const tools = [
     {
       id: 'transcription',
       title: "تفريغ الصوت",
-      desc: "تحويل الملفات الصوتية أو الكلام المباشر إلى نصوص",
+      desc: "تحويل الملفات الصوتية إلى نصوص دقيقة بالذكاء الاصطناعي",
       icon: Mic,
       color: "bg-blue-50 text-blue-600",
       details: "تحويل مباشر بالذكاء الاصطناعي"
@@ -223,17 +176,17 @@ const ReaderTools = () => {
             <div className="w-8" />
           </div>
 
-          {!isProcessing && !result && !isRecording ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {!isProcessing && !result ? (
+            <div className="grid grid-cols-1 gap-4">
                <div 
                 onClick={() => fileInputRef.current.click()}
-                className="border-2 border-dashed border-blue-100 rounded-[2rem] p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-blue-50/50 hover:border-blue-200 transition-all group"
+                className="border-2 border-dashed border-blue-100 rounded-[2rem] p-10 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-blue-50/50 hover:border-blue-200 transition-all group"
               >
-                <div className="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <Upload size={24} />
+                <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                  <Upload size={32} />
                 </div>
-                <h4 className="font-black text-[#09264d] text-sm mb-2">رفع ملف صوتي</h4>
-                <p className="text-[10px] font-bold text-slate-400">محاكاة التفريغ للملفات</p>
+                <h4 className="font-black text-[#09264d] text-lg mb-2">رفع ملف صوتي للتفريغ</h4>
+                <p className="text-xs font-bold text-slate-400">يدعم صيغ MP3, WAV, M4A حتى 25 ميجابايت</p>
                 <input 
                   type="file" 
                   ref={fileInputRef} 
@@ -242,40 +195,6 @@ const ReaderTools = () => {
                   onChange={handleFileChange}
                 />
               </div>
-
-              <div 
-                onClick={startRecording}
-                className="border-2 border-dashed border-red-100 rounded-[2rem] p-8 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-red-50/50 hover:border-red-200 transition-all group"
-              >
-                <div className="w-14 h-14 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                  <Mic size={24} />
-                </div>
-                <h4 className="font-black text-[#09264d] text-sm mb-2">تفريغ مباشر (حقيقي)</h4>
-                <p className="text-[10px] font-bold text-slate-400">تحدث الآن وسيتحول كلامك لنص</p>
-              </div>
-            </div>
-          ) : isRecording ? (
-            <div className="py-10 flex flex-col items-center justify-center text-center">
-               <div className="relative mb-6">
-                  <div className="w-20 h-20 bg-red-600 rounded-full animate-ping absolute inset-0 opacity-20" />
-                  <div className="w-20 h-20 bg-red-600 rounded-full flex items-center justify-center relative shadow-xl shadow-red-900/40">
-                     <Mic size={32} className="text-white" />
-                  </div>
-               </div>
-               <h4 className="font-black text-[#09264d] mb-2">جاري الاستماع...</h4>
-               <p className="text-sm font-bold text-red-600 mb-8 animate-pulse">تحدث باللغة العربية الآن</p>
-               
-               <div className="w-full bg-slate-50 border border-slate-100 rounded-2xl p-6 mb-8 min-h-[100px] text-right">
-                  <p className="text-sm font-bold text-slate-700 leading-loose">{result || 'بانتظار صوتك...'}</p>
-               </div>
-
-               <button 
-                  onClick={stopRecording}
-                  className="px-10 py-4 bg-red-600 text-white rounded-2xl font-black text-sm hover:bg-red-700 transition-all flex items-center justify-center gap-2 shadow-lg shadow-red-900/20"
-               >
-                  <Square size={18} fill="currentColor" />
-                  إيقاف وحفظ النص
-               </button>
             </div>
           ) : isProcessing ? (
             <div className="py-10 flex flex-col items-center justify-center text-center">
