@@ -3,6 +3,7 @@ import { Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import Header from './components/Header';
 import NewsTicker from './components/NewsTicker';
 import Footer from './components/Footer';
+import ScrollToTop from './components/ScrollToTop';
 
 // Pages
 import HomePage from './pages/HomePage';
@@ -99,7 +100,9 @@ function App() {
   );
 
   return (
-    <Routes>
+    <>
+      <ScrollToTop />
+      <Routes>
       {/* Public routes wrapped with Header/NewsTicker/Footer */}
       <Route element={<PublicLayout />}>
         <Route path="/" element={<HomePage />} />
@@ -164,6 +167,7 @@ function App() {
         <Route path="content/edit/:id" element={<ContentEditor />} />
       </Route>
     </Routes>
+    </>
   );
 }
 

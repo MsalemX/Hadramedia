@@ -97,6 +97,7 @@ function Footer() {
     fetchSocial();
   }, []);
 
+
   const socialItems = [
     { icon: FacebookIcon, color: "hover:bg-[#3b5998]", url: socialLinks.facebook_url },
     { icon: XIcon, color: "hover:bg-black", url: socialLinks.twitter_url },
@@ -183,6 +184,8 @@ function Footer() {
             <Link to="/terms" className="hover:text-white transition-colors">شروط الاستخدام</Link>
             <span className="text-white/5">|</span>
             <Link to="/contact" className="hover:text-white transition-colors">اتصل بنا</Link>
+            <span className="text-white/5">|</span>
+            <Link to="/login" className="hover:text-white transition-colors">دخول المشرف</Link>
           </div>
         </div>
       </div>
