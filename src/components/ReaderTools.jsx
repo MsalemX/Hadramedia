@@ -5,6 +5,7 @@ const ReaderTools = () => {
   const [activeTool, setActiveTool] = useState(null); // 'transcription' or 'verification'
   const [isProcessing, setIsProcessing] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
+  const [mediaRecorder, setMediaRecorder] = useState(null);
   const [progress, setProgress] = useState(0);
   const [result, setResult] = useState('');
   const [copied, setCopied] = useState(false);
@@ -13,45 +14,56 @@ const ReaderTools = () => {
   const [imageMeta, setImageMeta] = useState(null);
   const fileInputRef = useRef(null);
   const imageInputRef = useRef(null);
-  const recognitionRef = useRef(null);
 
-  useEffect(() => {
-    // Initialize Web Speech API
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      recognitionRef.current = new SpeechRecognition();
-      recognitionRef.current.continuous = true;
-      recognitionRef.current.interimResults = true;
-      recognitionRef.current.lang = 'ar-SA';
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      const chunks = [];
 
-      recognitionRef.current.onresult = (event) => {
-        let interimTranscript = '';
-        let finalTranscript = '';
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) chunks.push(e.data);
+      };
 
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-          if (event.results[i].isFinal) {
-            finalTranscript += event.results[i][0].transcript;
-          } else {
-            interimTranscript += event.results[i][0].transcript;
-          }
+      recorder.onstop = async () => {
+        const audioBlob = new Blob(chunks, { type: 'audio/webm' });
+        const audioFile = new File([audioBlob], "recording.webm", { type: 'audio/webm' });
+        
+        setIsProcessing(true);
+        try {
+          const formData = new FormData();
+          formData.append('file', audioFile);
+          formData.append('model', 'whisper-large-v3');
+          formData.append('language', 'ar');
+          
+          const response = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${import.meta.env.VITE_GROQ_API_KEY}`
+            },
+            body: formData
+          });
+
+          if (!response.ok) throw new Error('فشل معالجة الصوت المسجل');
+          
+          const data = await response.json();
+          setResult(data.text);
+        } catch (err) {
+          console.error(err);
+          setResult(`خطأ في المعالجة: ${err.message}`);
+        } finally {
+          setIsProcessing(false);
         }
-        setResult(prev => prev + finalTranscript);
+        
+        stream.getTracks().forEach(track => track.stop());
       };
 
-      recognitionRef.current.onerror = (event) => {
-        console.error("Speech recognition error:", event.error);
-        setIsRecording(false);
-      };
-    }
-  }, []);
-
-  const startRecording = () => {
-    if (recognitionRef.current) {
-      setResult('');
+      recorder.start();
+      setMediaRecorder(recorder);
       setIsRecording(true);
-      recognitionRef.current.start();
-    } else {
-      alert("متصفحك لا يدعم التعرف على الصوت المباشر.");
+      setResult('');
+    } catch (err) {
+      alert('لا يمكن الوصول للميكروفون');
     }
   };
 
