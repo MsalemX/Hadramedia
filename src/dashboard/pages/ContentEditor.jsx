@@ -26,11 +26,13 @@ const ContentEditor = () => {
 
   const [formData, setFormData] = useState({
     title: '',
+    author: '',
     category: type === 'stories' ? 'قصص' : type === 'studies' ? 'دراسات' : type === 'investigations' ? 'تحقيقات' : type === 'articles' ? 'مقالات' : type === 'cartoons' ? 'كاريكاتير' : type === 'cross-media' ? 'كروس ميديا' : 'أخبار',
     main_image: '',
     gallery: [],
     pdf_url: '',
     content: '',
+    paragraphs: [''],
     status: 'مسودة',
     is_cross_media: type === 'cross-media',
     sections: []
@@ -66,7 +68,8 @@ const ContentEditor = () => {
       setFormData({
         ...data,
         gallery: data.gallery || [],
-        sections: sections.length > 0 ? sections : []
+        sections: sections.length > 0 ? sections : [],
+        paragraphs: data.category === 'مقالات' && data.content ? data.content.split('\n\n') : ['']
       });
     } catch (err) {
       setError('خطأ في جلب البيانات');
@@ -180,10 +183,13 @@ const ContentEditor = () => {
       let finalContent = formData.content;
       if (formData.is_cross_media) {
         finalContent = JSON.stringify(formData.sections);
+      } else if (formData.category === 'مقالات' && formData.paragraphs) {
+        finalContent = formData.paragraphs.filter(p => p.trim()).join('\n\n');
       }
 
       const payload = {
         title: formData.title,
+        author: formData.author || '',
         category: formData.category,
         main_image: formData.main_image,
         gallery: formData.gallery || [],
@@ -298,6 +304,19 @@ const ContentEditor = () => {
             </div>
 
             {(formData.category === 'مقالات' || formData.category === 'دراسات') && (
+              <div>
+                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">اسم الكاتب</label>
+                <input 
+                  type="text" 
+                  value={formData.author || ''}
+                  onChange={(e) => setFormData({...formData, author: e.target.value})}
+                  className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-6 py-4 text-sm font-black text-slate-700 focus:outline-none focus:ring-4 focus:ring-blue-600/5 transition-all"
+                  placeholder="مثال: د. عبدالله بن حريز"
+                />
+              </div>
+            )}
+
+            {(formData.category === 'مقالات' || formData.category === 'دراسات') && (
               <div className="bg-blue-50/50 p-6 rounded-3xl border border-blue-100/50 space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
@@ -330,17 +349,57 @@ const ContentEditor = () => {
             )}
 
             {!formData.is_cross_media ? (
-              <div>
-                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-3">
-                  {formData.category === 'مقالات' ? 'نص إضافي (اختياري)' : 'المحتوى'}
+              <div className="space-y-4">
+                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest">
+                  {formData.category === 'مقالات' ? 'فقرات المقال' : 'المحتوى'}
                 </label>
-                <textarea 
-                  rows={formData.category === 'مقالات' ? 8 : 15}
-                  value={formData.content}
-                  onChange={(e) => setFormData({...formData, content: e.target.value})}
-                  className="w-full bg-gray-50 border border-gray-100 rounded-[32px] px-6 py-6 font-bold text-slate-600 focus:outline-none focus:ring-4 focus:ring-blue-600/5 transition-all"
-                  placeholder={formData.category === 'مقالات' ? "يمكنك ترك هذا الحقل فارغاً إذا قمت برفع ملف..." : "اكتب تفاصيل المحتوى هنا..."}
-                />
+                
+                {formData.category === 'مقالات' ? (
+                  <div className="space-y-4">
+                    {(formData.paragraphs || ['']).map((para, idx) => (
+                      <div key={idx} className="relative group">
+                        <textarea 
+                          rows={4}
+                          value={para}
+                          onChange={(e) => {
+                            const newParas = [...formData.paragraphs];
+                            newParas[idx] = e.target.value;
+                            setFormData({...formData, paragraphs: newParas});
+                          }}
+                          className="w-full bg-gray-50 border border-gray-100 rounded-[24px] px-6 py-4 font-bold text-slate-600 focus:outline-none focus:ring-4 focus:ring-blue-600/5 transition-all"
+                          placeholder={`اكتب الفقرة رقم ${idx + 1}...`}
+                        />
+                        {formData.paragraphs.length > 1 && (
+                          <button 
+                            type="button"
+                            onClick={() => {
+                              const newParas = formData.paragraphs.filter((_, i) => i !== idx);
+                              setFormData({...formData, paragraphs: newParas});
+                            }}
+                            className="absolute left-4 top-4 p-2 text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                    <button 
+                      type="button"
+                      onClick={() => setFormData({...formData, paragraphs: [...formData.paragraphs, '']})}
+                      className="w-full py-4 border-2 border-dashed border-gray-100 rounded-2xl text-slate-400 font-bold hover:bg-gray-50 hover:border-blue-200 hover:text-blue-500 transition-all flex items-center justify-center gap-2"
+                    >
+                      <Plus size={18} /> إضافة فقرة جديدة
+                    </button>
+                  </div>
+                ) : (
+                  <textarea 
+                    rows={15}
+                    value={formData.content}
+                    onChange={(e) => setFormData({...formData, content: e.target.value})}
+                    className="w-full bg-gray-50 border border-gray-100 rounded-[32px] px-6 py-6 font-bold text-slate-600 focus:outline-none focus:ring-4 focus:ring-blue-600/5 transition-all"
+                    placeholder="اكتب تفاصيل المحتوى هنا..."
+                  />
+                )}
               </div>
             ) : (
               <div className="space-y-6">

@@ -3,6 +3,8 @@ import { NavLink, useParams } from 'react-router-dom';
 import { ChevronLeft, Clock, Share2, MousePointer2, Volume2, Info, ArrowDown, MessageSquare, User, Send, ThumbsUp, Heart, Loader2, Eye } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import ReaderTools from '../components/ReaderTools';
+import LinkifyText from '../components/LinkifyText';
+import ShareButtons from '../components/ShareButtons';
 
 const CrossMediaDetailsPage = () => {
   const { id } = useParams();
@@ -199,7 +201,10 @@ const CrossMediaDetailsPage = () => {
             <Heart size={20} className={post.likes > 0 ? 'fill-white' : ''} />
             {post.likes > 0 && <span className="text-xs">{post.likes}</span>}
           </button>
-          <button className="bg-white/10 backdrop-blur-md p-3 rounded-2xl border border-white/10 hover:bg-blue-600 transition-all">
+          <button 
+            onClick={() => document.getElementById('share-section')?.scrollIntoView({ behavior: 'smooth' })}
+            className="bg-white/10 backdrop-blur-md p-3 rounded-2xl border border-white/10 hover:bg-blue-600 transition-all"
+          >
             <Share2 size={20} />
           </button>
         </div>
@@ -229,13 +234,23 @@ const CrossMediaDetailsPage = () => {
             <div className="max-w-2xl bg-white/5 backdrop-blur-xl p-10 md:p-16 rounded-[3rem] border border-white/10 shadow-2xl transform transition-all duration-700 hover:bg-white/10">
               <span className="text-red-500 font-black text-xs mb-4 block uppercase tracking-widest">الجزء {index + 1}</span>
               <h2 className="text-3xl md:text-5xl font-black mb-8 leading-tight">{section.title}</h2>
-              <div className="text-xl md:text-2xl font-medium leading-relaxed opacity-90 mb-10 text-justify article-content"
-                   dangerouslySetInnerHTML={{ __html: section.content }} />
+              <div className="text-xl md:text-2xl font-medium leading-relaxed opacity-90 mb-10 text-justify article-content">
+                {section.content && (section.content.includes('<p>') || section.content.includes('<br')) ? (
+                  <div dangerouslySetInnerHTML={{ __html: section.content }} />
+                ) : (
+                  (section.content || '').split(/\n\n+/).filter(p => p.trim()).map((paragraph, idx) => (
+                    <p key={idx} className="mb-4">
+                      <LinkifyText text={paragraph.trim()} />
+                    </p>
+                  ))
+                )}
+              </div>
             </div>
           </section>
         ))}
         
         <div className="max-w-4xl mx-auto px-6 relative z-10 py-10">
+          <ShareButtons title={post.title} />
           <ReaderTools />
         </div>
 
@@ -298,7 +313,9 @@ const CrossMediaDetailsPage = () => {
                               <h4 className="font-black text-red-500">{comment.author_name}</h4>
                               <span className="text-[10px] font-bold opacity-40">{new Date(comment.created_at).toLocaleDateString('ar-YE')}</span>
                            </div>
-                           <p className="text-lg opacity-80 leading-relaxed font-medium">{comment.content}</p>
+                           <p className="text-lg opacity-80 leading-relaxed font-medium">
+                              <LinkifyText text={comment.content} />
+                           </p>
                         </div>
                      </div>
                   )) : (

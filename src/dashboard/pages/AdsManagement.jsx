@@ -25,6 +25,10 @@ const AdsManagement = () => {
     status: 'نشط'
   });
 
+  useEffect(() => {
+    fetchAds();
+  }, []);
+
   const fetchAds = async () => {
     try {
       setLoading(true);

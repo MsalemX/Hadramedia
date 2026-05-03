@@ -131,7 +131,18 @@ const ReportsPage = () => {
                     <div className="absolute bottom-0 right-0 left-0 p-12 text-white">
                       <span className="bg-[#e00013] px-4 py-2 rounded-lg text-[10px] font-black mb-6 inline-block shadow-lg uppercase tracking-widest">{featuredReport.category || 'تقرير تفاعلي'}</span>
                       <h2 className="text-4xl font-black mb-6 leading-tight max-w-3xl drop-shadow-lg group-hover:text-red-400 transition-colors">{featuredReport.title}</h2>
-                      <div className="text-gray-300 text-base mb-8 max-w-2xl leading-relaxed font-bold opacity-90 line-clamp-2" dangerouslySetInnerHTML={{ __html: featuredReport.content.substring(0, 200) + '...' }} />
+                      <div className="text-gray-300 text-base mb-8 max-w-2xl leading-relaxed font-bold opacity-90 line-clamp-2">
+                        {(() => {
+                          let text = featuredReport.content || "";
+                          try {
+                            const parsed = JSON.parse(text);
+                            if (Array.isArray(parsed) && parsed.length > 0) {
+                              text = parsed[0].content || "";
+                            }
+                          } catch (e) {}
+                          return text.replace(/<[^>]*>?/gm, '').substring(0, 180) + '...';
+                        })()}
+                      </div>
                       
                       <div className="flex items-center gap-8 text-xs font-black text-gray-400 border-t border-white/10 pt-8">
                          <div className="flex items-center gap-2">

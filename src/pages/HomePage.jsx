@@ -70,7 +70,7 @@ function Hero({ sidebarNews, featuredNews }) {
             <img src={featuredNews.main_image || heroImg} className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" alt="Feature" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
 
-            <div className="absolute bottom-0 right-0 left-0 p-6 md:p-12 text-white">
+            <div className="absolute bottom-0 right-0 left-0 p-4 sm:p-8 md:p-12 text-white">
               <span className="bg-[#e00013] px-4 py-2 rounded-lg text-[10px] md:text-xs font-black mb-4 md:mb-6 inline-block shadow-lg">{featuredNews.category || "أخبار"}</span>
               <h1 className="text-2xl md:text-4xl lg:text-5xl font-black mb-4 md:mb-6 leading-tight max-w-3xl drop-shadow-lg">{featuredNews.title}</h1>
               <p className="hidden md:block text-gray-200 text-lg mb-8 max-w-2xl leading-relaxed font-bold opacity-90 line-clamp-2">{featuredNews.content?.replace(/<[^>]*>?/gm, '').substring(0, 150)}...</p>
@@ -121,7 +121,7 @@ function NewsletterCard() {
   };
 
   return (
-    <div className="bg-[#09264d] rounded-3xl p-10 text-white relative overflow-hidden shadow-2xl">
+    <div className="bg-[#09264d] rounded-3xl p-6 sm:p-10 text-white relative overflow-hidden shadow-2xl">
       <div className="relative z-10">
         <div className="w-20 h-20 bg-white/10 rounded-2xl flex items-center justify-center mb-8 backdrop-blur-md border border-white/10 rotate-3">
           <Mail className="text-white" size={40} />

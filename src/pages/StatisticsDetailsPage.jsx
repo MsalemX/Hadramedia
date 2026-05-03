@@ -103,7 +103,7 @@ const StatisticsDetailsPage = () => {
       <div className="min-h-screen bg-[#f7f8fb] flex items-center justify-center font-cairo" dir="rtl">
         <div className="text-center">
           <h1 className="text-2xl font-black text-[#09264d] mb-4">الإحصائية غير موجودة</h1>
-          <NavLink to="/statistics" className="text-red-600 font-bold hover:underline">العودة لصفحة الإحصائيات</NavLink>
+          <NavLink to="/polls" className="text-red-600 font-bold hover:underline">العودة لصفحة الاستطلاعات</NavLink>
         </div>
       </div>
     );
@@ -117,7 +117,7 @@ const StatisticsDetailsPage = () => {
         <div className="flex items-center gap-2 text-xs font-bold text-slate-400 mb-8">
           <NavLink to="/" className="hover:text-blue-600 transition-colors">الرئيسية</NavLink>
           <ChevronLeft size={14} />
-          <NavLink to="/statistics" className="hover:text-blue-600 transition-colors">استطلاعات</NavLink>
+          <NavLink to="/polls" className="hover:text-blue-600 transition-colors">استطلاعات</NavLink>
           <ChevronLeft size={14} />
           <span className="text-slate-600 truncate max-w-[200px]">{post.title}</span>
         </div>

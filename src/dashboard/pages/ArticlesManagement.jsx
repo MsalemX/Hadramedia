@@ -129,6 +129,7 @@ const ArticlesManagement = () => {
                 <tr>
                   <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">المصغرة</th>
                   <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">عنوان المقال</th>
+                  <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">الكاتب</th>
                   <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">الحالة</th>
                   <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">إجراءات</th>
                 </tr>
@@ -141,6 +142,9 @@ const ArticlesManagement = () => {
                     </td>
                     <td className="px-8 py-5">
                       <span className="text-sm font-black text-slate-700 line-clamp-2 max-w-xs">{item.title}</span>
+                    </td>
+                    <td className="px-8 py-5">
+                      <span className="text-sm font-bold text-[#e00013]">{item.author || '—'}</span>
                     </td>
                     <td className="px-8 py-5">
                       <span className={`px-3 py-1 rounded-full text-[10px] font-black ${item.status === 'منشور' ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-600'}`}>

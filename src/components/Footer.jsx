@@ -159,7 +159,7 @@ function Footer() {
                 { label: "أحداث", to: "/events" },
                 { label: "تقارير كروس ميديا", to: "/reports" },
                 { label: "قصص", to: "/stories" },
-                { label: "استطلاعات", to: "/statistics" },
+                { label: "استطلاعات", to: "/polls" },
                 { label: "كاريكاتير", to: "/cartoons" },
                 { label: "مقال", to: "/article" },
                 { label: "الدراسات", to: "/studies" }

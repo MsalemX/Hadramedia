@@ -75,7 +75,7 @@ const ArticlesPage = () => {
             {/* Featured Opinion Piece */}
             {featuredArticle && (
               <Link to={`/post/${featuredArticle.id}`} className="bg-white rounded-[3rem] overflow-hidden border border-gray-100 shadow-2xl flex flex-col md:flex-row min-h-[480px] group block">
-                <div className="md:w-1/2 p-12 lg:p-16 flex flex-col justify-center">
+                <div className="md:w-1/2 p-6 sm:p-10 lg:p-16 flex flex-col justify-center">
                     <div className="flex items-center gap-3 mb-8">
                       <Quote size={40} className="text-red-600 opacity-20" />
                       <span className="bg-slate-100 text-[#09264d] px-4 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest">رأي وتحليل</span>
@@ -90,7 +90,7 @@ const ArticlesPage = () => {
                           <User size={32} className="text-slate-300 mt-2" />
                       </div>
                       <div>
-                          <h4 className="font-black text-[#09264d]">كاتب حضرميديا</h4>
+                          <h4 className="font-black text-[#e00013]">{featuredArticle.author || 'كاتب حضرميديا'}</h4>
                           <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">محلل استراتيجي</p>
                       </div>
                     </div>
@@ -117,14 +117,14 @@ const ArticlesPage = () => {
                           <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-all" />
                           <span className="absolute top-5 right-5 bg-white/90 backdrop-blur-md text-[#09264d] text-[9px] font-black py-2 px-5 rounded-xl shadow-lg">{art.category}</span>
                        </div>
-                       <div className="p-10 flex-1 flex flex-col">
+                       <div className="p-6 sm:p-10 flex-1 flex flex-col">
                           <h3 className="text-xl font-black text-slate-800 mb-6 leading-tight group-hover:text-red-600 transition-colors h-14 overflow-hidden">{art.title}</h3>
                           
                           <div className="flex items-center gap-3 mb-8">
                              <div className="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center border border-gray-100 overflow-hidden">
                                 <User size={18} className="text-slate-300 mt-1" />
                              </div>
-                             <span className="text-xs font-black text-slate-600">كاتب حضرميديا</span>
+                             <span className="text-xs font-black text-[#e00013]">{art.author || 'كاتب حضرميديا'}</span>
                           </div>
 
                           <p className="text-slate-500 text-sm font-bold leading-relaxed mb-10 line-clamp-2">

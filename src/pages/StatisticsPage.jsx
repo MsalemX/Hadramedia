@@ -3,39 +3,177 @@ import { NavLink, Link } from 'react-router-dom';
 import { 
   BarChart3, Bell, ChevronLeft, Clock, Eye, FileText, 
   Share2, MessageSquare, Filter, ChevronDown, CheckSquare, Calendar,
-  Loader2
+  Loader2, Vote
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
+
+const PollCard = ({ poll, onVote }) => {
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [hasVoted, setHasVoted] = useState(false);
+  const [voting, setVoting] = useState(false);
+  const [localPoll, setLocalPoll] = useState(poll);
+
+  useEffect(() => {
+    const voted = localStorage.getItem(`poll_voted_${poll.id}`);
+    if (voted) {
+      setHasVoted(true);
+      setSelectedOption(parseInt(voted));
+    }
+  }, [poll.id]);
+
+  const handleVote = async () => {
+    if (selectedOption === null || hasVoted) return;
+    try {
+      setVoting(true);
+      const updatedOptions = localPoll.options.map((opt, i) =>
+        i === selectedOption ? { ...opt, votes: (opt.votes || 0) + 1 } : opt
+      );
+      const newTotal = (localPoll.total_votes || 0) + 1;
+
+      const { error } = await supabase
+        .from('polls')
+        .update({ options: updatedOptions, total_votes: newTotal })
+        .eq('id', poll.id);
+
+      if (error) throw error;
+
+      setLocalPoll({ ...localPoll, options: updatedOptions, total_votes: newTotal });
+      setHasVoted(true);
+      localStorage.setItem(`poll_voted_${poll.id}`, selectedOption.toString());
+    } catch (err) {
+      console.error("Error voting:", err);
+    } finally {
+      setVoting(false);
+    }
+  };
+
+  const getPercentage = (option) => {
+    if (!localPoll.total_votes || localPoll.total_votes === 0) return 0;
+    return Math.round((option.votes / localPoll.total_votes) * 100);
+  };
+
+  return (
+    <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden">
+      <div className="p-8 md:p-10">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-10 h-10 bg-red-50 text-red-600 rounded-xl flex items-center justify-center">
+            <BarChart3 size={20} />
+          </div>
+          <span className="text-[10px] font-black text-red-600 uppercase tracking-widest">استطلاع رأي</span>
+        </div>
+        <h3 className="text-xl md:text-2xl font-black text-[#09264d] mb-8 leading-tight">{localPoll.title}</h3>
+
+        <div className="space-y-3 mb-8">
+          {(localPoll.options || []).map((option, index) => (
+            <button
+              key={index}
+              onClick={() => !hasVoted && setSelectedOption(index)}
+              disabled={hasVoted}
+              className={`w-full text-right relative rounded-2xl border-2 transition-all duration-300 overflow-hidden ${
+                hasVoted
+                  ? selectedOption === index
+                    ? 'border-red-200 bg-red-50/30'
+                    : 'border-gray-100 bg-gray-50/50'
+                  : selectedOption === index
+                    ? 'border-red-500 bg-red-50 shadow-md'
+                    : 'border-gray-100 hover:border-gray-200 hover:bg-gray-50'
+              }`}
+            >
+              {hasVoted && (
+                <div
+                  className={`absolute inset-0 transition-all duration-700 rounded-2xl ${
+                    selectedOption === index ? 'bg-red-100/50' : 'bg-gray-100/50'
+                  }`}
+                  style={{ width: `${getPercentage(option)}%` }}
+                />
+              )}
+              <div className="relative z-10 px-6 py-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
+                    selectedOption === index
+                      ? 'border-red-500 bg-red-500'
+                      : 'border-gray-300'
+                  }`}>
+                    {selectedOption === index && (
+                      <div className="w-2 h-2 bg-white rounded-full" />
+                    )}
+                  </div>
+                  <span className="font-bold text-sm text-slate-700">{option.text}</span>
+                </div>
+                {hasVoted && (
+                  <span className="font-black text-sm text-slate-600">{getPercentage(option)}%</span>
+                )}
+              </div>
+            </button>
+          ))}
+        </div>
+
+        {!hasVoted ? (
+          <button
+            onClick={handleVote}
+            disabled={selectedOption === null || voting}
+            className="w-full bg-[#e00013] hover:bg-red-700 disabled:bg-gray-200 disabled:text-gray-400 text-white font-black py-4 rounded-xl text-sm transition-all shadow-lg shadow-red-600/20 disabled:shadow-none"
+          >
+            {voting ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : 'تصويت'}
+          </button>
+        ) : (
+          <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+            <span className="text-xs font-black text-green-600 flex items-center gap-2">
+              <CheckSquare size={14} /> تم التصويت بنجاح
+            </span>
+            <span className="text-xs font-bold text-slate-400">
+              إجمالي المشاركين: {localPoll.total_votes || 0}
+            </span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
 
 const StatisticsPage = () => {
   const [surveys, setSurveys] = useState([]);
   const [featuredSurvey, setFeaturedSurvey] = useState(null);
+  const [polls, setPolls] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchSurveys = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const { data, error } = await supabase
+
+        // Fetch news-based surveys
+        const { data: surveyData, error: surveyError } = await supabase
           .from('news')
           .select('*')
           .eq('category', 'إحصائيات')
           .eq('status', 'منشور')
           .order('created_at', { ascending: false });
 
-        if (error) throw error;
-        if (data && data.length > 0) {
-          setFeaturedSurvey(data[0]);
-          setSurveys(data.slice(1));
+        if (surveyError) throw surveyError;
+        if (surveyData && surveyData.length > 0) {
+          setFeaturedSurvey(surveyData[0]);
+          setSurveys(surveyData.slice(1));
+        }
+
+        // Fetch real polls
+        const { data: pollsData, error: pollsError } = await supabase
+          .from('polls')
+          .select('*')
+          .eq('status', 'نشط')
+          .order('created_at', { ascending: false });
+
+        if (!pollsError && pollsData) {
+          setPolls(pollsData);
         }
       } catch (err) {
-        console.error("Error fetching surveys:", err);
+        console.error("Error fetching data:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchSurveys();
+    fetchData();
   }, []);
 
   if (loading) {
@@ -67,10 +205,25 @@ const StatisticsPage = () => {
           
           {/* Main Content */}
           <main className="lg:col-span-9 space-y-12 order-1 lg:order-2">
+
+            {/* Interactive Polls Section */}
+            {polls.length > 0 && (
+              <section className="space-y-8">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-1.5 h-6 bg-[#e00013] rounded-full" />
+                  <h2 className="text-2xl font-black text-slate-800">شارك برأيك</h2>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {polls.map((poll) => (
+                    <PollCard key={poll.id} poll={poll} />
+                  ))}
+                </div>
+              </section>
+            )}
             
             {/* Featured Survey Report */}
             {featuredSurvey && (
-              <Link to={`/statistics/${featuredSurvey.id}`} className="relative rounded-[2rem] md:rounded-[3rem] overflow-hidden h-[300px] md:h-[540px] group shadow-2xl block">
+              <Link to={`/polls/${featuredSurvey.id}`} className="relative rounded-[2rem] md:rounded-[3rem] overflow-hidden h-[300px] md:h-[540px] group shadow-2xl block">
                 <img src={featuredSurvey.main_image || "images/hero.png"} className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" alt="" />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#09264d] via-[#09264d]/40 to-transparent" />
                 
@@ -104,7 +257,7 @@ const StatisticsPage = () => {
 
                <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
                   {surveys.length > 0 ? surveys.map((survey) => (
-                    <Link to={`/statistics/${survey.id}`} key={survey.id} className="bg-white rounded-[2.5rem] overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl transition-all duration-500 group flex flex-col block">
+                    <Link to={`/polls/${survey.id}`} key={survey.id} className="bg-white rounded-[2.5rem] overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl transition-all duration-500 group flex flex-col block">
                        <div className="relative h-64 overflow-hidden">
                           <img src={survey.main_image || "images/image.jpg"} alt="" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                           <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-all" />
@@ -129,7 +282,7 @@ const StatisticsPage = () => {
                           </div>
                        </div>
                     </Link>
-                  )) : (
+                  )) : !polls.length && (
                     <div className="col-span-2 py-20 text-center text-slate-400 font-bold">لا توجد استطلاعات حالياً</div>
                   )}
                </div>

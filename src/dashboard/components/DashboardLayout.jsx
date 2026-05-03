@@ -74,6 +74,7 @@ const DashboardLayout = () => {
         { to: "/dashboard/cartoons", icon: TrendingUp, label: "الكاريكاتير" },
         { to: "/dashboard/cross-media", icon: PlayCircle, label: "الكروس ميديا" },
         { to: "/dashboard/podcasts", icon: Mic, label: "البودكاست" },
+        { to: "/dashboard/polls", icon: BarChart3, label: "الاستطلاعات" },
       ]
     },
     {

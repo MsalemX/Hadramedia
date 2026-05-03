@@ -57,6 +57,7 @@ import StatsManagement from './dashboard/pages/StatsManagement';
 import SettingsManagement from './dashboard/pages/SettingsManagement';
 import NewsletterManagement from './dashboard/pages/NewsletterManagement';
 import PodcastsManagement from './dashboard/pages/PodcastsManagement';
+import PollsManagement from './dashboard/pages/PollsManagement';
 import ContentEditor from './dashboard/pages/ContentEditor';
 
 import { supabase } from './lib/supabase';
@@ -92,10 +93,10 @@ const ProtectedRoute = ({ children }) => {
 
 function App() {
   const PublicLayout = () => (
-    <div className="app" dir="rtl">
+    <div className="app overflow-x-hidden min-h-screen" dir="rtl">
       <Header />
       <NewsTicker />
-      <main>
+      <main className="overflow-x-hidden">
         <Outlet />
       </main>
       <Footer />
@@ -115,7 +116,7 @@ function App() {
         <Route path="/reports" element={<ReportsPage />} />
         <Route path="/stories" element={<StoriesPage />} />
         <Route path="/investigation" element={<InvestigationPage />} />
-        <Route path="/statistics" element={<StatisticsPage />} />
+        <Route path="/polls" element={<StatisticsPage />} />
         <Route path="/cartoons" element={<CartoonsPage />} />
         <Route path="/article" element={<ArticlesPage />} />
         <Route path="/studies" element={<StudiesPage />} />
@@ -132,7 +133,7 @@ function App() {
         <Route path="/post/:id" element={<PostDetailsPage />} />
         <Route path="/story/:id" element={<StoryDetailsPage />} />
         <Route path="/investigation/:id" element={<InvestigationDetailsPage />} />
-        <Route path="/statistics/:id" element={<StatisticsDetailsPage />} />
+        <Route path="/polls/:id" element={<StatisticsDetailsPage />} />
         <Route path="/cartoon/:id" element={<CartoonsDetailsPage />} />
         <Route path="/article/:id" element={<ArticleDetailsPage />} />
         <Route path="/study/:id" element={<StudyDetailsPage />} />
@@ -169,6 +170,7 @@ function App() {
         <Route path="settings" element={<SettingsManagement />} />
         <Route path="newsletter" element={<NewsletterManagement />} />
         <Route path="podcasts" element={<PodcastsManagement />} />
+        <Route path="polls" element={<PollsManagement />} />
         <Route path="content/add" element={<ContentEditor />} />
         <Route path="content/edit/:id" element={<ContentEditor />} />
       </Route>

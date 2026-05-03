@@ -3,6 +3,8 @@ import { NavLink, useParams } from 'react-router-dom';
 import { ChevronLeft, Heart, MessageSquare, Share2, Bookmark, User, Send, ThumbsUp, MoreHorizontal, Download, FileText, BookOpen, Clock, Tag, Loader2, Eye } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import ReaderTools from '../components/ReaderTools';
+import LinkifyText from '../components/LinkifyText';
+import ShareButtons from '../components/ShareButtons';
 
 const StudyDetailsPage = () => {
   const { id } = useParams();
@@ -193,8 +195,18 @@ const StudyDetailsPage = () => {
 
         {/* Content */}
         <div className="bg-white rounded-[3rem] p-8 md:p-14 shadow-sm border border-gray-100 mb-12">
-          <div className="prose prose-lg prose-slate text-slate-700 font-medium leading-loose max-w-none text-justify article-content"
-               dangerouslySetInnerHTML={{ __html: post.content }} />
+          <div className="prose prose-lg prose-slate text-slate-700 font-medium leading-loose max-w-none text-justify article-content">
+            {post.content && (post.content.includes('<p>') || post.content.includes('<br')) ? (
+              <div dangerouslySetInnerHTML={{ __html: post.content }} />
+            ) : (
+              (post.content || '').split(/\n\n+/).filter(p => p.trim()).map((paragraph, idx) => (
+                <p key={idx} className="mb-8 leading-[2.2] text-slate-700 font-medium text-lg text-justify">
+                  <LinkifyText text={paragraph.trim()} />
+                </p>
+              ))
+            )}
+            <ShareButtons title={post.title} />
+          </div>
         </div>
         
         <ReaderTools />
@@ -267,7 +279,7 @@ const StudyDetailsPage = () => {
                       </div>
                     </div>
                     <p className="text-slate-600 text-sm font-medium leading-relaxed">
-                      {comment.content}
+                      <LinkifyText text={comment.content} />
                     </p>
                   </div>
                 </div>

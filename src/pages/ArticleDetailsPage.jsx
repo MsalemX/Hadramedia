@@ -3,6 +3,8 @@ import { NavLink, useParams } from 'react-router-dom';
 import { ChevronLeft, Heart, MessageSquare, Share2, Bookmark, User, Send, ThumbsUp, MoreHorizontal, Clock, Quote, Loader2, BookOpen, Download } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import ReaderTools from '../components/ReaderTools';
+import LinkifyText from '../components/LinkifyText';
+import ShareButtons from '../components/ShareButtons';
 
 const ArticleDetailsPage = () => {
   const { id } = useParams();
@@ -136,7 +138,7 @@ const ArticleDetailsPage = () => {
               </div>
               <div className="text-right">
                 <span className="text-[10px] text-slate-400 block mb-0.5 uppercase">الكاتب</span>
-                <span className="text-[#09264d] font-black text-base">د. عبدالله بن حريز</span>
+                <span className="text-[#e00013] font-black text-base">{post.author || 'فريق حضرميديا'}</span>
               </div>
             </div>
             <div className="h-8 w-px bg-gray-200 hidden md:block"></div>
@@ -180,9 +182,31 @@ const ArticleDetailsPage = () => {
         )}
 
         {/* Content */}
-        <div className="bg-white rounded-[3rem] p-8 md:p-14 shadow-sm border border-gray-100 mb-12 relative overflow-hidden">
-          <div className="prose prose-lg prose-slate text-slate-700 font-medium leading-loose max-w-none relative z-10 article-content"
-               dangerouslySetInnerHTML={{ __html: post.content }} />
+        <div className="bg-white rounded-[3rem] p-8 md:p-14 shadow-sm border border-gray-100 mb-8 relative overflow-hidden">
+          <div className="prose prose-lg prose-slate text-slate-700 font-medium leading-loose max-w-none relative z-10 article-content">
+            {post.content && (post.content.includes('<p>') || post.content.includes('<br')) ? (
+              <div dangerouslySetInnerHTML={{ __html: post.content }} />
+            ) : (
+              (post.content || '').split(/\n\n+/).filter(p => p.trim()).map((paragraph, idx) => (
+                <p key={idx} className="mb-8 leading-[2.2] text-slate-700 font-medium text-lg text-justify">
+                  <LinkifyText text={paragraph.trim()} />
+                </p>
+              ))
+            )}
+          </div>
+          <ShareButtons title={post.title} />
+        </div>
+
+        {/* Author Box */}
+        <div className="bg-white rounded-[2.5rem] p-8 md:p-10 shadow-sm border border-gray-100 mb-12 flex flex-col md:flex-row items-center gap-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+          <div className="w-24 h-24 rounded-full bg-red-50 flex items-center justify-center shrink-0 border-4 border-white shadow-lg">
+            <User size={48} className="text-red-600" />
+          </div>
+          <div className="text-center md:text-right space-y-2">
+            <span className="text-[10px] font-black text-red-600 uppercase tracking-widest">كاتب المقال</span>
+            <h3 className="text-2xl font-black text-[#09264d]">{post.author || 'فريق حضرميديا'}</h3>
+            <p className="text-slate-500 text-sm font-bold leading-relaxed">كاتب ومحرر في منصة حضرميديا، متخصص في الشؤون المحلية والقضايا المجتمعية.</p>
+          </div>
         </div>
         
         <ReaderTools />
@@ -208,7 +232,10 @@ const ArticleDetailsPage = () => {
             <button className="p-3 bg-slate-50 text-slate-600 hover:bg-slate-100 rounded-2xl transition-all">
               <Bookmark size={20} />
             </button>
-            <button className="p-3 bg-slate-50 text-slate-600 hover:bg-slate-100 rounded-2xl transition-all hover:text-red-600">
+            <button 
+              onClick={() => document.getElementById('share-section')?.scrollIntoView({ behavior: 'smooth' })}
+              className="p-3 bg-slate-50 text-slate-600 hover:bg-slate-100 rounded-2xl transition-all hover:text-red-600"
+            >
               <Share2 size={20} />
             </button>
           </div>
@@ -282,7 +309,7 @@ const ArticleDetailsPage = () => {
                       </div>
                     </div>
                     <p className="text-slate-600 text-sm font-medium leading-relaxed">
-                      {comment.content}
+                      <LinkifyText text={comment.content} />
                     </p>
                   </div>
                 </div>

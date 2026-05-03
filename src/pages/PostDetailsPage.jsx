@@ -17,7 +17,9 @@ import {
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import AdBanner from '../components/AdBanner';
+import LinkifyText from '../components/LinkifyText';
 import ReaderTools from '../components/ReaderTools';
+import ShareButtons from '../components/ShareButtons';
 
 const PostDetailsPage = () => {
   const { id } = useParams();
@@ -171,10 +173,17 @@ const PostDetailsPage = () => {
           
           {/* Main Content */}
           <div className="lg:col-span-8 bg-white rounded-[40px] p-8 md:p-12 shadow-sm border border-gray-100 text-right">
-            <div 
-              className="prose prose-lg max-w-none font-bold text-slate-700 leading-relaxed space-y-6 article-content text-right"
-              dangerouslySetInnerHTML={{ __html: post.content }}
-            />
+            <div className="prose prose-lg max-w-none font-bold text-slate-700 leading-relaxed space-y-6 article-content text-right">
+              {post.content && (post.content.includes('<p>') || post.content.includes('<br')) ? (
+                <div dangerouslySetInnerHTML={{ __html: post.content }} />
+              ) : (
+                (post.content || '').split(/\n\n+/).filter(p => p.trim()).map((paragraph, idx) => (
+                  <p key={idx} className="mb-8 leading-[2.2] text-slate-700 font-medium text-lg text-justify">
+                    <LinkifyText text={paragraph.trim()} />
+                  </p>
+                ))
+              )}
+            </div>
 
             <AdBanner position="content" className="mt-12" />
 
@@ -197,6 +206,8 @@ const PostDetailsPage = () => {
                 </a>
               </div>
             )}
+
+            <ShareButtons title={post.title} />
 
             {/* Gallery Section if exists */}
             {post.gallery && post.gallery.length > 0 && (
@@ -224,7 +235,10 @@ const PostDetailsPage = () => {
                  <Heart size={20} className={post.likes > 0 ? 'fill-red-600 text-red-600' : ''} />
                  {post.likes > 0 ? `${post.likes} إعجاب` : 'أعجبني'}
                </button>
-               <button className="flex items-center gap-2 bg-white px-6 py-3 rounded-2xl shadow-sm border border-gray-100 hover:bg-blue-50 hover:border-blue-100 hover:text-blue-600 transition-all font-black">
+               <button 
+                 onClick={() => document.getElementById('share-section')?.scrollIntoView({ behavior: 'smooth' })}
+                 className="flex items-center gap-2 bg-white px-6 py-3 rounded-2xl shadow-sm border border-gray-100 hover:bg-blue-50 hover:border-blue-100 hover:text-blue-600 transition-all font-black"
+               >
                  <Share2 size={20} /> مشاركة
                </button>
             </div>
@@ -288,7 +302,9 @@ const PostDetailsPage = () => {
                            <h4 className="font-black text-[#09264d]">{comment.author_name}</h4>
                            <span className="text-[10px] font-bold text-slate-400">{new Date(comment.created_at).toLocaleDateString('ar-YE')}</span>
                         </div>
-                        <p className="text-slate-600 font-bold leading-relaxed">{comment.content}</p>
+                        <p className="text-slate-600 text-sm font-medium leading-relaxed">
+                          <LinkifyText text={comment.content} />
+                        </p>
                       </div>
                     </div>
                   )) : (
@@ -308,12 +324,12 @@ const PostDetailsPage = () => {
                  كاتب المقال
                </h3>
                <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 bg-gray-100 rounded-2xl flex items-center justify-center text-slate-400">
+                  <div className="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center text-red-600 border border-red-100 shadow-sm">
                     <User size={32} />
                   </div>
                   <div>
-                    <h4 className="font-black text-slate-800">أدمن النظام</h4>
-                    <p className="text-xs font-bold text-slate-400">إعلامي متخصص</p>
+                    <h4 className="font-black text-[#e00013]">{post.author || 'فريق حضرميديا'}</h4>
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">كاتب المحتوى</p>
                   </div>
                </div>
             </div>

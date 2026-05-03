@@ -3,6 +3,8 @@ import { NavLink, useParams } from 'react-router-dom';
 import { ChevronLeft, Heart, MessageSquare, Share2, Bookmark, User, Send, ThumbsUp, MoreHorizontal, Download, Calendar, Loader2 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import ReaderTools from '../components/ReaderTools';
+import LinkifyText from '../components/LinkifyText';
+import ShareButtons from '../components/ShareButtons';
 
 const CartoonsDetailsPage = () => {
   const { id } = useParams();
@@ -148,6 +150,7 @@ const CartoonsDetailsPage = () => {
         </div>
         
         <ReaderTools />
+        <ShareButtons title={post.title} />
 
         {/* Engagement Actions */}
         <div className="flex flex-wrap items-center justify-between gap-4 bg-white rounded-[2rem] p-4 shadow-sm border border-gray-100 mb-16">
@@ -244,7 +247,7 @@ const CartoonsDetailsPage = () => {
                       </div>
                     </div>
                     <p className="text-slate-600 text-sm font-medium leading-relaxed">
-                      {comment.content}
+                      <LinkifyText text={comment.content} />
                     </p>
                   </div>
                 </div>

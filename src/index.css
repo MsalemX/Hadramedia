@@ -9,9 +9,32 @@
 }
 
 @layer base {
-  body {
+  html, body {
     @apply bg-[#f7f8fb] text-slate-800 font-cairo text-right;
     direction: rtl;
+    overflow-x: hidden !important;
+    width: 100% !important;
+    position: relative;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-tap-highlight-color: transparent;
+    line-break: loose;
+  }
+
+  #root {
+    overflow-x: hidden !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    position: relative;
+  }
+
+  * {
+    box-sizing: border-box !important;
+  }
+
+  img, video, iframe {
+    max-width: 100%;
+    height: auto;
   }
 }
 
@@ -22,5 +45,17 @@
   .no-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
+  }
+
+  table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .article-content {
+    word-break: break-word;
+    overflow-wrap: break-word;
   }
 }
