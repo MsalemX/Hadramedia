@@ -20,19 +20,32 @@ const StatisticsDetailsPage = () => {
     const fetchStatisticsData = async () => {
       try {
         setLoading(true);
-        // Fetch post
-        const { data: postData, error: postError } = await supabase
+        // Try fetching from news table first
+        let { data: postData, error: postError } = await supabase
           .from('news')
           .select('*')
           .eq('id', id)
-          .eq('status', 'منشور')
           .single();
 
-        if (postError) throw postError;
+        let sourceTable = 'news';
+
+        // If not found in news, try the polls table
+        if (postError || !postData) {
+          const { data: pollData, error: pollError } = await supabase
+            .from('polls')
+            .select('*')
+            .eq('id', id)
+            .single();
+
+          if (pollError) throw pollError;
+          postData = pollData;
+          sourceTable = 'polls';
+        }
+
         setPost(postData);
         setLikes(postData.views_count ? Math.floor(postData.views_count / 15) : 0);
 
-        // Fetch comments
+        // Fetch comments (unified for both)
         const { data: commentsData } = await supabase
           .from('comments')
           .select('*')
@@ -41,10 +54,10 @@ const StatisticsDetailsPage = () => {
 
         setComments(commentsData || []);
 
-        // Increment views
-        await supabase.rpc('increment_views', { post_id: id }).catch(() => {
-          supabase.from('news').update({ views_count: (postData.views_count || 0) + 1 }).eq('id', id);
-        });
+        // Increment views for the correct table
+        await supabase.from(sourceTable)
+          .update({ views_count: (postData.views_count || 0) + 1 })
+          .eq('id', id);
 
       } catch (err) {
         console.error("Error fetching statistics data:", err);
@@ -111,42 +124,75 @@ const StatisticsDetailsPage = () => {
 
   return (
     <div className="bg-[#f7f8fb] min-h-screen pb-20 font-cairo" dir="rtl">
-      <div className="max-w-4xl mx-auto px-6 py-10">
+      {/* Hero Header Section - Full Width Image */}
+      <div className="relative h-[60vh] md:h-[80vh] w-full overflow-hidden">
+        <img 
+          src={post.main_image || "/images/hero.png"} 
+          alt={post.title} 
+          className="absolute inset-0 w-full h-full object-cover transition-transform duration-10000 hover:scale-110"
+        />
+        {/* Gradients for readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-[#09264d] via-[#09264d]/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-transparent" />
+
+        {/* Top Navigation Overlay */}
+        <div className="absolute top-0 left-0 right-0 p-6 z-30">
+          <div className="max-w-6xl mx-auto flex items-center justify-between">
+            <div className="flex items-center gap-2 text-xs font-black text-white/80 bg-black/20 backdrop-blur-md px-4 py-2 rounded-full border border-white/10">
+              <NavLink to="/" className="hover:text-white transition-colors">الرئيسية</NavLink>
+              <ChevronLeft size={14} className="opacity-50" />
+              <NavLink to="/polls" className="hover:text-white transition-colors">استطلاعات</NavLink>
+              <ChevronLeft size={14} className="opacity-50" />
+              <span className="text-white truncate max-w-[150px] md:max-w-[300px]">{post.title}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Title and Meta Section */}
+        <div className="absolute inset-0 flex flex-col justify-end pb-20 md:pb-32">
+          <div className="max-w-5xl mx-auto px-6 w-full">
+            <div className="space-y-6 animate-in slide-in-from-bottom-10 duration-700">
+              <div className="flex items-center gap-3">
+                <span className="bg-[#e00013] text-white px-5 py-2.5 rounded-2xl text-[10px] md:text-xs font-black shadow-2xl shadow-red-600/40 uppercase tracking-widest flex items-center gap-2">
+                  <BarChart3 size={16} /> {post.category || 'استطلاع رأي'}
+                </span>
+              </div>
+              <h1 className="text-3xl md:text-5xl lg:text-7xl font-black text-white leading-tight md:leading-[1.1] drop-shadow-2xl">
+                {post.title}
+              </h1>
+              
+              <div className="flex flex-wrap items-center gap-4 md:gap-8 text-xs md:text-sm font-black text-white/90 pt-4">
+                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-xl px-5 py-3 rounded-2xl border border-white/10 shadow-xl">
+                  <div className="w-8 h-8 bg-red-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <User size={16} className="text-white" />
+                  </div>
+                  <span>بواسطة: {post.author || 'هيئة التحرير'}</span>
+                </div>
+                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-xl px-5 py-3 rounded-2xl border border-white/10 shadow-xl">
+                  <div className="w-8 h-8 bg-[#09264d] rounded-xl flex items-center justify-center shadow-lg">
+                    <Calendar size={16} className="text-white" />
+                  </div>
+                  <span>{new Date(post.created_at).toLocaleDateString('ar-YE')}</span>
+                </div>
+                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-xl px-5 py-3 rounded-2xl border border-white/10 shadow-xl">
+                  <div className="w-8 h-8 bg-green-600 rounded-xl flex items-center justify-center shadow-lg">
+                    <Eye size={16} className="text-white" />
+                  </div>
+                  <span>{post.views_count || 0} مشاهدة</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <div className="max-w-4xl mx-auto px-6 -mt-16 relative z-20">
         
-        {/* Breadcrumbs */}
-        <div className="flex items-center gap-2 text-xs font-bold text-slate-400 mb-8">
-          <NavLink to="/" className="hover:text-blue-600 transition-colors">الرئيسية</NavLink>
-          <ChevronLeft size={14} />
-          <NavLink to="/polls" className="hover:text-blue-600 transition-colors">استطلاعات</NavLink>
-          <ChevronLeft size={14} />
-          <span className="text-slate-600 truncate max-w-[200px]">{post.title}</span>
-        </div>
-
-        {/* Header */}
-        <div className="mb-10 border-b border-gray-200 pb-8">
-          <div className="flex items-center gap-3 mb-6">
-            <span className="bg-[#e00013] text-white px-4 py-2 rounded-xl text-xs font-black shadow-sm uppercase tracking-widest flex items-center gap-2">
-              <BarChart3 size={14} /> {post.category || 'استطلاع رأي'}
-            </span>
-          </div>
-          <h1 className="text-4xl md:text-5xl font-black text-[#09264d] leading-tight mb-8">
-            {post.title}
-          </h1>
+        {/* Content Card */}
+        <div className="bg-white rounded-[3rem] p-8 md:p-16 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.08)] border border-gray-100 mb-12 relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-24 h-24 bg-red-50/50 rounded-bl-[4rem] -z-10 group-hover:scale-110 transition-transform" />
           
-          <div className="flex flex-wrap items-center gap-8 text-sm font-bold text-slate-500 bg-white p-5 rounded-2xl shadow-sm border border-gray-100">
-            <span className="flex items-center gap-2"><Calendar size={18} className="text-red-600" /> النشر: {new Date(post.created_at).toLocaleDateString('ar-YE')}</span>
-            <div className="h-8 w-px bg-gray-200 hidden md:block"></div>
-            <span className="flex items-center gap-2"><Eye size={18} className="text-red-600" /> {post.views_count || 0} مشاهدة</span>
-          </div>
-        </div>
-
-        {/* Featured Image */}
-        <div className="rounded-[3rem] overflow-hidden mb-12 shadow-2xl h-[400px] md:h-[600px] relative group border-4 border-white">
-          <img src={post.main_image || "/images/hero.png"} alt="Cover" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" />
-        </div>
-
-        {/* Content */}
-        <div className="bg-white rounded-[3rem] p-8 md:p-14 shadow-sm border border-gray-100 mb-12 relative overflow-hidden">
           <div className="prose prose-lg prose-slate text-slate-700 font-medium leading-loose max-w-none relative z-10 article-content"
                dangerouslySetInnerHTML={{ __html: post.content }} />
         </div>
@@ -154,107 +200,121 @@ const StatisticsDetailsPage = () => {
         <ReaderTools />
 
         {/* Engagement Actions */}
-        <div className="flex flex-wrap items-center justify-between gap-4 bg-white rounded-[2rem] p-4 shadow-sm border border-gray-100 mb-16">
+        <div className="flex flex-wrap items-center justify-between gap-6 bg-white rounded-[2.5rem] p-5 shadow-xl shadow-slate-200/50 border border-gray-100 mb-16">
           <div className="flex flex-wrap gap-4">
             <button 
               onClick={handleLike}
-              className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all ${isLiked ? 'bg-red-50 text-red-600 shadow-inner' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}
+              className={`flex items-center gap-3 px-8 py-4 rounded-2xl font-black transition-all ${isLiked ? 'bg-red-50 text-red-600 shadow-inner' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}
             >
-              <Heart size={20} className={isLiked ? 'fill-current' : ''} />
-              <span>{likes}</span>
+              <Heart size={22} className={isLiked ? 'fill-current' : ''} />
+              <span className="text-lg">{likes}</span>
               <span className="hidden sm:inline">إعجاب</span>
             </button>
-            <a href="#comments" className="flex items-center gap-2 px-6 py-3 bg-slate-50 text-slate-600 hover:bg-slate-100 rounded-2xl font-bold transition-all">
-              <MessageSquare size={20} />
-              <span>{comments.length}</span>
+            <a href="#comments" className="flex items-center gap-3 px-8 py-4 bg-slate-50 text-slate-600 hover:bg-slate-100 rounded-2xl font-black transition-all">
+              <MessageSquare size={22} />
+              <span className="text-lg">{comments.length}</span>
               <span className="hidden sm:inline">مشاركة رأي</span>
             </a>
           </div>
-          <div className="flex gap-2">
-            <button className="p-3 bg-slate-50 text-slate-600 hover:bg-slate-100 rounded-2xl transition-all">
-              <Bookmark size={20} />
+          <div className="flex gap-3">
+            <button className="p-4 bg-slate-50 text-slate-400 hover:text-[#09264d] hover:bg-white hover:shadow-lg rounded-2xl transition-all border border-transparent hover:border-gray-100">
+              <Bookmark size={24} />
             </button>
-            <button className="p-3 bg-slate-50 text-slate-600 hover:bg-slate-100 rounded-2xl transition-all hover:text-[#09264d]">
-              <Share2 size={20} />
+            <button className="p-4 bg-slate-50 text-slate-400 hover:text-red-600 hover:bg-white hover:shadow-lg rounded-2xl transition-all border border-transparent hover:border-gray-100">
+              <Share2 size={24} />
             </button>
           </div>
         </div>
 
         {/* Comments Section */}
-        <div id="comments" className="bg-white rounded-[3rem] p-6 md:p-10 shadow-sm border border-gray-100">
-          <h3 className="text-3xl font-black text-[#09264d] mb-10 flex items-center gap-4">
-            <div className="w-12 h-12 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center">
-              <MessageSquare size={24} />
-            </div>
-            آراء المشاركين ({comments.length})
-          </h3>
+        <div id="comments" className="bg-white rounded-[3.5rem] p-8 md:p-14 shadow-2xl shadow-slate-200/50 border border-gray-100">
+          <div className="flex items-center justify-between mb-12">
+            <h3 className="text-3xl font-black text-[#09264d] flex items-center gap-5">
+              <div className="w-16 h-16 bg-red-50 text-red-600 rounded-[2rem] flex items-center justify-center shadow-inner">
+                <MessageSquare size={32} />
+              </div>
+              آراء المشاركين ({comments.length})
+            </h3>
+          </div>
 
           {/* Add Comment Form */}
-          <form onSubmit={handleAddComment} className="mb-12 flex gap-4 items-start">
-            <div className="w-12 md:w-14 h-12 md:h-14 rounded-full bg-slate-100 shrink-0 overflow-hidden flex items-center justify-center text-slate-400 mt-1 shadow-inner">
-              <User size={28} />
-            </div>
-            <div className="flex-1 space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <input 
-                  type="text" 
-                  value={commentName}
-                  onChange={(e) => setCommentName(e.target.value)}
-                  placeholder="الاسم" 
-                  className="w-full bg-slate-50 border border-gray-200 rounded-2xl px-5 py-4 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-red-600/10 focus:border-red-300 transition-all outline-none"
-                  required
-                />
-                <input 
-                  type="email" 
-                  value={commentEmail}
-                  onChange={(e) => setCommentEmail(e.target.value)}
-                  placeholder="البريد الإلكتروني" 
-                  className="w-full bg-slate-50 border border-gray-200 rounded-2xl px-5 py-4 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-red-600/10 focus:border-red-300 transition-all outline-none"
-                  required
-                />
+          <form onSubmit={handleAddComment} className="mb-16 space-y-6">
+            <div className="flex gap-4 items-start">
+              <div className="w-14 h-14 rounded-2xl bg-slate-100 shrink-0 overflow-hidden flex items-center justify-center text-slate-400 mt-1 shadow-inner border border-gray-100">
+                <User size={32} />
               </div>
-              <div className="relative">
-                <textarea
-                  value={newComment}
-                  onChange={(e) => setNewComment(e.target.value)}
-                  placeholder="أضف رأيك حول نتائج هذا الاستطلاع..."
-                  className="w-full bg-slate-50 border border-gray-200 rounded-2xl px-6 py-5 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-red-600/10 focus:border-red-300 transition-all outline-none resize-none min-h-[120px]"
-                  required
-                />
-                <button
-                  type="submit"
-                  disabled={submittingComment || !newComment.trim() || !commentName.trim() || !commentEmail.trim()}
-                  className="absolute left-4 bottom-4 bg-[#09264d] hover:bg-blue-900 disabled:bg-slate-300 text-white p-3 rounded-xl transition-all shadow-lg shadow-blue-900/30"
-                >
-                  {submittingComment ? <Loader2 size={20} className="animate-spin" /> : <Send size={20} className="rtl:-scale-x-100" />}
-                </button>
+              <div className="flex-1 space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <input 
+                    type="text" 
+                    value={commentName}
+                    onChange={(e) => setCommentName(e.target.value)}
+                    placeholder="الاسم الكامل" 
+                    className="w-full bg-slate-50/50 border border-gray-200 rounded-2xl px-6 py-4.5 text-sm font-black text-slate-700 focus:ring-4 focus:ring-red-600/5 focus:border-red-400/30 transition-all outline-none"
+                    required
+                  />
+                  <input 
+                    type="email" 
+                    value={commentEmail}
+                    onChange={(e) => setCommentEmail(e.target.value)}
+                    placeholder="البريد الإلكتروني" 
+                    className="w-full bg-slate-50/50 border border-gray-200 rounded-2xl px-6 py-4.5 text-sm font-black text-slate-700 focus:ring-4 focus:ring-red-600/5 focus:border-red-400/30 transition-all outline-none"
+                    required
+                  />
+                </div>
+                <div className="relative">
+                  <textarea
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    placeholder="أضف رأيك حول نتائج هذا الاستطلاع..."
+                    className="w-full bg-slate-50/50 border border-gray-200 rounded-[2rem] px-8 py-6 text-sm font-bold text-slate-700 focus:ring-4 focus:ring-red-600/5 focus:border-red-400/30 transition-all outline-none resize-none min-h-[160px]"
+                    required
+                  />
+                  <button
+                    type="submit"
+                    disabled={submittingComment || !newComment.trim() || !commentName.trim() || !commentEmail.trim()}
+                    className="absolute left-5 bottom-5 bg-[#09264d] hover:bg-red-600 disabled:bg-slate-300 text-white px-8 py-4 rounded-2xl font-black transition-all shadow-xl shadow-blue-900/30 flex items-center gap-2"
+                  >
+                    {submittingComment ? <Loader2 size={20} className="animate-spin" /> : (
+                      <>
+                        إرسال الآن <Send size={20} className="rtl:-scale-x-100" />
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           </form>
 
           {/* Comments List */}
-          <div className="space-y-6">
+          <div className="space-y-8">
             {comments.length > 0 ? comments.map(comment => (
-              <div key={comment.id} className="flex gap-4">
-                <div className="w-12 h-12 rounded-full bg-slate-200 shrink-0 overflow-hidden flex items-center justify-center shadow-sm">
-                  <User size={24} className="text-slate-400" />
+              <div key={comment.id} className="flex gap-5 animate-in fade-in slide-in-from-right-4 duration-500">
+                <div className="w-14 h-14 rounded-2xl bg-slate-100 shrink-0 overflow-hidden flex items-center justify-center shadow-sm border border-gray-50">
+                  <User size={28} className="text-slate-400" />
                 </div>
                 <div className="flex-1">
-                  <div className="bg-slate-50/80 p-5 md:p-6 rounded-[2rem] rounded-tr-none border border-gray-100/50">
-                    <div className="flex justify-between items-start mb-3">
+                  <div className="bg-slate-50/40 p-6 md:p-8 rounded-[2.5rem] rounded-tr-none border border-gray-100/50 relative group">
+                    <div className="absolute top-4 left-6 opacity-20 group-hover:opacity-40 transition-opacity">
+                      <MessageSquare size={40} className="text-[#09264d]" />
+                    </div>
+                    <div className="flex justify-between items-start mb-4 relative z-10">
                       <div>
-                        <h4 className="text-sm font-black text-[#09264d]">{comment.author_name}</h4>
-                        <span className="text-[10px] text-slate-400 font-bold">{new Date(comment.created_at).toLocaleDateString('ar-YE')}</span>
+                        <h4 className="text-base font-black text-[#09264d]">{comment.author_name}</h4>
+                        <span className="text-[10px] text-slate-400 font-black uppercase tracking-widest">{new Date(comment.created_at).toLocaleDateString('ar-YE')}</span>
                       </div>
                     </div>
-                    <p className="text-slate-600 text-sm font-medium leading-relaxed">
+                    <p className="text-slate-600 text-sm md:text-base font-medium leading-loose relative z-10">
                       {comment.content}
                     </p>
                   </div>
                 </div>
               </div>
             )) : (
-              <p className="text-center text-slate-400 font-bold py-10">لا توجد آراء بعد. كن أول من يشارك!</p>
+              <div className="text-center py-20 bg-slate-50/50 rounded-[3rem] border border-dashed border-gray-200">
+                <MessageSquare size={48} className="mx-auto text-slate-200 mb-4" />
+                <p className="text-slate-400 font-black text-lg">لا توجد آراء بعد. كن أول من يشارك!</p>
+              </div>
             )}
           </div>
         </div>

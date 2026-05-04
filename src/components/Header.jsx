@@ -6,7 +6,7 @@ import { supabase } from "../lib/supabase";
 const navItems = [
   { label: "الرئيسية", icon: Home, to: "/" },
   { label: "أحداث", icon: Calendar, to: "/events" },
-  { label: "تقارير كروس ميديا", icon: CirclePlus, to: "/reports" },
+  { label: "تقارير كورس ميديا", icon: CirclePlus, to: "/reports" },
   { label: "قصص", icon: BookOpen, to: "/stories" },
   { label: "تحقيق", icon: Search, to: "/investigation" },
   { label: "استطلاعات", icon: BarChart3, to: "/polls" },
@@ -21,6 +21,7 @@ function TopHeader({ toggleMenu, isOpen }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [showSearch, setShowSearch] = useState(false);
   const [topNewsLabel, setTopNewsLabel] = useState("");
+  const [currentNewsIndex, setCurrentNewsIndex] = useState(0);
   const [logoUrl, setLogoUrl] = useState("");
   const navigate = useNavigate();
 
@@ -37,6 +38,17 @@ function TopHeader({ toggleMenu, isOpen }) {
     };
     fetchSettings();
   }, []);
+
+  const newsItems = topNewsLabel ? topNewsLabel.split('\n').map(line => line.trim()).filter(Boolean) : [];
+
+  React.useEffect(() => {
+    if (newsItems.length > 1) {
+      const interval = setInterval(() => {
+        setCurrentNewsIndex(prev => (prev + 1) % newsItems.length);
+      }, 15000); // 30 seconds
+      return () => clearInterval(interval);
+    }
+  }, [newsItems.length]);
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -83,14 +95,23 @@ function TopHeader({ toggleMenu, isOpen }) {
           </Link>
         </div>
 
-        {/* MIDDLE: Top News Label */}
-        <div className="hidden md:flex flex-1 justify-center items-center px-6">
-          {topNewsLabel && (
-            <div className="flex items-center gap-3 text-[#09264d] font-black text-base md:text-lg text-center leading-tight animate-[pulse_2s_infinite]">
+        {/* MIDDLE: Top News Label (Desktop) / Site Name (Mobile) */}
+        <div className="flex flex-1 justify-center items-center px-2 md:px-6">
+          {/* Desktop News Label */}
+          {newsItems.length > 0 && (
+            <div
+              key={currentNewsIndex}
+              className="hidden md:flex items-center gap-3 text-[#09264d] font-black text-base md:text-lg text-center leading-tight animate-[pulse_2s_infinite]"
+            >
               <span className="w-3 h-3 bg-red-600 rounded-full shrink-0 shadow-[0_0_10px_rgba(220,38,38,0.3)]"></span>
-              <p className="line-clamp-1">{topNewsLabel}</p>
+              <p className="line-clamp-1">{newsItems[currentNewsIndex]}</p>
             </div>
           )}
+
+          {/* Mobile Site Name */}
+          <div className="md:hidden">
+            <h1 className="text-[#09264d] font-black text-2xl whitespace-nowrap drop-shadow-sm">حضرميديا</h1>
+          </div>
         </div>
 
         {/* LEFT: Search & Date */}

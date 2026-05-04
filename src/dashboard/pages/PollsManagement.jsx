@@ -10,7 +10,8 @@ import {
   BarChart3,
   ToggleLeft,
   ToggleRight,
-  MinusCircle
+  MinusCircle,
+  Image as ImageIcon
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 
@@ -21,10 +22,14 @@ const PollsManagement = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPoll, setEditingPoll] = useState(null);
   const [saving, setSaving] = useState(false);
+  const [mainImageFile, setMainImageFile] = useState(null);
 
   const [formData, setFormData] = useState({
     title: '',
-    options: [{ text: '', votes: 0 }, { text: '', votes: 0 }]
+    author: '',
+    content: '',
+    main_image: '',
+    status: 'نشط'
   });
 
   const fetchPolls = async () => {
@@ -51,8 +56,12 @@ const PollsManagement = () => {
   const resetForm = () => {
     setFormData({
       title: '',
-      options: [{ text: '', votes: 0 }, { text: '', votes: 0 }]
+      author: '',
+      content: '',
+      main_image: '',
+      status: 'نشط'
     });
+    setMainImageFile(null);
     setEditingPoll(null);
   };
 
@@ -65,8 +74,12 @@ const PollsManagement = () => {
     setEditingPoll(poll);
     setFormData({
       title: poll.title,
-      options: poll.options || [{ text: '', votes: 0 }, { text: '', votes: 0 }]
+      author: poll.author || '',
+      content: poll.content || '',
+      main_image: poll.main_image || '',
+      status: poll.status || 'نشط'
     });
+    setMainImageFile(null);
     setIsModalOpen(true);
   };
 
@@ -90,44 +103,53 @@ const PollsManagement = () => {
     }));
   };
 
-  const updateOptionText = (index, text) => {
-    setFormData(prev => ({
-      ...prev,
-      options: prev.options.map((opt, i) => i === index ? { ...opt, text } : opt)
-    }));
+  const uploadImage = async (file) => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 10)}.${fileExt}`;
+    const filePath = `${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('images')
+      .upload(filePath, file);
+
+    if (uploadError) throw uploadError;
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('images')
+      .getPublicUrl(filePath);
+
+    return publicUrl;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const emptyOptions = formData.options.filter(o => !o.text.trim());
-    if (emptyOptions.length > 0) {
-      alert('يرجى ملء جميع الخيارات أو حذف الفارغة');
-      return;
-    }
-
     try {
       setSaving(true);
-      const totalVotes = formData.options.reduce((sum, o) => sum + (o.votes || 0), 0);
+
+      let finalImageUrl = formData.main_image;
+      if (mainImageFile) {
+        finalImageUrl = await uploadImage(mainImageFile);
+      }
+      
+      const payload = {
+        title: formData.title,
+        author: formData.author,
+        content: formData.content,
+        main_image: finalImageUrl,
+        status: formData.status || 'نشط'
+      };
 
       if (editingPoll) {
         const { error } = await supabase
           .from('polls')
-          .update({
-            title: formData.title,
-            options: formData.options,
-            total_votes: totalVotes
-          })
+          .update(payload)
           .eq('id', editingPoll.id);
 
         if (error) throw error;
       } else {
         const { error } = await supabase
           .from('polls')
-          .insert([{
-            title: formData.title,
-            options: formData.options,
-            total_votes: 0
-          }]);
+          .insert([payload]);
 
         if (error) throw error;
       }
@@ -220,8 +242,7 @@ const PollsManagement = () => {
               <thead className="bg-gray-50/50">
                 <tr>
                   <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">العنوان</th>
-                  <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">الخيارات</th>
-                  <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">إجمالي الأصوات</th>
+                  <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">الكاتب</th>
                   <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">الحالة</th>
                   <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest">تاريخ الإنشاء</th>
                   <th className="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest text-center">إجراءات</th>
@@ -234,29 +255,7 @@ const PollsManagement = () => {
                       <span className="text-sm font-black text-slate-700 line-clamp-2 max-w-xs">{poll.title}</span>
                     </td>
                     <td className="px-8 py-5">
-                      <div className="flex flex-col gap-1.5 max-w-[250px]">
-                        {(poll.options || []).map((opt, i) => (
-                          <div key={i} className="flex items-center gap-2">
-                            <div className="flex-1 bg-gray-50 rounded-lg overflow-hidden h-5 relative">
-                              <div
-                                className="h-full bg-blue-100 rounded-lg transition-all"
-                                style={{ width: `${getVotePercentage(opt, poll)}%` }}
-                              />
-                              <span className="absolute inset-0 flex items-center px-2 text-[10px] font-black text-slate-600 truncate">
-                                {opt.text}
-                              </span>
-                            </div>
-                            <span className="text-[10px] font-black text-slate-400 w-8 text-left shrink-0">
-                              {getVotePercentage(opt, poll)}%
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="px-8 py-5">
-                      <span className="px-3 py-1 bg-blue-50 text-blue-600 rounded-full text-[10px] font-black">
-                        {poll.total_votes || 0} صوت
-                      </span>
+                      <span className="text-sm font-bold text-slate-600">{poll.author || 'غير محدد'}</span>
                     </td>
                     <td className="px-8 py-5">
                       <span className={`px-3 py-1 rounded-full text-[10px] font-black ${
@@ -328,58 +327,84 @@ const PollsManagement = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="p-8 space-y-6 overflow-y-auto max-h-[70vh] no-scrollbar">
-              {/* Title */}
-              <div className="space-y-2">
-                <label className="text-xs font-black text-slate-500 uppercase tracking-widest mr-2">عنوان الاستطلاع</label>
-                <input
-                  required
-                  type="text"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="مثال: ما رأيك في مستوى الخدمات الصحية؟"
-                  className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 text-sm focus:outline-none focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600/20 transition-all font-bold"
-                />
+              {/* Title & Author */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-slate-500 uppercase tracking-widest mr-2">عنوان الاستطلاع</label>
+                  <input
+                    required
+                    type="text"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    placeholder="مثال: نتائج استطلاع حول..."
+                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 text-sm focus:outline-none focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600/20 transition-all font-bold"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-black text-slate-500 uppercase tracking-widest mr-2">الكاتب / المصدر</label>
+                  <input
+                    type="text"
+                    value={formData.author}
+                    onChange={(e) => setFormData({ ...formData, author: e.target.value })}
+                    placeholder="اسم الكاتب..."
+                    className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 text-sm focus:outline-none focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600/20 transition-all font-bold"
+                  />
+                </div>
               </div>
 
-              {/* Options */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-black text-slate-500 uppercase tracking-widest mr-2">الخيارات</label>
-                  <button
-                    type="button"
-                    onClick={addOption}
-                    className="text-xs font-black text-blue-600 hover:text-blue-700 flex items-center gap-1 transition-colors"
-                  >
-                    <Plus size={14} />
-                    إضافة خيار
-                  </button>
-                </div>
-                <div className="space-y-3">
-                  {formData.options.map((option, index) => (
-                    <div key={index} className="flex items-center gap-3">
-                      <span className="w-8 h-8 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center text-xs font-black shrink-0">
-                        {index + 1}
-                      </span>
+              {/* Main Image */}
+              <div className="space-y-4">
+                <label className="text-xs font-black text-slate-500 uppercase tracking-widest mr-2">الصورة الرئيسية</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <input
+                      type="text"
+                      value={formData.main_image}
+                      onChange={(e) => setFormData({ ...formData, main_image: e.target.value })}
+                      placeholder="رابط الصورة (اختياري)..."
+                      className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 text-xs focus:outline-none focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600/20 transition-all font-bold"
+                    />
+                    <div className="relative group h-24">
+                      <div className="absolute inset-0 bg-blue-50 border-2 border-dashed border-blue-100 rounded-2xl flex flex-col items-center justify-center text-blue-400 group-hover:border-blue-300 transition-all">
+                        <ImageIcon size={24} className="mb-1" />
+                        <span className="text-[10px] font-black">اضغط لرفع صورة من جهازك</span>
+                      </div>
                       <input
-                        required
-                        type="text"
-                        value={option.text}
-                        onChange={(e) => updateOptionText(index, e.target.value)}
-                        placeholder={`الخيار ${index + 1}...`}
-                        className="flex-1 bg-gray-50 border border-gray-100 rounded-2xl px-5 py-3.5 text-sm focus:outline-none focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600/20 transition-all font-bold"
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => setMainImageFile(e.target.files[0])}
+                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                       />
-                      {formData.options.length > 2 && (
-                        <button
-                          type="button"
-                          onClick={() => removeOption(index)}
-                          className="p-2 text-slate-300 hover:text-red-500 transition-colors shrink-0"
-                        >
-                          <MinusCircle size={20} />
-                        </button>
-                      )}
                     </div>
-                  ))}
+                  </div>
+                  <div className="bg-gray-50 rounded-2xl border border-gray-100 overflow-hidden h-40 flex items-center justify-center">
+                    {mainImageFile || formData.main_image ? (
+                      <img
+                        src={mainImageFile ? URL.createObjectURL(mainImageFile) : formData.main_image}
+                        className="w-full h-full object-cover"
+                        alt="Preview"
+                      />
+                    ) : (
+                      <div className="text-slate-300 flex flex-col items-center">
+                         <ImageIcon size={32} />
+                         <span className="text-[10px] font-bold">معاينة الصورة</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
+              </div>
+
+              {/* Content */}
+              <div className="space-y-2">
+                <label className="text-xs font-black text-slate-500 uppercase tracking-widest mr-2">محتوى التقرير</label>
+                <textarea
+                  required
+                  rows={8}
+                  value={formData.content}
+                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                  placeholder="اكتب تفاصيل الاستطلاع هنا..."
+                  className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 text-sm focus:outline-none focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600/20 transition-all font-bold resize-none"
+                />
               </div>
 
               {/* Submit */}

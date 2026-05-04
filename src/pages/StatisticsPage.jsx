@@ -3,131 +3,36 @@ import { NavLink, Link } from 'react-router-dom';
 import { 
   BarChart3, Bell, ChevronLeft, Clock, Eye, FileText, 
   Share2, MessageSquare, Filter, ChevronDown, CheckSquare, Calendar,
-  Loader2, Vote
+  Loader2, Vote, User
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
-const PollCard = ({ poll, onVote }) => {
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [hasVoted, setHasVoted] = useState(false);
-  const [voting, setVoting] = useState(false);
-  const [localPoll, setLocalPoll] = useState(poll);
-
-  useEffect(() => {
-    const voted = localStorage.getItem(`poll_voted_${poll.id}`);
-    if (voted) {
-      setHasVoted(true);
-      setSelectedOption(parseInt(voted));
-    }
-  }, [poll.id]);
-
-  const handleVote = async () => {
-    if (selectedOption === null || hasVoted) return;
-    try {
-      setVoting(true);
-      const updatedOptions = localPoll.options.map((opt, i) =>
-        i === selectedOption ? { ...opt, votes: (opt.votes || 0) + 1 } : opt
-      );
-      const newTotal = (localPoll.total_votes || 0) + 1;
-
-      const { error } = await supabase
-        .from('polls')
-        .update({ options: updatedOptions, total_votes: newTotal })
-        .eq('id', poll.id);
-
-      if (error) throw error;
-
-      setLocalPoll({ ...localPoll, options: updatedOptions, total_votes: newTotal });
-      setHasVoted(true);
-      localStorage.setItem(`poll_voted_${poll.id}`, selectedOption.toString());
-    } catch (err) {
-      console.error("Error voting:", err);
-    } finally {
-      setVoting(false);
-    }
-  };
-
-  const getPercentage = (option) => {
-    if (!localPoll.total_votes || localPoll.total_votes === 0) return 0;
-    return Math.round((option.votes / localPoll.total_votes) * 100);
-  };
-
+const PollCard = ({ poll }) => {
   return (
-    <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden">
-      <div className="p-8 md:p-10">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 bg-red-50 text-red-600 rounded-xl flex items-center justify-center">
-            <BarChart3 size={20} />
-          </div>
-          <span className="text-[10px] font-black text-red-600 uppercase tracking-widest">استطلاع رأي</span>
-        </div>
-        <h3 className="text-xl md:text-2xl font-black text-[#09264d] mb-8 leading-tight">{localPoll.title}</h3>
-
-        <div className="space-y-3 mb-8">
-          {(localPoll.options || []).map((option, index) => (
-            <button
-              key={index}
-              onClick={() => !hasVoted && setSelectedOption(index)}
-              disabled={hasVoted}
-              className={`w-full text-right relative rounded-2xl border-2 transition-all duration-300 overflow-hidden ${
-                hasVoted
-                  ? selectedOption === index
-                    ? 'border-red-200 bg-red-50/30'
-                    : 'border-gray-100 bg-gray-50/50'
-                  : selectedOption === index
-                    ? 'border-red-500 bg-red-50 shadow-md'
-                    : 'border-gray-100 hover:border-gray-200 hover:bg-gray-50'
-              }`}
-            >
-              {hasVoted && (
-                <div
-                  className={`absolute inset-0 transition-all duration-700 rounded-2xl ${
-                    selectedOption === index ? 'bg-red-100/50' : 'bg-gray-100/50'
-                  }`}
-                  style={{ width: `${getPercentage(option)}%` }}
-                />
-              )}
-              <div className="relative z-10 px-6 py-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all ${
-                    selectedOption === index
-                      ? 'border-red-500 bg-red-500'
-                      : 'border-gray-300'
-                  }`}>
-                    {selectedOption === index && (
-                      <div className="w-2 h-2 bg-white rounded-full" />
-                    )}
-                  </div>
-                  <span className="font-bold text-sm text-slate-700">{option.text}</span>
-                </div>
-                {hasVoted && (
-                  <span className="font-black text-sm text-slate-600">{getPercentage(option)}%</span>
-                )}
-              </div>
-            </button>
-          ))}
-        </div>
-
-        {!hasVoted ? (
-          <button
-            onClick={handleVote}
-            disabled={selectedOption === null || voting}
-            className="w-full bg-[#e00013] hover:bg-red-700 disabled:bg-gray-200 disabled:text-gray-400 text-white font-black py-4 rounded-xl text-sm transition-all shadow-lg shadow-red-600/20 disabled:shadow-none"
-          >
-            {voting ? <Loader2 className="w-5 h-5 animate-spin mx-auto" /> : 'تصويت'}
-          </button>
-        ) : (
-          <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-            <span className="text-xs font-black text-green-600 flex items-center gap-2">
-              <CheckSquare size={14} /> تم التصويت بنجاح
-            </span>
-            <span className="text-xs font-bold text-slate-400">
-              إجمالي المشاركين: {localPoll.total_votes || 0}
-            </span>
-          </div>
-        )}
+    <Link to={`/polls/${poll.id}`} className="bg-white rounded-[2.5rem] border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-500 overflow-hidden group block">
+      <div className="relative h-64 overflow-hidden">
+        <img src={poll.main_image || "/images/image.jpg"} alt="" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+        <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-all" />
+        <span className="absolute top-5 right-5 bg-red-600 text-white text-[9px] font-black py-2 px-5 rounded-xl shadow-lg uppercase tracking-widest">استطلاع</span>
       </div>
-    </div>
+      <div className="p-8">
+        <h3 className="text-xl font-black text-[#09264d] mb-4 leading-tight group-hover:text-red-600 transition-colors line-clamp-2">
+          {poll.title}
+        </h3>
+        <div className="flex items-center justify-between pt-6 border-t border-gray-50 mt-4">
+          <div className="flex items-center gap-3">
+             <div className="w-8 h-8 bg-slate-100 rounded-full flex items-center justify-center">
+                <User size={14} className="text-slate-400" />
+             </div>
+             <span className="text-[10px] font-black text-slate-600">{poll.author || 'المحرر'}</span>
+          </div>
+          <div className="flex items-center gap-2 text-[10px] font-bold text-slate-400">
+             <Calendar size={12} className="text-red-600" />
+             <span>{new Date(poll.created_at).toLocaleDateString('ar-YE')}</span>
+          </div>
+        </div>
+      </div>
+    </Link>
   );
 };
 
@@ -211,7 +116,7 @@ const StatisticsPage = () => {
               <section className="space-y-8">
                 <div className="flex items-center gap-4 mb-4">
                   <div className="w-1.5 h-6 bg-[#e00013] rounded-full" />
-                  <h2 className="text-2xl font-black text-slate-800">شارك برأيك</h2>
+                  <h2 className="text-2xl font-black text-slate-800">أحدث الاستطلاعات</h2>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   {polls.map((poll) => (

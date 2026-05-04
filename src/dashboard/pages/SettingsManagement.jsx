@@ -160,15 +160,16 @@ const SettingsManagement = () => {
                   placeholder="اكتب الخبر العاجل هنا..."
                 />
               </div>
-              <div className="space-y-2">
-                <label className="text-xs font-black text-slate-500 uppercase">تسمية أهم الأخبار (بجانب الشعار)</label>
-                <input 
-                  type="text" 
+              <div className="space-y-2 md:col-span-2">
+                <label className="text-xs font-black text-slate-500 uppercase">عناوين أهم الأخبار (تظهر بجانب الشعار وتتغير تلقائياً)</label>
+                <textarea 
+                  rows={3}
                   value={settings.top_news_label} 
                   onChange={(e) => setSettings({...settings, top_news_label: e.target.value})}
-                  className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-3.5 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600/20 transition-all" 
-                  placeholder="مثال: أهم الأخبار:"
+                  className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-3.5 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600/20 transition-all resize-none" 
+                  placeholder="اكتب كل عنوان في سطر جديد ليتم عرضها بالتناوب (خبر واحد في كل سطر)..."
                 />
+                <p className="text-[10px] text-slate-400 font-bold px-2">كل سطر يعتبر خبراً منفصلاً وسيظهر لمدة 30 ثانية في الموقع</p>
               </div>
             </div>
           </div>
