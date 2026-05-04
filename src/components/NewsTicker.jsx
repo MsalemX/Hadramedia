@@ -92,7 +92,7 @@ function NewsTicker() {
         }
         .animate-marquee-rtl {
           display: inline-block;
-          animation: marquee-rtl 90s linear infinite;
+          animation: marquee-rtl 40s linear infinite;
         }
       `}</style>
     </div>
