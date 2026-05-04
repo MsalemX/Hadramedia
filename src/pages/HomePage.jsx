@@ -177,7 +177,7 @@ function SocialCard() {
   ];
 
   return (
-    <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-lg mt-10">
+    <div className="bg-white rounded-3xl p-8 border border-gray-100 shadow-lg">
       <h3 className="text-2xl font-black text-slate-800 mb-8 border-r-8 border-red-600 pr-4">تابعونا</h3>
       <div className="grid grid-cols-2 gap-4">
         {socials.map((s) => (
@@ -226,6 +226,7 @@ function ReportCard({ id, big, label, title, time, views, image, is_cross_media 
 function ReportsSection({ reports }) {
   const mainReport = reports[0];
   const subReports = reports.slice(1, 4);
+  const hasSubReports = subReports.length > 0;
 
   return (
     <section className="mb-16">
@@ -237,7 +238,7 @@ function ReportsSection({ reports }) {
         <Link to="/reports" className="text-red-600 font-black text-sm hover:underline flex items-center gap-1">عرض الكل <ChevronLeft size={16} /></Link>
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className={`grid grid-cols-1 ${hasSubReports ? 'lg:grid-cols-2' : ''} gap-8`}>
         {mainReport && (
           <ReportCard 
             id={mainReport.id}
@@ -250,24 +251,26 @@ function ReportsSection({ reports }) {
             is_cross_media={mainReport.is_cross_media}
           />
         )}
-        <div className="flex flex-col gap-8">
-          {subReports.map((report, idx) => (
-            <Link to={`/post/${report.id}`} key={idx} className="flex gap-4 group">
-              <img src={report.main_image || defaultImg} className="w-32 h-24 rounded-2xl object-cover shrink-0 shadow-sm transition-transform group-hover:scale-105" alt="" />
-              <div className="flex flex-col justify-center">
-                <span className="text-[10px] font-black text-red-600 mb-1">{report.category}</span>
-                <h3 className="font-black text-base text-slate-800 leading-snug group-hover:text-red-600 transition-colors line-clamp-2">{report.title}</h3>
-                <div className="flex items-center gap-4 text-[10px] text-gray-400 font-bold mt-2">
-                  <span>{formatTime(report.created_at)}</span>
-                  <div className="flex items-center gap-1">
-                    <Eye size={12} />
-                    <span>{report.views || 0}</span>
+        {hasSubReports && (
+          <div className="flex flex-col gap-8">
+            {subReports.map((report, idx) => (
+              <Link to={`/post/${report.id}`} key={idx} className="flex gap-4 group">
+                <img src={report.main_image || defaultImg} className="w-32 h-24 rounded-2xl object-cover shrink-0 shadow-sm transition-transform group-hover:scale-105" alt="" />
+                <div className="flex flex-col justify-center">
+                  <span className="text-[10px] font-black text-red-600 mb-1">{report.category}</span>
+                  <h3 className="font-black text-base text-slate-800 leading-snug group-hover:text-red-600 transition-colors line-clamp-2">{report.title}</h3>
+                  <div className="flex items-center gap-4 text-[10px] text-gray-400 font-bold mt-2">
+                    <span>{formatTime(report.created_at)}</span>
+                    <div className="flex items-center gap-1">
+                      <Eye size={12} />
+                      <span>{report.views || 0}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </Link>
-          ))}
-        </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
@@ -352,6 +355,7 @@ const HomePage = () => {
   const [stories, setStories] = useState([]);
   const [events, setEvents] = useState([]);
   const [cartoons, setCartoons] = useState([]);
+  const [topics, setTopics] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -377,6 +381,9 @@ const HomePage = () => {
           setStories(allNews.filter(n => n.category === 'قصص').slice(0, 4));
           setEvents(allNews.filter(n => n.category === 'أحداث').slice(0, 4));
           setCartoons(allNews.filter(n => n.category === 'كاريكاتير').slice(0, 4));
+          
+          // Topics of interest - Top 4 most viewed
+          setTopics([...allNews].sort((a, b) => (b.views || 0) - (a.views || 0)).slice(0, 4));
         }
 
       } catch (err) {
@@ -413,24 +420,33 @@ const HomePage = () => {
             </div>
             <div className="lg:col-span-3 space-y-8">
               <NewsletterCard />
-              <SocialCard />
             </div>
           </div>
 
           {/* Articles Section - Full Width Background */}
           {articles.length > 0 && <ArticlesSection articles={articles} />}
 
+          {/* Topics of Interest - Based on views */}
+          {topics.length > 0 && <NewsGrid title="مواضيع تهمكم" news={topics} color="blue-600" link="/search?q=مواضيع" />}
+
           {/* Stories Grid */}
           {stories.length > 0 && <NewsGrid title="قصص حضرمية" news={stories} link="/stories" />}
-
-          {/* Ad Banner */}
-          <AdBanner position="content" className="my-12" />
 
           {/* Events Grid */}
           {events.length > 0 && <NewsGrid title="أحداث وفعاليات" news={events} color="blue-600" link="/events" />}
 
           {/* Cartoons Grid */}
           {cartoons.length > 0 && <NewsGrid title="كاريكاتير" news={cartoons} color="red-600" link="/cartoons" />}
+
+          {/* Bottom Ad & Social Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+            <div className="lg:col-span-8 h-full">
+              <AdBanner position="content" className="h-full flex items-center" />
+            </div>
+            <div className="lg:col-span-4">
+              <SocialCard />
+            </div>
+          </div>
         </div>
       </main>
     </div>

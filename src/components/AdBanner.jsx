@@ -32,7 +32,7 @@ const AdBanner = ({ position = 'sidebar', className = '' }) => {
   if (loading || !ad) return null;
 
   return (
-    <div className={`ad-banner overflow-hidden rounded-2xl shadow-sm border border-gray-100 bg-white ${className}`}>
+    <div className={`ad-banner overflow-hidden rounded-2xl shadow-sm border border-gray-100 bg-white mx-auto ${position === 'content' ? 'max-w-3xl' : 'w-full'} ${className}`}>
       <a 
         href={ad.link_url || '#'} 
         target={ad.link_url ? "_blank" : "_self"} 
