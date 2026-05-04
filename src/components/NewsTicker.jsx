@@ -13,7 +13,7 @@ function NewsTicker() {
         .from('settings')
         .select('breaking_news')
         .single();
-      
+
       if (settings?.breaking_news) {
         setTickerText(settings.breaking_news);
       }
@@ -25,7 +25,7 @@ function NewsTicker() {
         .eq('is_urgent', true)
         .eq('status', 'منشور')
         .order('created_at', { ascending: false });
-      
+
       if (news) setUrgentNews(news.map(n => n.title));
     };
 
@@ -41,14 +41,14 @@ function NewsTicker() {
         <div className="bg-[#c00010] h-full flex items-center px-6 text-white font-black text-base relative z-20 whitespace-nowrap shadow-[5px_0_15px_rgba(0,0,0,0.3)]">
           عـاجـل
         </div>
-        
+
         {/* Moving content container */}
-        <div 
+        <div
           className="flex-1 text-white font-bold px-6 overflow-hidden whitespace-nowrap text-sm relative z-10 h-full flex items-center"
           onMouseEnter={() => setIsPaused(true)}
           onMouseLeave={() => setIsPaused(false)}
         >
-          <div 
+          <div
             className="inline-block animate-marquee-rtl"
             style={{ animationPlayState: isPaused ? 'paused' : 'running' }}
           >
@@ -92,7 +92,7 @@ function NewsTicker() {
         }
         .animate-marquee-rtl {
           display: inline-block;
-          animation: marquee-rtl 40s linear infinite;
+          animation: marquee-rtl 5s linear infinite;
         }
       `}</style>
     </div>
