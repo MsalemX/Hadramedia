@@ -205,29 +205,41 @@ const SettingsManagement = () => {
         <div className="lg:col-span-4 space-y-8">
           <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm text-center">
             <h3 className="text-sm font-black text-slate-800 mb-6">شعار الموقع</h3>
-            <div className="relative group mx-auto w-32 h-32">
+            
+            <div className="space-y-4 mb-6">
               <input 
-                type="file" 
-                accept="image/*"
-                onChange={(e) => setLogoFile(e.target.files[0])}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                type="text" 
+                value={settings.logo_url || ''} 
+                onChange={(e) => setSettings({...settings, logo_url: e.target.value})}
+                placeholder="رابط الشعار المباشر..." 
+                className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 text-[10px] font-bold focus:outline-none focus:ring-4 focus:ring-blue-600/5" 
               />
-              <div className="w-full h-full bg-gray-50 rounded-[32px] flex flex-col items-center justify-center border-2 border-dashed border-gray-200 group-hover:border-blue-600 transition-all overflow-hidden">
-                {logoFile || settings.logo_url ? (
-                  <img 
-                    src={logoFile ? URL.createObjectURL(logoFile) : settings.logo_url} 
-                    className="w-full h-full object-contain p-2" 
-                    alt="Logo" 
-                  />
-                ) : (
-                  <>
-                    <Upload className="text-slate-300 group-hover:text-blue-600 mb-2" size={32} />
-                    <span className="text-[10px] font-black text-slate-400">تحميل الشعار</span>
-                  </>
-                )}
+              
+              <div className="relative group mx-auto w-32 h-32">
+                <input 
+                  type="file" 
+                  accept="image/*"
+                  onChange={(e) => setLogoFile(e.target.files[0])}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                />
+                <div className="w-full h-full bg-gray-50 rounded-[32px] flex flex-col items-center justify-center border-2 border-dashed border-gray-200 group-hover:border-blue-600 transition-all overflow-hidden">
+                  {logoFile || settings.logo_url ? (
+                    <img 
+                      src={logoFile ? URL.createObjectURL(logoFile) : settings.logo_url} 
+                      className="w-full h-full object-contain p-2" 
+                      alt="Logo" 
+                    />
+                  ) : (
+                    <>
+                      <Upload className="text-slate-300 group-hover:text-blue-600 mb-2" size={32} />
+                      <span className="text-[10px] font-black text-slate-400">تحميل الشعار</span>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
-            <p className="text-[10px] text-slate-400 mt-4 font-bold">يفضل بصيغة PNG أو SVG بمقاس 200x200</p>
+            
+            <p className="text-[10px] text-slate-400 mt-4 font-bold">يمكنك وضع رابط مباشر أو الرفع من جهازك (PNG/SVG)</p>
           </div>
 
           {/* Site Status removed as requested */}

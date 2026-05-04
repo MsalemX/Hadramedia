@@ -21,6 +21,7 @@ const AdsManagement = () => {
   const [formData, setFormData] = useState({
     title: '',
     link_url: '',
+    image_url: '',
     position: 'sidebar',
     status: 'نشط'
   });
@@ -84,6 +85,7 @@ const AdsManagement = () => {
       id: ad.id,
       title: ad.title,
       link_url: ad.link_url || '',
+      image_url: ad.image || ad.image_url || '',
       position: ad.placement || ad.position || 'sidebar',
       status: ad.status || 'نشط'
     });
@@ -93,17 +95,19 @@ const AdsManagement = () => {
 
   const handleAddAd = async (e) => {
     e.preventDefault();
-    if (!formData.title || (!formData.id && !imageFile)) {
-      alert('يرجى إدخال العنوان واختيار صورة الإعلان');
+    if (!formData.title || (!formData.id && !imageFile && !formData.image_url)) {
+      alert('يرجى إدخال العنوان واختيار صورة الإعلان أو وضع رابط');
       return;
     }
 
     try {
       setSaving(true);
-      let image_url = formData.id ? ads.find(a => a.id === formData.id)?.image : '';
+      let final_image_url = formData.image_url;
       
       if (imageFile) {
-        image_url = await uploadFile(imageFile);
+        final_image_url = await uploadFile(imageFile);
+      } else if (formData.id && !formData.image_url) {
+        final_image_url = ads.find(a => a.id === formData.id)?.image || '';
       }
 
       const adData = {
@@ -112,8 +116,8 @@ const AdsManagement = () => {
         position: formData.position,
         placement: formData.position,
         status: formData.status,
-        image: image_url,
-        image_url: image_url
+        image: final_image_url,
+        image_url: final_image_url
       };
 
       let error;
@@ -132,7 +136,7 @@ const AdsManagement = () => {
 
       if (error) throw error;
       
-      setFormData({ title: '', link_url: '', position: 'sidebar', status: 'نشط' });
+      setFormData({ title: '', link_url: '', image_url: '', position: 'sidebar', status: 'نشط' });
       setImageFile(null);
       setIsModalOpen(false);
       fetchAds();
@@ -301,14 +305,23 @@ const AdsManagement = () => {
               </div>
 
               <div>
-                <label className="block text-xs font-black text-slate-400 uppercase mb-2">صورة الإعلان</label>
+                <label className="block text-xs font-black text-slate-400 uppercase mb-2">رابط صورة الإعلان (اختياري)</label>
+                <input 
+                  type="url" 
+                  value={formData.image_url}
+                  onChange={(e) => setFormData({...formData, image_url: e.target.value})}
+                  placeholder="https://example.com/image.jpg" 
+                  className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-6 py-4 font-bold focus:outline-none focus:ring-4 focus:ring-blue-600/5 transition-all mb-4"
+                />
+                
+                <label className="block text-xs font-black text-slate-400 uppercase mb-2">أو رفع صورة من الجهاز</label>
                 <div className="relative group">
                   <input 
                     type="file" 
                     accept="image/*"
                     onChange={(e) => setImageFile(e.target.files[0])}
                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                    required={!formData.id}
+                    required={!formData.id && !formData.image_url}
                   />
                   <div className="bg-gray-50 border-2 border-dashed border-gray-200 rounded-2xl p-8 flex flex-col items-center justify-center gap-3 group-hover:border-blue-600/30 transition-all">
                     {imageFile ? (

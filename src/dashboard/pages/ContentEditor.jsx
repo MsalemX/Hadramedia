@@ -320,18 +320,27 @@ const ContentEditor = () => {
               <div className="bg-blue-50/50 p-6 rounded-3xl border border-blue-100/50 space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <label className="block text-xs font-black text-blue-600 uppercase tracking-widest mb-1">ملف المحتوى (PDF / DOC)</label>
-                    <p className="text-[10px] text-blue-400 font-bold">ارفع الملف الخاص بالمقال أو الدراسة هنا</p>
+                    <label className="block text-xs font-black text-blue-600 uppercase tracking-widest mb-1">رابط ملف المحتوى (PDF / URL)</label>
+                    <p className="text-[10px] text-blue-400 font-bold">ضع رابط الملف هنا أو ارفعه من الأسفل</p>
                   </div>
                   {formData.pdf_url && (
                      <span className="bg-green-100 text-green-600 px-3 py-1 rounded-lg text-[10px] font-black flex items-center gap-1">
-                        <CheckCircle2 size={12} /> تم الرفع
+                        <CheckCircle2 size={12} /> تم التحديد
                      </span>
                   )}
                 </div>
+                
+                <input 
+                  type="text" 
+                  value={formData.pdf_url || ''}
+                  onChange={(e) => setFormData({...formData, pdf_url: e.target.value})}
+                  className="w-full bg-white border border-blue-100 rounded-2xl px-6 py-4 text-sm font-bold focus:outline-none"
+                  placeholder="https://example.com/file.pdf"
+                />
+
                 <div className="relative h-14">
                   <div className="absolute inset-0 bg-white border border-blue-100 rounded-2xl flex items-center px-6 text-sm font-bold text-slate-500 shadow-sm">
-                    {formData.pdf_url ? 'تغيير الملف المرفوع' : 'اضغط هنا لرفع ملف'}
+                    {formData.pdf_url ? 'أو تغيير الملف المرفوع' : 'أو اضغط هنا لرفع ملف من جهازك'}
                   </div>
                   <input 
                     type="file" 
@@ -340,11 +349,6 @@ const ContentEditor = () => {
                     accept=".pdf,.doc,.docx"
                   />
                 </div>
-                {formData.pdf_url && (
-                  <div className="text-[10px] font-bold text-slate-400 truncate">
-                    رابط الملف: <a href={formData.pdf_url} target="_blank" className="text-blue-600 underline">{formData.pdf_url}</a>
-                  </div>
-                )}
               </div>
             )}
 
@@ -433,10 +437,17 @@ const ContentEditor = () => {
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-black text-slate-400 mb-2">صورة الجزء (رفع محلي)</label>
+                        <label className="block text-[10px] font-black text-slate-400 mb-2">رابط صورة الجزء</label>
+                        <input 
+                          type="text" 
+                          value={section.image || ''}
+                          onChange={(e) => updateSection(index, 'image', e.target.value)}
+                          className="w-full bg-white border border-gray-100 rounded-xl px-4 py-2 text-sm font-black mb-2"
+                          placeholder="رابط الصورة..."
+                        />
                         <div className="relative h-10">
                           <div className="absolute inset-0 bg-white border border-gray-100 rounded-xl px-4 py-2 text-[10px] font-bold overflow-hidden text-ellipsis whitespace-nowrap">
-                            {section.image ? 'تم رفع الصورة' : 'اضغط لرفع صورة'}
+                            {section.image ? 'تغيير الصورة المرفوعة' : 'أو اضغط للرفع من الجهاز'}
                           </div>
                           <input 
                             type="file" 
@@ -473,6 +484,13 @@ const ContentEditor = () => {
           <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm space-y-6">
             <div>
               <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-4">الصورة الرئيسية</label>
+              <input 
+                type="text" 
+                value={formData.main_image}
+                onChange={(e) => setFormData({...formData, main_image: e.target.value})}
+                className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-6 py-4 text-sm font-bold mb-4 focus:outline-none focus:ring-4 focus:ring-blue-600/5 transition-all"
+                placeholder="ضع رابط الصورة هنا أو ارفعها من الأسفل..."
+              />
               <div className="aspect-video bg-gray-50 rounded-3xl border-2 border-dashed border-gray-100 overflow-hidden relative group">
                 {formData.main_image ? (
                   <img src={formData.main_image} className="w-full h-full object-cover" alt="Preview" />
@@ -493,6 +511,27 @@ const ContentEditor = () => {
 
             <div>
               <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-4">معرض الصور</label>
+              <div className="mb-4 flex gap-2">
+                <input 
+                  type="text" 
+                  id="gallery-url-input"
+                  className="flex-1 bg-gray-50 border border-gray-100 rounded-2xl px-6 py-3 text-sm font-bold focus:outline-none"
+                  placeholder="أضف رابط صورة للمعرض..."
+                />
+                <button 
+                  type="button"
+                  onClick={() => {
+                    const input = document.getElementById('gallery-url-input');
+                    if (input.value) {
+                      setFormData({ ...formData, gallery: [...(formData.gallery || []), input.value] });
+                      input.value = '';
+                    }
+                  }}
+                  className="bg-blue-600 text-white px-4 rounded-2xl hover:bg-blue-700 transition-all"
+                >
+                  <Plus size={20} />
+                </button>
+              </div>
               <div className="grid grid-cols-2 gap-4">
                 {(formData.gallery || []).map((img, index) => (
                   <div key={index} className="relative aspect-square rounded-2xl overflow-hidden group border border-gray-100">

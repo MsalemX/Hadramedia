@@ -172,7 +172,21 @@ const PostDetailsPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
           {/* Main Content */}
-          <div className="lg:col-span-8 bg-white rounded-[40px] p-8 md:p-12 shadow-sm border border-gray-100 text-right">
+          <div className="lg:col-span-8 space-y-8">
+            {/* Author Card - Mobile Only */}
+            <div className="lg:hidden bg-white rounded-[32px] p-6 shadow-sm border border-gray-100">
+               <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 bg-red-50 rounded-2xl flex items-center justify-center text-red-600 border border-red-100 shadow-sm">
+                    <User size={28} />
+                  </div>
+                  <div>
+                    <h4 className="font-black text-[#e00013]">{post.author || 'فريق حضرميديا'}</h4>
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">كاتب المحتوى</p>
+                  </div>
+               </div>
+            </div>
+
+            <div className="bg-white rounded-[40px] p-8 md:p-12 shadow-sm border border-gray-100 text-right">
             <div className="prose prose-lg max-w-none font-bold text-slate-700 leading-relaxed space-y-6 article-content text-right">
               {post.content && (post.content.includes('<p>') || post.content.includes('<br')) ? (
                 <div dangerouslySetInnerHTML={{ __html: post.content }} />
@@ -315,10 +329,11 @@ const PostDetailsPage = () => {
                </div>
             </div>
           </div>
+        </div>
 
           {/* Sidebar */}
           <aside className="lg:col-span-4 space-y-8 text-right">
-            <div className="bg-white rounded-[40px] p-8 border border-gray-100 shadow-sm">
+            <div className="hidden lg:block bg-white rounded-[40px] p-8 border border-gray-100 shadow-sm">
                <h3 className="text-xl font-black text-[#09264d] mb-6 flex items-center gap-2">
                  <div className="w-2 h-6 bg-red-600 rounded-full" />
                  كاتب المقال
