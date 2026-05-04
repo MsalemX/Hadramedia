@@ -66,7 +66,7 @@ const AdsManagement = () => {
 
   const toggleStatus = async (ad) => {
     try {
-      const newStatus = ad.status === 'نشط' ? 'متوقف' : 'نشط';
+      const newStatus = ad.status === 'نشط' ? 'غير نشط' : 'نشط';
       const { error } = await supabase
         .from('ads')
         .update({ status: newStatus })
@@ -75,7 +75,7 @@ const AdsManagement = () => {
       if (error) throw error;
       fetchAds();
     } catch (err) {
-      alert('خطأ في تغيير الحالة');
+      alert('خطأ في تغيير الحالة: ' + err.message);
     }
   };
 
@@ -192,7 +192,7 @@ const AdsManagement = () => {
                       item.status === 'نشط' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'
                     }`}
                   >
-                    {item.status === 'نشط' ? 'نشط (إيقاف)' : 'متوقف (تشغيل)'}
+                    {item.status === 'نشط' ? 'نشط (إيقاف)' : 'غير نشط (تشغيل)'}
                   </button>
                 </div>
               </div>
@@ -295,7 +295,7 @@ const AdsManagement = () => {
                     className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-6 py-4 font-bold focus:outline-none focus:ring-4 focus:ring-blue-600/5 transition-all appearance-none"
                   >
                     <option value="نشط">نشط</option>
-                    <option value="متوقف">متوقف</option>
+                    <option value="غير نشط">متوقف (غير نشط)</option>
                   </select>
                 </div>
               </div>

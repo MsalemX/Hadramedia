@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
-import { Home, FileText, PenLine, Search, BarChart, BookOpen, CirclePlus, BarChart3, Menu, X, LayoutGrid, Headphones } from "lucide-react";
+import { Home, FileText, PenLine, Search, BarChart, BookOpen, CirclePlus, BarChart3, Menu, X, LayoutGrid, Headphones, Calendar } from "lucide-react";
 import { supabase } from "../lib/supabase";
 
 const navItems = [
-  { label: "أحداث", icon: Home, to: "/events" },
+  { label: "الرئيسية", icon: Home, to: "/" },
+  { label: "أحداث", icon: Calendar, to: "/events" },
   { label: "تقارير كروس ميديا", icon: CirclePlus, to: "/reports" },
   { label: "قصص", icon: BookOpen, to: "/stories" },
   { label: "تحقيق", icon: Search, to: "/investigation" },
@@ -85,7 +86,7 @@ function TopHeader({ toggleMenu, isOpen }) {
         {/* MIDDLE: Top News Label */}
         <div className="hidden md:flex flex-1 justify-center items-center px-6">
           {topNewsLabel && (
-            <div className="flex items-center gap-3 text-[#09264d] font-black text-base md:text-lg text-center leading-tight">
+            <div className="flex items-center gap-3 text-[#09264d] font-black text-base md:text-lg text-center leading-tight animate-[pulse_2s_infinite]">
               <span className="w-3 h-3 bg-red-600 rounded-full shrink-0 shadow-[0_0_10px_rgba(220,38,38,0.3)]"></span>
               <p className="line-clamp-1">{topNewsLabel}</p>
             </div>
@@ -138,7 +139,7 @@ function Navbar({ isOpen, toggleMenu }) {
               key={item.label}
               to={item.to}
               className={({ isActive }) =>
-                `flex items-center gap-2 px-5 h-full text-sm font-bold transition-all border-b-2 whitespace-nowrap hover:bg-white/5 ${isActive ? "border-red-600 bg-white/10 text-white" : "border-transparent text-gray-300"
+                `flex items-center gap-2 px-4 h-full text-[13px] font-bold transition-all border-b-2 whitespace-nowrap hover:bg-white/5 ${isActive ? "border-red-600 bg-white/10 text-white" : "border-transparent text-gray-300"
                 }`
               }
             >

@@ -25,6 +25,8 @@ import {
   Mic
 } from 'lucide-react';
 
+import { supabase } from '../../lib/supabase';
+
 const SidebarLink = ({ to, icon: Icon, label, badge, onClick }) => (
   <NavLink
     to={to}
@@ -51,6 +53,18 @@ const DashboardLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [userName, setUserName] = useState("مدير النظام");
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const name = user.user_metadata?.full_name || user.email.split('@')[0];
+        setUserName(name);
+      }
+    };
+    fetchUser();
+  }, []);
 
   // Close sidebar on route change (for mobile)
   useEffect(() => {
@@ -185,11 +199,11 @@ const DashboardLayout = () => {
 
               <div className="flex items-center gap-3">
                 <div className="text-left hidden md:block">
-                  <h4 className="text-sm font-black text-slate-800">أحمد المدير</h4>
+                  <h4 className="text-sm font-black text-slate-800">{userName}</h4>
                   <p className="text-[10px] text-slate-400 font-bold">مدير النظام</p>
                 </div>
                 <img
-                  src="https://ui-avatars.com/api/?name=Ahmed+Manager&background=09264d&color=fff"
+                  src={`https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&background=09264d&color=fff`}
                   className="w-10 h-10 rounded-xl border-2 border-white shadow-sm"
                   alt="Profile"
                 />

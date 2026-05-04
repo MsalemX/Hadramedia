@@ -154,7 +154,7 @@ const PollsManagement = () => {
   };
 
   const handleToggleStatus = async (poll) => {
-    const newStatus = poll.status === 'نشط' ? 'متوقف' : 'نشط';
+    const newStatus = poll.status === 'نشط' ? 'غير نشط' : 'نشط';
     try {
       const { error } = await supabase
         .from('polls')

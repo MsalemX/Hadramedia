@@ -119,8 +119,8 @@ const ReportsPage = () => {
                 {/* Featured Report */}
                 {featuredReport && (
                   <Link to={`/cross-media/${featuredReport.id}`} className="relative rounded-[2.5rem] overflow-hidden h-[540px] group shadow-2xl block">
-                    <img src={featuredReport.main_image || "images/port.png"} className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" alt="" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#09264d] via-[#09264d]/20 to-transparent" />
+                    <img src={featuredReport.main_image || "images/port.png"} className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 blur-[3px]" alt="" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#09264d] via-[#09264d]/70 to-[#09264d]/30" />
                     
                     <div className="absolute inset-0 flex items-center justify-center">
                        <div className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 text-white hover:scale-110 hover:bg-red-600 transition-all shadow-2xl group/play">

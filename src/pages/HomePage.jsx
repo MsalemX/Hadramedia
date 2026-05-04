@@ -28,7 +28,32 @@ function Hero({ sidebarNews, featuredNews }) {
 
   return (
     <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8 lg:h-[540px]">
-      <div className="lg:col-span-3 h-[300px] lg:h-full overflow-hidden relative bg-white rounded-3xl border border-gray-100 shadow-sm">
+      <div className="lg:col-span-9 relative rounded-3xl overflow-hidden h-[400px] lg:h-full group shadow-2xl">
+        {featuredNews ? (
+          <Link to={`/post/${featuredNews.id}`} className="block h-full relative">
+            <img src={featuredNews.main_image || heroImg} className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" alt="Feature" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+
+            <div className="absolute bottom-0 right-0 left-0 p-4 sm:p-8 md:p-12 text-white">
+              <span className="bg-[#e00013] px-4 py-2 rounded-lg text-[10px] md:text-xs font-black mb-4 md:mb-6 inline-block shadow-lg">{featuredNews.category || "أخبار"}</span>
+              <h1 className="text-2xl md:text-4xl lg:text-5xl font-black mb-4 md:mb-6 leading-tight max-w-3xl drop-shadow-lg">{featuredNews.title}</h1>
+              <p className="hidden md:block text-gray-200 text-lg mb-8 max-w-2xl leading-relaxed font-bold opacity-90 line-clamp-2">{featuredNews.content?.replace(/<[^>]*>?/gm, '').substring(0, 150)}...</p>
+
+              <div className="flex items-center gap-8 text-sm font-black text-gray-300 border-t border-white/10 pt-8">
+                <span>{new Date(featuredNews.created_at).toLocaleDateString('ar-YE', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                <div className="flex items-center gap-2">
+                  <Eye size={18} className="text-red-500" />
+                  <span>{featuredNews.views || 0}</span>
+                </div>
+              </div>
+            </div>
+          </Link>
+        ) : (
+          <div className="h-full bg-slate-100 flex items-center justify-center text-slate-400 font-bold">جاري تحميل المحتوى المميز...</div>
+        )}
+      </div>
+
+      <div className="lg:col-span-3 h-[300px] lg:h-full overflow-hidden relative bg-white rounded-3xl border border-gray-100 shadow-sm order-last lg:order-none">
         <div className="absolute top-0 left-0 right-0 h-16 bg-gradient-to-b from-white via-white/80 to-transparent z-10" />
         <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white via-white/80 to-transparent z-10" />
 
@@ -61,31 +86,6 @@ function Hero({ sidebarNews, featuredNews }) {
           </motion.div>
         ) : (
           <div className="h-full flex items-center justify-center text-slate-300 font-bold">لا توجد أخبار</div>
-        )}
-      </div>
-
-      <div className="lg:col-span-9 relative rounded-3xl overflow-hidden h-[400px] lg:h-full group shadow-2xl order-first lg:order-last">
-        {featuredNews ? (
-          <Link to={`/post/${featuredNews.id}`} className="block h-full relative">
-            <img src={featuredNews.main_image || heroImg} className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" alt="Feature" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
-
-            <div className="absolute bottom-0 right-0 left-0 p-4 sm:p-8 md:p-12 text-white">
-              <span className="bg-[#e00013] px-4 py-2 rounded-lg text-[10px] md:text-xs font-black mb-4 md:mb-6 inline-block shadow-lg">{featuredNews.category || "أخبار"}</span>
-              <h1 className="text-2xl md:text-4xl lg:text-5xl font-black mb-4 md:mb-6 leading-tight max-w-3xl drop-shadow-lg">{featuredNews.title}</h1>
-              <p className="hidden md:block text-gray-200 text-lg mb-8 max-w-2xl leading-relaxed font-bold opacity-90 line-clamp-2">{featuredNews.content?.replace(/<[^>]*>?/gm, '').substring(0, 150)}...</p>
-
-              <div className="flex items-center gap-8 text-sm font-black text-gray-300 border-t border-white/10 pt-8">
-                <span>{new Date(featuredNews.created_at).toLocaleDateString('ar-YE', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
-                <div className="flex items-center gap-2">
-                  <Eye size={18} className="text-red-500" />
-                  <span>{featuredNews.views || 0}</span>
-                </div>
-              </div>
-            </div>
-          </Link>
-        ) : (
-          <div className="h-full bg-slate-100 flex items-center justify-center text-slate-400 font-bold">جاري تحميل المحتوى المميز...</div>
         )}
       </div>
     </section>
@@ -225,11 +225,11 @@ function ReportCard({ id, big, label, title, time, views, image, is_cross_media 
 
 function ReportsSection({ reports }) {
   const mainReport = reports[0];
-  const subReports = reports.slice(1, 3);
+  const subReports = reports.slice(1, 4);
 
   return (
-    <section>
-      <div className="flex items-center justify-between mb-10">
+    <section className="mb-16">
+      <div className="flex items-center justify-between mb-8">
         <div className="flex items-center gap-4">
           <div className="w-2 h-8 md:h-10 bg-red-600 rounded-full" />
           <h2 className="text-2xl md:text-4xl font-black text-slate-800">تقارير وتحقيقات</h2>
@@ -237,42 +237,121 @@ function ReportsSection({ reports }) {
         <Link to="/reports" className="text-red-600 font-black text-sm hover:underline flex items-center gap-1">عرض الكل <ChevronLeft size={16} /></Link>
       </div>
       
-      {mainReport && (
-        <ReportCard 
-          id={mainReport.id}
-          big 
-          label={mainReport.category || "تقرير خاص"} 
-          title={mainReport.title} 
-          time={mainReport.created_at} 
-          views={mainReport.views || 0} 
-          image={mainReport.main_image} 
-          is_cross_media={mainReport.is_cross_media}
-        />
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
-        {subReports.map((report, idx) => (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {mainReport && (
           <ReportCard 
-            key={idx}
-            id={report.id}
-            label={report.category || "تقرير"} 
-            title={report.title} 
-            time={report.created_at} 
-            views={report.views || 0} 
-            image={report.main_image} 
-            is_cross_media={report.is_cross_media}
+            id={mainReport.id}
+            big 
+            label={mainReport.category || "تقرير خاص"} 
+            title={mainReport.title} 
+            time={mainReport.created_at} 
+            views={mainReport.views || 0} 
+            image={mainReport.main_image} 
+            is_cross_media={mainReport.is_cross_media}
           />
+        )}
+        <div className="flex flex-col gap-8">
+          {subReports.map((report, idx) => (
+            <Link to={`/post/${report.id}`} key={idx} className="flex gap-4 group">
+              <img src={report.main_image || defaultImg} className="w-32 h-24 rounded-2xl object-cover shrink-0 shadow-sm transition-transform group-hover:scale-105" alt="" />
+              <div className="flex flex-col justify-center">
+                <span className="text-[10px] font-black text-red-600 mb-1">{report.category}</span>
+                <h3 className="font-black text-base text-slate-800 leading-snug group-hover:text-red-600 transition-colors line-clamp-2">{report.title}</h3>
+                <div className="flex items-center gap-4 text-[10px] text-gray-400 font-bold mt-2">
+                  <span>{formatTime(report.created_at)}</span>
+                  <div className="flex items-center gap-1">
+                    <Eye size={12} />
+                    <span>{report.views || 0}</span>
+                  </div>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ArticlesSection({ articles }) {
+  return (
+    <section className="mb-16 bg-slate-50 -mx-6 px-6 py-16 rounded-[3rem]">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex items-center justify-between mb-10">
+          <div className="flex items-center gap-4">
+            <div className="w-2 h-10 bg-[#09264d] rounded-full" />
+            <h2 className="text-2xl md:text-4xl font-black text-slate-800">أقلام حضرميديا</h2>
+          </div>
+          <Link to="/article" className="text-[#09264d] font-black text-sm hover:underline flex items-center gap-1">المزيد من المقالات <ChevronLeft size={16} /></Link>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {articles.map((art, i) => (
+            <Link to={`/post/${art.id}`} key={i} className="bg-white p-8 rounded-[2.5rem] shadow-sm hover:shadow-xl transition-all group flex flex-col border border-gray-100">
+              <div className="flex items-center gap-4 mb-6">
+                <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center border-2 border-red-600 overflow-hidden">
+                  <span className="text-xl">✍️</span>
+                </div>
+                <div>
+                  <h4 className="font-black text-red-600 text-sm">{art.author || 'كاتب حضرميديا'}</h4>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">رأي وتحليل</p>
+                </div>
+              </div>
+              <h3 className="text-xl font-black text-slate-800 mb-4 leading-tight group-hover:text-red-600 transition-colors line-clamp-3 h-[4.5rem]">"{art.title}"</h3>
+              <div className="mt-auto flex items-center justify-between text-[10px] text-slate-400 font-bold pt-6 border-t border-gray-50">
+                <span>{formatTime(art.created_at)}</span>
+                <span className="flex items-center gap-1"><Eye size={12} /> {art.views || 0}</span>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function NewsGrid({ title, news, color = "red-600", link = "/events" }) {
+  return (
+    <section className="mb-16">
+      <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center gap-4">
+          <div className={`w-2 h-8 bg-${color} rounded-full`} />
+          <h2 className="text-2xl md:text-3xl font-black text-slate-800">{title}</h2>
+        </div>
+        <Link to={link} className={`text-${color} font-black text-sm hover:underline flex items-center gap-1 text-red-600`}>عرض الكل <ChevronLeft size={16} /></Link>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {news.map((item, i) => (
+          <Link to={`/post/${item.id}`} key={i} className="group">
+            <div className="relative h-48 rounded-2xl overflow-hidden mb-4 shadow-md">
+              <img src={item.main_image || defaultImg} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+              <span className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-slate-800 text-[9px] font-black px-3 py-1 rounded-lg">{item.category}</span>
+            </div>
+            <h3 className="font-black text-sm text-slate-800 leading-relaxed group-hover:text-red-600 transition-colors line-clamp-2 h-10">{item.title}</h3>
+            <div className="flex items-center gap-3 text-[10px] text-gray-400 font-bold mt-2">
+              <span>{formatTime(item.created_at)}</span>
+              <span className="w-1 h-1 bg-gray-300 rounded-full" />
+              <div className="flex items-center gap-1">
+                <Eye size={12} />
+                <span>{item.views || 0}</span>
+              </div>
+            </div>
+          </Link>
         ))}
       </div>
     </section>
   );
 }
 
-
 const HomePage = () => {
   const [sidebarNews, setSidebarNews] = useState([]);
   const [featuredNews, setFeaturedNews] = useState(null);
   const [reports, setReports] = useState([]);
+  const [articles, setArticles] = useState([]);
+  const [stories, setStories] = useState([]);
+  const [events, setEvents] = useState([]);
+  const [cartoons, setCartoons] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -280,29 +359,25 @@ const HomePage = () => {
       try {
         setLoading(true);
         
-        // Fetch Sidebar News (Latest 10)
-        const { data: latestNews } = await supabase
+        // Fetch All Published News
+        const { data: allNews } = await supabase
           .from('news')
           .select('*')
           .eq('status', 'منشور')
-          .order('created_at', { ascending: false })
-          .limit(10);
-        
-        if (latestNews) {
-          setSidebarNews(latestNews);
-          setFeaturedNews(latestNews[0]);
-        }
+          .order('created_at', { ascending: false });
 
-        // Fetch Reports/Investigations
-        const { data: reportsData } = await supabase
-          .from('news')
-          .select('*')
-          .eq('status', 'منشور')
-          .or('category.eq.تقارير,category.eq.تحقيقات,category.eq.كروس ميديا')
-          .order('created_at', { ascending: false })
-          .limit(3);
-        
-        if (reportsData) setReports(reportsData);
+        if (allNews) {
+          // Sidebar & Hero
+          setSidebarNews(allNews.slice(0, 10));
+          setFeaturedNews(allNews[0]);
+
+          // Filter by categories
+          setReports(allNews.filter(n => ['تقارير', 'تحقيقات', 'كروس ميديا'].includes(n.category)).slice(0, 4));
+          setArticles(allNews.filter(n => n.category === 'مقالات').slice(0, 3));
+          setStories(allNews.filter(n => n.category === 'قصص').slice(0, 4));
+          setEvents(allNews.filter(n => n.category === 'أحداث').slice(0, 4));
+          setCartoons(allNews.filter(n => n.category === 'كاريكاتير').slice(0, 4));
+        }
 
       } catch (err) {
         console.error("Error fetching home data:", err);
@@ -319,7 +394,7 @@ const HomePage = () => {
       <div className="min-h-screen bg-[#f7f8fb] flex items-center justify-center" dir="rtl">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="w-12 h-12 text-red-600 animate-spin" />
-          <p className="font-black text-slate-400 tracking-widest text-sm uppercase">جاري جلب البيانات الحية من Supabase...</p>
+          <p className="font-black text-slate-400 tracking-widest text-sm uppercase">جاري جلب البيانات الحية من حضرميديا...</p>
         </div>
       </div>
     );
@@ -329,18 +404,33 @@ const HomePage = () => {
     <div className="bg-[#f7f8fb] min-h-screen font-cairo text-right overflow-x-hidden pb-20" dir="rtl">
       <main className="max-w-7xl mx-auto px-6 py-12">
         <Hero sidebarNews={sidebarNews} featuredNews={featuredNews} />
-        <AdBanner position="content" className="mb-12" />
+        
+        <div className="mt-12 space-y-20">
+          {/* Reports Section */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+            <div className="lg:col-span-9">
+              <ReportsSection reports={reports} />
+            </div>
+            <div className="lg:col-span-3 space-y-8">
+              <NewsletterCard />
+              <SocialCard />
+            </div>
+          </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-          <div className="lg:col-span-3 lg:sticky lg:top-24 order-2 lg:order-1 space-y-8">
-            <NewsletterCard />
-            <AdBanner position="sidebar" />
-            <SocialCard />
-          </div>
-          <div className="lg:col-span-9">
-            <ReportsSection reports={reports} />
-            {/* View all governorates button removed as requested */}
-          </div>
+          {/* Articles Section - Full Width Background */}
+          {articles.length > 0 && <ArticlesSection articles={articles} />}
+
+          {/* Stories Grid */}
+          {stories.length > 0 && <NewsGrid title="قصص حضرمية" news={stories} link="/stories" />}
+
+          {/* Ad Banner */}
+          <AdBanner position="content" className="my-12" />
+
+          {/* Events Grid */}
+          {events.length > 0 && <NewsGrid title="أحداث وفعاليات" news={events} color="blue-600" link="/events" />}
+
+          {/* Cartoons Grid */}
+          {cartoons.length > 0 && <NewsGrid title="كاريكاتير" news={cartoons} color="red-600" link="/cartoons" />}
         </div>
       </main>
     </div>

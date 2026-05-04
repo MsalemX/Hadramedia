@@ -55,7 +55,7 @@ function NewsTicker() {
             {/* النسخة الأولى */}
             {tickerText && tickerText.split('\n').map((text, idx) => (
               <React.Fragment key={`ticker-${idx}`}>
-                <span className="mx-10 text-yellow-300 font-black">{text.trim()}</span>
+                <span className="mx-10 text-white font-black">{text.trim()}</span>
                 <span className="mx-10 font-black opacity-30">|</span>
               </React.Fragment>
             ))}
@@ -71,7 +71,7 @@ function NewsTicker() {
             {/* النسخة الثانية (مكررة للحلقة السلسة) */}
             {tickerText && tickerText.split('\n').map((text, idx) => (
               <React.Fragment key={`ticker2-${idx}`}>
-                <span className="mx-10 text-yellow-300 font-black">{text.trim()}</span>
+                <span className="mx-10 text-white font-black">{text.trim()}</span>
                 <span className="mx-10 font-black opacity-30">|</span>
               </React.Fragment>
             ))}

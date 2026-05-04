@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { NavLink, useParams } from 'react-router-dom';
 import { ChevronLeft, Clock, Share2, MousePointer2, Volume2, Info, ArrowDown, MessageSquare, User, Send, ThumbsUp, Heart, Loader2, Eye } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import ReaderTools from '../components/ReaderTools';
 import LinkifyText from '../components/LinkifyText';
 import ShareButtons from '../components/ShareButtons';
 
@@ -174,7 +173,7 @@ const CrossMediaDetailsPage = () => {
             key={index}
             className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${index === activeSection ? 'opacity-100' : 'opacity-0'}`}
           >
-            <img src={section.image || "/images/hero.png"} alt="" className="w-full h-full object-cover" />
+            <img src={section.image || "/images/hero.png"} alt="" className="w-full h-full object-cover blur-[2px]" />
             <div className={`absolute inset-0 transition-colors duration-1000 ${section.overlay || 'bg-black/60'}`} />
           </div>
         ))}
@@ -251,7 +250,6 @@ const CrossMediaDetailsPage = () => {
         
         <div className="max-w-4xl mx-auto px-6 relative z-10 py-10">
           <ShareButtons title={post.title} />
-          <ReaderTools />
         </div>
 
         <section className="min-h-screen bg-[#061935] relative px-6 py-32">
