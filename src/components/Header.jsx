@@ -174,7 +174,7 @@ function Navbar({ isOpen, toggleMenu }) {
       </div>
 
       <div
-        className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? "max-h-[500px] border-t border-white/5 shadow-2xl" : "max-h-0"
+        className={`md:hidden overflow-y-auto transition-all duration-500 ease-in-out ${isOpen ? "max-h-[1000px] border-t border-white/5 shadow-2xl" : "max-h-0 overflow-hidden"
           }`}
       >
         <div className="flex flex-col py-4 bg-[#09264d]">
