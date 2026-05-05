@@ -17,33 +17,11 @@ const HeroSlider = () => {
   ];
 
   return (
-    <div className="hero-slider glass">
-      <div className="slide-content">
+    <div className="hero-slider">
+      <div className="image-container">
         <img src={slides[activeSlide].image} alt="Hero" className="hero-image" />
-        <div className="slide-overlay">
-          <div className="category-badge">{slides[activeSlide].category}</div>
-          <h2 className="slide-title">{slides[activeSlide].title}</h2>
-          <p className="slide-desc">{slides[activeSlide].description}</p>
-          
-          <div className="slide-footer">
-            <div className="slide-meta">
-              <span>{slides[activeSlide].date}</span>
-              <span className="views">
-                <Eye size={16} />
-                {slides[activeSlide].views}
-              </span>
-            </div>
-            <div className="slide-indicators">
-              {[0, 1, 2, 3].map((i) => (
-                <div 
-                  key={i} 
-                  className={`indicator ${i === activeSlide ? 'active' : ''}`}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-
+        <div className="category-badge">{slides[activeSlide].category}</div>
+        
         <button className="nav-btn prev">
           <ChevronRight size={24} />
         </button>
@@ -52,20 +30,46 @@ const HeroSlider = () => {
         </button>
       </div>
 
+      <div className="text-container">
+        <h2 className="slide-title">{slides[activeSlide].title}</h2>
+        <p className="slide-desc">{slides[activeSlide].description}</p>
+        
+        <div className="slide-footer">
+          <div className="slide-meta">
+            <span>{slides[activeSlide].date}</span>
+            <span className="views">
+              <Eye size={16} />
+              {slides[activeSlide].views}
+            </span>
+          </div>
+          <div className="slide-indicators">
+            {[0, 1, 2, 3].map((i) => (
+              <div 
+                key={i} 
+                className={`indicator ${i === activeSlide ? 'active' : ''}`}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
       <style>{`
         .hero-slider {
-          position: relative;
+          display: flex;
+          flex-direction: column;
           width: 100%;
-          height: 520px;
+          border-radius: 20px;
           overflow: hidden;
-          border-radius: 15px;
-          box-shadow: 0 15px 40px rgba(0,0,0,0.15);
+          background: #fff;
+          box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+          border: 1px solid #f1f5f9;
         }
 
-        .slide-content {
+        .image-container {
           position: relative;
           width: 100%;
-          height: 100%;
+          height: 400px;
+          overflow: hidden;
         }
 
         .hero-image {
@@ -79,50 +83,47 @@ const HeroSlider = () => {
           transform: scale(1.05);
         }
 
-        .slide-overlay {
-          position: absolute;
-          bottom: 0;
-          left: 0;
-          right: 0;
-          padding: 6rem 3rem 2.5rem;
-          background: linear-gradient(transparent, rgba(0, 26, 61, 0.95));
-          color: #fff;
-          display: flex;
-          flex-direction: column;
-          gap: 1.2rem;
-        }
-
         .category-badge {
+          position: absolute;
+          top: 1.5rem;
+          right: 1.5rem;
           background: var(--accent-red);
           color: #fff;
-          padding: 0.4rem 1rem;
+          padding: 0.5rem 1.2rem;
           font-size: 0.9rem;
           font-weight: 800;
-          width: fit-content;
+          border-radius: 8px;
+          z-index: 5;
+        }
+
+        .text-container {
+          padding: 2.5rem;
+          display: flex;
+          flex-direction: column;
+          gap: 1rem;
         }
 
         .slide-title {
-          font-size: 2.8rem;
+          font-size: 2.2rem;
           font-weight: 900;
-          line-height: 1.1;
-          max-width: 850px;
-          text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+          line-height: 1.3;
+          color: #09264d;
+          margin: 0;
         }
 
         .slide-desc {
           font-size: 1.1rem;
-          color: #f1f5f9;
-          max-width: 750px;
-          opacity: 0.9;
-          line-height: 1.5;
+          color: #64748b;
+          line-height: 1.6;
+          margin: 0;
         }
 
         .slide-footer {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-top: 1.5rem;
-          border-top: 1px solid rgba(255, 255, 255, 0.15);
+          margin-top: 1rem;
+          border-top: 1px solid #f1f5f9;
           padding-top: 1.5rem;
         }
 
@@ -130,8 +131,8 @@ const HeroSlider = () => {
           display: flex;
           gap: 2rem;
           font-size: 0.95rem;
-          color: #cbd5e1;
-          font-weight: 600;
+          color: #94a3b8;
+          font-weight: 700;
         }
 
         .views {
@@ -142,62 +143,64 @@ const HeroSlider = () => {
 
         .slide-indicators {
           display: flex;
-          gap: 0.8rem;
+          gap: 0.6rem;
         }
 
         .indicator {
-          width: 10px;
-          height: 10px;
+          width: 8px;
+          height: 8px;
           border-radius: 50%;
-          background: rgba(255, 255, 255, 0.3);
+          background: #cbd5e1;
           cursor: pointer;
           transition: 0.3s;
         }
 
         .indicator.active {
           background: var(--accent-red);
-          transform: scale(1.3);
-          box-shadow: 0 0 10px var(--accent-red);
+          transform: scale(1.4);
         }
 
         .nav-btn {
           position: absolute;
           top: 50%;
           transform: translateY(-50%);
-          width: 50px;
-          height: 50px;
+          width: 45px;
+          height: 45px;
           border-radius: 50%;
-          background: rgba(255, 255, 255, 0.15);
-          backdrop-filter: blur(8px);
+          background: rgba(255, 255, 255, 0.9);
+          backdrop-filter: blur(4px);
           display: flex;
           align-items: center;
           justify-content: center;
-          color: #fff;
+          color: #09264d;
           transition: 0.3s;
           z-index: 10;
-          border: 1px solid rgba(255, 255, 255, 0.2);
+          border: none;
+          box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+          cursor: pointer;
         }
 
         .nav-btn:hover {
           background: var(--accent-red);
-          border-color: var(--accent-red);
+          color: #fff;
           transform: translateY(-50%) scale(1.1);
         }
 
-        .prev { right: 25px; }
-        .next { left: 25px; }
+        .prev { right: 20px; }
+        .next { left: 20px; }
 
         @media (max-width: 1024px) {
-          .slide-title { font-size: 2rem; }
-          .hero-slider { height: 450px; }
+          .slide-title { font-size: 1.8rem; }
+          .image-container { height: 320px; }
+          .text-container { padding: 2rem; }
         }
 
         @media (max-width: 768px) {
-          .hero-slider { height: 380px; }
-          .slide-overlay { padding: 4rem 1.5rem 1.5rem; }
-          .slide-title { font-size: 1.6rem; }
-          .slide-desc { display: none; }
-          .nav-btn { width: 40px; height: 40px; }
+          .image-container { height: 260px; }
+          .text-container { padding: 1.5rem; }
+          .slide-title { font-size: 1.4rem; }
+          .slide-desc { font-size: 1rem; }
+          .nav-btn { width: 35px; height: 35px; }
         }
       `}</style>
     </div>

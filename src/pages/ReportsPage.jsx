@@ -118,20 +118,22 @@ const ReportsPage = () => {
               <>
                 {/* Featured Report */}
                 {featuredReport && (
-                  <Link to={`/cross-media/${featuredReport.id}`} className="relative rounded-[2.5rem] overflow-hidden h-[540px] group shadow-2xl block">
-                    <img src={featuredReport.main_image || "images/port.png"} className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105 blur-[3px]" alt="" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#09264d] via-[#09264d]/70 to-[#09264d]/30" />
-                    
-                    <div className="absolute inset-0 flex items-center justify-center">
-                       <div className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 text-white hover:scale-110 hover:bg-red-600 transition-all shadow-2xl group/play">
-                          <PlayCircle size={48} fill="currentColor" className="text-white group-hover/play:text-white" />
-                       </div>
+                  <Link to={`/cross-media/${featuredReport.id}`} className="group shadow-sm bg-white rounded-[2.5rem] border border-gray-100 flex flex-col overflow-hidden block">
+                    <div className="relative h-[300px] md:h-[400px] w-full overflow-hidden shrink-0">
+                      <img src={featuredReport.main_image || "images/port.png"} className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" alt="" />
+                      <div className="absolute inset-0 bg-[#09264d]/30 group-hover:bg-[#09264d]/10 transition-colors" />
+                      
+                      <div className="absolute inset-0 flex items-center justify-center">
+                         <div className="w-20 h-20 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 text-white hover:scale-110 hover:bg-red-600 transition-all shadow-2xl group/play">
+                            <PlayCircle size={48} fill="currentColor" className="text-white group-hover/play:text-white" />
+                         </div>
+                      </div>
+                      <span className="absolute top-4 right-4 bg-[#e00013] text-white px-4 py-2 rounded-lg text-[10px] font-black z-10 shadow-lg uppercase tracking-widest">{featuredReport.category || 'تقرير تفاعلي'}</span>
                     </div>
 
-                    <div className="absolute bottom-0 right-0 left-0 p-12 text-white">
-                      <span className="bg-[#e00013] px-4 py-2 rounded-lg text-[10px] font-black mb-6 inline-block shadow-lg uppercase tracking-widest">{featuredReport.category || 'تقرير تفاعلي'}</span>
-                      <h2 className="text-4xl font-black mb-6 leading-tight max-w-3xl drop-shadow-lg group-hover:text-red-400 transition-colors">{featuredReport.title}</h2>
-                      <div className="text-gray-300 text-base mb-8 max-w-2xl leading-relaxed font-bold opacity-90 line-clamp-2">
+                    <div className="p-6 md:p-10 flex flex-col flex-1">
+                      <h2 className="text-2xl md:text-4xl font-black mb-6 leading-tight text-[#09264d] group-hover:text-red-600 transition-colors line-clamp-2">{featuredReport.title}</h2>
+                      <div className="text-slate-500 text-base mb-8 leading-relaxed font-bold line-clamp-2">
                         {(() => {
                           let text = featuredReport.content || "";
                           try {
@@ -144,7 +146,7 @@ const ReportsPage = () => {
                         })()}
                       </div>
                       
-                      <div className="flex items-center gap-8 text-xs font-black text-gray-400 border-t border-white/10 pt-8">
+                      <div className="flex items-center gap-6 md:gap-8 text-[10px] md:text-xs font-black text-slate-400 border-t border-gray-100 pt-6">
                          <div className="flex items-center gap-2">
                             <Map size={16} className="text-red-600" />
                             <span>خرائط تفاعلية</span>

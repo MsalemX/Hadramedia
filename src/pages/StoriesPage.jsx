@@ -91,18 +91,19 @@ const StoriesPage = () => {
             
             {/* Featured Story */}
             {featuredStory ? (
-              <Link to={`/story/${featuredStory.id}`} className="relative rounded-[3rem] overflow-hidden h-[540px] group shadow-2xl block">
-                <img src={featuredStory.main_image || "images/hero.png"} className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" alt="" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+              <Link to={`/story/${featuredStory.id}`} className="group shadow-sm bg-white rounded-[2.5rem] border border-gray-100 flex flex-col overflow-hidden block">
+                <div className="relative h-[300px] md:h-[400px] w-full overflow-hidden shrink-0">
+                  <img src={featuredStory.main_image || "images/hero.png"} className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" alt="" />
+                  <span className="absolute top-4 right-4 bg-red-600 px-5 py-2 rounded-xl text-[10px] font-black z-10 text-white shadow-lg uppercase tracking-widest">{featuredStory.category}</span>
+                </div>
                 
-                <div className="absolute bottom-0 right-0 left-0 p-12 text-white">
-                  <span className="bg-red-600 px-5 py-2 rounded-xl text-[10px] font-black mb-6 inline-block shadow-lg uppercase tracking-widest">{featuredStory.category}</span>
-                  <h2 className="text-5xl font-black mb-6 leading-tight max-w-3xl drop-shadow-lg group-hover:text-red-400 transition-colors line-clamp-2">{featuredStory.title}</h2>
-                  <p className="text-gray-300 text-lg mb-8 max-w-2xl leading-relaxed font-bold opacity-90 line-clamp-2">
+                <div className="p-6 md:p-10 flex flex-col flex-1">
+                  <h2 className="text-2xl md:text-5xl font-black mb-6 leading-tight text-[#09264d] group-hover:text-red-600 transition-colors line-clamp-2">{featuredStory.title}</h2>
+                  <p className="text-slate-500 text-lg mb-8 leading-relaxed font-bold line-clamp-2">
                     {featuredStory.content?.replace(/<[^>]*>?/gm, '').substring(0, 150)}...
                   </p>
                   
-                  <div className="flex items-center gap-10 text-xs font-black text-gray-400 border-t border-white/10 pt-8">
+                  <div className="flex items-center gap-10 text-[10px] md:text-xs font-black text-slate-400 border-t border-gray-100 pt-8">
                      <div className="flex items-center gap-2">
                         <Clock size={18} className="text-red-600" />
                         <span>{new Date(featuredStory.created_at).toLocaleDateString('ar-YE')}</span>

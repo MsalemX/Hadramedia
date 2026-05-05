@@ -27,20 +27,21 @@ function Hero({ sidebarNews, featuredNews }) {
   const duplicatedNews = sidebarNews.length > 0 ? [...sidebarNews, ...sidebarNews] : [];
 
   return (
-    <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8 lg:h-[540px]">
-      <div className="lg:col-span-9 relative rounded-3xl overflow-hidden h-[400px] lg:h-full group shadow-2xl">
+    <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+      <div className="lg:col-span-9 h-full group shadow-sm bg-white rounded-[2.5rem] border border-gray-100 flex flex-col overflow-hidden">
         {featuredNews ? (
-          <Link to={`/post/${featuredNews.id}`} className="block h-full relative">
-            <img src={featuredNews.main_image || heroImg} className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" alt="Feature" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
+          <Link to={`/post/${featuredNews.id}`} className="block h-full flex flex-col">
+            <div className="relative h-[250px] lg:h-[320px] w-full overflow-hidden shrink-0">
+              <img src={featuredNews.main_image || heroImg} className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" alt="Feature" />
+              <span className="absolute top-4 right-4 bg-[#e00013] text-white px-4 py-2 rounded-xl text-xs font-black z-10 shadow-lg">{featuredNews.category || "أخبار"}</span>
+            </div>
 
-            <div className="absolute bottom-0 right-0 left-0 p-4 sm:p-8 md:p-12 text-white">
-              <span className="bg-[#e00013] px-4 py-2 rounded-lg text-[10px] md:text-xs font-black mb-4 md:mb-6 inline-block shadow-lg">{featuredNews.category || "أخبار"}</span>
-              <h1 className="text-2xl md:text-4xl lg:text-5xl font-black mb-4 md:mb-6 leading-tight max-w-3xl drop-shadow-lg">{featuredNews.title}</h1>
-              <p className="hidden md:block text-gray-200 text-lg mb-8 max-w-2xl leading-relaxed font-bold opacity-90 line-clamp-2">{featuredNews.content?.replace(/<[^>]*>?/gm, '').substring(0, 150)}...</p>
+            <div className="p-6 md:p-10 flex-1 flex flex-col justify-center">
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-black mb-4 leading-tight text-[#09264d] group-hover:text-red-600 transition-colors">{featuredNews.title}</h1>
+              <p className="hidden md:block text-slate-500 text-lg mb-6 leading-relaxed font-bold line-clamp-2">{featuredNews.content?.replace(/<[^>]*>?/gm, '').substring(0, 150)}...</p>
 
-              <div className="flex items-center gap-8 text-sm font-black text-gray-300 border-t border-white/10 pt-8">
-                <span>{new Date(featuredNews.created_at).toLocaleDateString('ar-YE', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+              <div className="flex items-center justify-between text-sm font-black text-slate-400 mt-auto pt-6 border-t border-gray-100">
+                <span className="flex items-center gap-2"><Clock size={16} /> {new Date(featuredNews.created_at).toLocaleDateString('ar-YE', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
                 <div className="flex items-center gap-2">
                   <Eye size={18} className="text-red-500" />
                   <span>{featuredNews.views || 0}</span>
@@ -49,7 +50,7 @@ function Hero({ sidebarNews, featuredNews }) {
             </div>
           </Link>
         ) : (
-          <div className="h-full bg-slate-100 flex items-center justify-center text-slate-400 font-bold">جاري تحميل المحتوى المميز...</div>
+          <div className="h-full bg-slate-100 flex items-center justify-center text-slate-400 font-bold min-h-[400px]">جاري تحميل المحتوى المميز...</div>
         )}
       </div>
 
@@ -58,32 +59,34 @@ function Hero({ sidebarNews, featuredNews }) {
         <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white via-white/80 to-transparent z-10" />
 
         {duplicatedNews.length > 0 ? (
-          <motion.div
-            className="p-4 space-y-4"
-            initial={{ y: "-50%" }}
-            animate={{ y: "0%" }}
-            transition={{
-              duration: 25,
-              repeat: Infinity,
-              ease: "linear"
-            }}
-            style={{ display: "flex", flexDirection: "column" }}
-            whileHover={{ animationPlayState: "paused" }}
-          >
-            {duplicatedNews.map((news, i) => (
-              <Link to={`/post/${news.id}`} key={i} className="bg-white p-4 rounded-xl border border-gray-50 shadow-sm flex flex-col gap-2 hover:shadow-md transition-shadow cursor-pointer group min-h-[140px] block">
-                <span className={`text-[10px] font-black tracking-widest text-blue-600`}>{news.category}</span>
-                <div className="flex gap-4">
-                  <h3 className="font-black text-sm leading-6 text-slate-800 flex-1 group-hover:text-red-600 transition-colors line-clamp-2">{news.title}</h3>
-                  <img src={news.main_image || defaultImg} className="w-16 h-12 rounded-lg object-cover shadow-sm" alt="" />
-                </div>
-                <div className="flex items-center gap-1 text-[10px] text-gray-400 font-bold mt-1">
-                  <Clock size={10} />
-                  <span>{formatTime(news.created_at)}</span>
-                </div>
-              </Link>
-            ))}
-          </motion.div>
+          <div className="absolute inset-0">
+            <motion.div
+              className="p-4 space-y-4"
+              initial={{ y: "-50%" }}
+              animate={{ y: "0%" }}
+              transition={{
+                duration: 25,
+                repeat: Infinity,
+                ease: "linear"
+              }}
+              style={{ display: "flex", flexDirection: "column" }}
+              whileHover={{ animationPlayState: "paused" }}
+            >
+              {duplicatedNews.map((news, i) => (
+                <Link to={`/post/${news.id}`} key={i} className="bg-white p-4 rounded-xl border border-gray-50 shadow-sm flex flex-col gap-2 hover:shadow-md transition-shadow cursor-pointer group min-h-[140px] block">
+                  <span className={`text-[10px] font-black tracking-widest text-blue-600`}>{news.category}</span>
+                  <div className="flex gap-4">
+                    <h3 className="font-black text-sm leading-6 text-slate-800 flex-1 group-hover:text-red-600 transition-colors line-clamp-2">{news.title}</h3>
+                    <img src={news.main_image || defaultImg} className="w-16 h-12 rounded-lg object-cover shadow-sm" alt="" />
+                  </div>
+                  <div className="flex items-center gap-1 text-[10px] text-gray-400 font-bold mt-1">
+                    <Clock size={10} />
+                    <span>{formatTime(news.created_at)}</span>
+                  </div>
+                </Link>
+              ))}
+            </motion.div>
+          </div>
         ) : (
           <div className="h-full flex items-center justify-center text-slate-300 font-bold">لا توجد أخبار</div>
         )}
@@ -203,15 +206,16 @@ function SocialCard() {
 function ReportCard({ id, big, label, title, time, views, image, is_cross_media }) {
   const path = is_cross_media ? `/cross-media/${id}` : `/post/${id}`;
   return (
-    <Link to={path} className="block">
-      <article className={`relative rounded-3xl overflow-hidden shadow-xl group bg-white ${big ? "h-[480px]" : "h-64"}`}>
-        <img src={image || defaultImg} className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt="" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/20 to-transparent" />
-        <span className="absolute top-5 right-5 bg-[#e00013] text-white px-4 py-2 rounded-xl text-xs font-black z-10 shadow-lg">{label}</span>
-        <div className="absolute bottom-0 right-0 left-0 p-8 text-white z-10">
-          <h3 className={`${big ? "text-3xl" : "text-xl"} font-black leading-tight mb-4 group-hover:text-red-400 transition-colors drop-shadow-md line-clamp-2`}>{title}</h3>
-          <div className="flex items-center gap-6 text-[11px] font-black text-gray-300">
-            <span>{formatTime(time)}</span>
+    <Link to={path} className="block h-full">
+      <article className={`flex flex-col rounded-3xl overflow-hidden shadow-sm border border-gray-100 group bg-white h-full`}>
+        <div className={`relative w-full ${big ? "h-[300px]" : "h-48"} overflow-hidden shrink-0`}>
+          <img src={image || defaultImg} className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" alt="" />
+          <span className="absolute top-4 right-4 bg-[#e00013] text-white px-3 py-1.5 rounded-lg text-[10px] font-black z-10 shadow-md">{label}</span>
+        </div>
+        <div className="p-6 flex flex-col flex-1">
+          <h3 className={`${big ? "text-2xl" : "text-lg"} font-black leading-snug mb-4 text-[#09264d] group-hover:text-red-600 transition-colors line-clamp-2`}>{title}</h3>
+          <div className="flex items-center justify-between mt-auto pt-4 border-t border-gray-50 text-[11px] font-black text-slate-400">
+            <span className="flex items-center gap-1.5"><Clock size={14} /> {formatTime(time)}</span>
             <div className="flex items-center gap-1">
               <Eye size={14} className="text-red-500" />
               <span>{views}</span>

@@ -70,22 +70,23 @@ const InvestigationPage = () => {
             
             {/* Featured Investigation */}
             {featuredInvestigation && (
-              <Link to={`/investigation/${featuredInvestigation.id}`} className="relative rounded-[2rem] md:rounded-[3rem] overflow-hidden h-[300px] md:h-[540px] group shadow-2xl block">
-                <img src={featuredInvestigation.main_image || "images/port.png"} className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" alt="" />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#09264d] via-[#09264d]/40 to-transparent" />
-                
-                <div className="absolute bottom-0 right-0 left-0 p-6 md:p-12 text-white">
-                  <div className="flex items-center gap-3 mb-4 md:mb-6">
-                     <span className="bg-red-600 px-4 md:px-5 py-1.5 md:py-2 rounded-xl text-[9px] md:text-[10px] font-black shadow-lg uppercase tracking-widest">تحقيق رئيسي</span>
-                     <span className="bg-white/20 backdrop-blur-md px-4 md:px-5 py-1.5 md:py-2 rounded-xl text-[9px] md:text-[10px] font-black shadow-lg uppercase tracking-widest">{featuredInvestigation.category}</span>
+              <Link to={`/investigation/${featuredInvestigation.id}`} className="group shadow-sm bg-white rounded-[2.5rem] border border-gray-100 flex flex-col overflow-hidden block">
+                <div className="relative h-[300px] md:h-[400px] w-full overflow-hidden shrink-0">
+                  <img src={featuredInvestigation.main_image || "images/port.png"} className="absolute inset-0 w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105" alt="" />
+                  <div className="absolute top-4 right-4 flex items-center gap-3 z-10">
+                     <span className="bg-red-600 px-4 md:px-5 py-1.5 md:py-2 rounded-xl text-[9px] md:text-[10px] text-white font-black shadow-lg uppercase tracking-widest">تحقيق رئيسي</span>
+                     <span className="bg-white/90 backdrop-blur-md px-4 md:px-5 py-1.5 md:py-2 rounded-xl text-[9px] md:text-[10px] text-[#09264d] font-black shadow-lg uppercase tracking-widest">{featuredInvestigation.category}</span>
                   </div>
-                  <h2 className="text-2xl md:text-4xl lg:text-5xl font-black mb-4 md:mb-6 leading-tight max-w-4xl drop-shadow-lg group-hover:text-blue-200 transition-colors line-clamp-2">{featuredInvestigation.title}</h2>
-                  <p className="hidden md:block text-gray-200 text-lg mb-8 max-w-3xl leading-relaxed font-bold opacity-90 line-clamp-2">
+                </div>
+                
+                <div className="p-6 md:p-10 flex flex-col flex-1">
+                  <h2 className="text-2xl md:text-4xl lg:text-5xl font-black mb-4 md:mb-6 leading-tight text-[#09264d] group-hover:text-red-600 transition-colors line-clamp-2">{featuredInvestigation.title}</h2>
+                  <p className="hidden md:block text-slate-500 text-lg mb-8 leading-relaxed font-bold line-clamp-2">
                     {featuredInvestigation.content?.replace(/<[^>]*>?/gm, '').substring(0, 150)}...
                   </p>
                   
-                  <div className="flex flex-wrap items-center gap-4 md:gap-8 text-[10px] md:text-xs font-black text-gray-300 border-t border-white/10 pt-6 md:pt-8">
-                     <div className="flex items-center gap-2 bg-white/5 px-3 md:px-4 py-1.5 md:py-2 rounded-lg border border-white/10">
+                  <div className="flex flex-wrap items-center gap-4 md:gap-8 text-[10px] md:text-xs font-black text-slate-400 border-t border-gray-100 pt-6 md:pt-8">
+                     <div className="flex items-center gap-2 bg-slate-50 px-3 md:px-4 py-1.5 md:py-2 rounded-lg border border-gray-100">
                         <User size={14} className="text-red-600" />
                         <span>بواسطة: فريق التحقيق</span>
                      </div>

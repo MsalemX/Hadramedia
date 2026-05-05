@@ -134,41 +134,40 @@ const PostDetailsPage = () => {
   return (
     <div className="bg-[#f7f8fb] min-h-screen pb-20 font-cairo" dir="rtl">
       {/* Hero Section */}
-      <div className="relative h-[400px] md:h-[600px] w-full">
-        <img 
-          src={post.main_image || '/images/hero.png'} 
-          className="w-full h-full object-cover"
-          alt={post.title}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#09264d] via-[#09264d]/40 to-transparent" />
-        
-        <div className="absolute bottom-0 right-0 left-0 max-w-7xl mx-auto px-6 pb-12">
-          <div className="flex flex-col gap-4">
-             <div className="flex items-center gap-2 text-xs font-bold text-blue-200">
-                <NavLink to="/" className="hover:text-white">الرئيسية</NavLink>
-                <ChevronLeft size={14} />
-                <span className="text-white">{post.category}</span>
-             </div>
-             <h1 className="text-3xl md:text-5xl font-black text-white leading-tight max-w-4xl">{post.title}</h1>
-             <div className="flex items-center gap-6 text-sm font-bold text-gray-300 mt-4">
-                <div className="flex items-center gap-2">
-                  <Clock size={16} className="text-red-500" />
-                  <span>{new Date(post.created_at).toLocaleDateString('ar-YE')}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Eye size={16} className="text-red-500" />
-                  <span>{post.views || 0} مشاهدة</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Heart size={16} className="text-red-500" />
-                  <span>{post.likes || 0} إعجاب</span>
-                </div>
-             </div>
-          </div>
+      <div className="max-w-7xl mx-auto px-6 pt-10 pb-6">
+        <div className="relative h-[300px] md:h-[500px] lg:h-[600px] w-full rounded-[2.5rem] overflow-hidden shadow-sm border border-gray-100 mb-10">
+          <img 
+            src={post.main_image || '/images/hero.png'} 
+            className="w-full h-full object-cover"
+            alt={post.title}
+          />
+        </div>
+
+        <div className="flex flex-col gap-6 mb-8">
+           <div className="flex items-center gap-2 text-xs font-bold text-slate-400">
+              <NavLink to="/" className="hover:text-blue-600">الرئيسية</NavLink>
+              <ChevronLeft size={14} />
+              <span className="text-[#e00013] font-black">{post.category}</span>
+           </div>
+           <h1 className="text-3xl md:text-5xl lg:text-6xl font-black text-[#09264d] leading-tight max-w-5xl">{post.title}</h1>
+           <div className="flex flex-wrap items-center gap-6 text-sm font-bold text-slate-400 mt-2">
+              <div className="flex items-center gap-2">
+                <Clock size={16} className="text-red-600" />
+                <span>{new Date(post.created_at).toLocaleDateString('ar-YE')}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Eye size={16} className="text-red-600" />
+                <span>{post.views || 0} مشاهدة</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Heart size={16} className="text-red-600" />
+                <span>{post.likes || 0} إعجاب</span>
+              </div>
+           </div>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 -mt-10 relative z-10">
+      <div className="max-w-7xl mx-auto px-6 mt-4 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
           {/* Main Content */}
