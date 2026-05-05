@@ -59,6 +59,7 @@ import NewsletterManagement from './dashboard/pages/NewsletterManagement';
 import PodcastsManagement from './dashboard/pages/PodcastsManagement';
 import PollsManagement from './dashboard/pages/PollsManagement';
 import ContentEditor from './dashboard/pages/ContentEditor';
+import PagesManagement from './dashboard/pages/PagesManagement';
 
 import { supabase } from './lib/supabase';
 
@@ -171,6 +172,7 @@ function App() {
         <Route path="newsletter" element={<NewsletterManagement />} />
         <Route path="podcasts" element={<PodcastsManagement />} />
         <Route path="polls" element={<PollsManagement />} />
+        <Route path="pages" element={<PagesManagement />} />
         <Route path="content/add" element={<ContentEditor />} />
         <Route path="content/edit/:id" element={<ContentEditor />} />
       </Route>

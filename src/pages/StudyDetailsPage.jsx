@@ -196,13 +196,37 @@ const StudyDetailsPage = () => {
         {/* Content */}
         <div className="bg-white rounded-[3rem] p-8 md:p-14 shadow-sm border border-gray-100 mb-12">
           <div className="prose prose-lg prose-slate text-slate-700 font-medium leading-loose max-w-none text-justify article-content">
+            <style>{`
+              .article-content p {
+                background: #f8fafc80;
+                padding: 1.5rem;
+                border-radius: 1.5rem;
+                border: 1px solid #f1f5f9;
+                margin-bottom: 1.5rem;
+                transition: all 0.3s ease;
+                font-weight: 700;
+              }
+              @media (min-width: 768px) {
+                .article-content p {
+                  padding: 2rem;
+                  border-radius: 2rem;
+                }
+              }
+              .article-content p:hover {
+                background: white;
+                box-shadow: 0 20px 25px -5px rgb(9 38 77 / 0.05);
+                border-color: #e2e8f0;
+              }
+            `}</style>
             {post.content && (post.content.includes('<p>') || post.content.includes('<br')) ? (
               <div dangerouslySetInnerHTML={{ __html: post.content }} />
             ) : (
               (post.content || '').split(/\n\n+/).filter(p => p.trim()).map((paragraph, idx) => (
-                <p key={idx} className="mb-8 leading-[2.2] text-slate-700 font-medium text-lg text-justify">
-                  <LinkifyText text={paragraph.trim()} />
-                </p>
+                <div key={idx} className="bg-slate-50/50 p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] border border-slate-100 mb-6 hover:bg-white hover:shadow-xl hover:shadow-blue-900/5 transition-all duration-300">
+                  <p className="leading-[2.2] text-slate-700 font-medium text-lg text-justify m-0">
+                    <LinkifyText text={paragraph.trim()} />
+                  </p>
+                </div>
               ))
             )}
             <ShareButtons title={post.title} />

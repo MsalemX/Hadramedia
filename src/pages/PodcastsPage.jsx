@@ -8,6 +8,17 @@ const PodcastsPage = () => {
   const [loading, setLoading] = useState(true);
   const [currentAudio, setCurrentAudio] = useState(null);
   const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = React.useRef(null);
+
+  useEffect(() => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.play().catch(e => console.log("Playback error:", e));
+      } else {
+        audioRef.current.pause();
+      }
+    }
+  }, [isPlaying, currentAudio]);
 
   useEffect(() => {
     fetchPodcasts();
@@ -161,11 +172,22 @@ const PodcastsPage = () => {
                         allowFullScreen
                       ></iframe>
                    ) : (
-                      <video className="w-full h-full" controls autoPlay src={currentAudio.media_url}></video>
+                      <video 
+                        ref={audioRef}
+                        className="w-full h-full" 
+                        controls 
+                        src={currentAudio.media_url}
+                        onEnded={() => setIsPlaying(false)}
+                      ></video>
                    )}
                 </div>
              ) : (
-                <audio className="hidden" autoPlay src={currentAudio.media_type === 'audio' ? currentAudio.media_url : ''}></audio>
+                <audio 
+                  ref={audioRef}
+                  className="hidden" 
+                  src={currentAudio.media_type === 'audio' ? currentAudio.media_url : ''}
+                  onEnded={() => setIsPlaying(false)}
+                ></audio>
              )}
 
              <div className="flex items-center gap-4">

@@ -81,7 +81,7 @@ function TopHeader({ toggleMenu, isOpen }) {
 
   return (
     <div className="bg-white border-b border-gray-100 w-full overflow-hidden">
-      <div className="max-w-7xl mx-auto px-2 md:px-6 h-20 md:h-32 flex items-center justify-between gap-2 md:gap-4">
+      <div className="max-w-7xl mx-auto px-2 md:px-6 h-24 md:h-36 flex items-center justify-between gap-2 md:gap-4">
         {/* RIGHT: Mobile Menu Toggle & Logo */}
         <div className="flex items-center gap-3">
           <button
@@ -91,7 +91,7 @@ function TopHeader({ toggleMenu, isOpen }) {
             {isOpen ? <X size={28} /> : <Menu size={28} />}
           </button>
           <Link to="/" className="flex items-center group shrink-0">
-            {logoUrl && <img src={logoUrl} alt="Logo" className="h-16 md:h-28 w-auto max-w-[220px] md:max-w-[400px] object-contain transition-transform group-hover:scale-105" />}
+            {logoUrl && <img src={logoUrl} alt="Logo" className="h-20 md:h-32 w-auto max-w-[250px] md:max-w-[500px] object-contain transition-transform group-hover:scale-105" />}
           </Link>
         </div>
 
@@ -108,9 +108,9 @@ function TopHeader({ toggleMenu, isOpen }) {
             </div>
           )}
 
-          {/* Mobile Site Name */}
+          {/* Mobile Site Name - Always shown, but smaller */}
           <div className="md:hidden">
-            <h1 className="text-[#09264d] font-black text-2xl whitespace-nowrap drop-shadow-sm">حضرميديا</h1>
+            <h1 className="text-[#09264d] font-black text-lg whitespace-nowrap drop-shadow-sm ml-2">حضرميديا</h1>
           </div>
         </div>
 

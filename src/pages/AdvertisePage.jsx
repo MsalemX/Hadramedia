@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
    BarChart,
    Users,
@@ -10,9 +10,29 @@ import {
    MessageSquare,
    Download,
 } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 const AdvertisePage = () => {
-   const stats = [
+   const [data, setData] = useState(null);
+
+   useEffect(() => {
+     const fetchPageData = async () => {
+       const { data: pageData } = await supabase
+         .from('site_pages')
+         .select('content')
+         .eq('id', 'advertise')
+         .single();
+       
+       if (pageData) setData(pageData.content);
+     };
+     fetchPageData();
+   }, []);
+
+   const badge = data?.badge || 'نمو وتوسع';
+   const title = data?.title || 'صل إلى جمهورك المستهدف في حضرموت واليمن';
+   const description = data?.description || 'منصة حضرميديا توفر لك مساحات إعلانية متنوعة وحلول تسويقية ذكية تصل بعلامتك التجارية إلى آلاف القراء يومياً.';
+
+   const stats = data?.stats || [
       {
          icon: BarChart,
          title: 'وصول واسع',
@@ -33,7 +53,7 @@ const AdvertisePage = () => {
       },
    ];
 
-   const ads = [
+   const ads = data?.placements || [
       {
          title: 'بنر الصفحة الرئيسية (Header)',
          size: '728x90',
@@ -66,39 +86,39 @@ const AdvertisePage = () => {
          <div className="bg-[#09264d] text-white pt-24 pb-48 px-6 text-center relative overflow-hidden">
             <div className="max-w-4xl mx-auto relative z-10">
                <span className="bg-red-600 px-5 py-2 rounded-full text-xs font-black mb-8 inline-block uppercase tracking-widest shadow-lg">
-                  نمو وتوسع
+                  {badge}
                </span>
-
+ 
                <h1 className="text-4xl md:text-6xl font-black mb-8 leading-tight">
-                  صل إلى جمهورك المستهدف في حضرموت واليمن
+                  {title}
                </h1>
-
+ 
                <p className="text-blue-100 text-lg md:text-xl font-bold opacity-80 leading-relaxed mb-12">
-                  منصة حضرميديا توفر لك مساحات إعلانية متنوعة وحلول تسويقية ذكية تصل بعلامتك التجارية إلى آلاف القراء يومياً.
+                  {description}
                </p>
-
+ 
                <div className="flex flex-wrap justify-center gap-4">
                   <button className="bg-red-600 hover:bg-red-700 text-white px-10 py-5 rounded-2xl font-black text-lg transition-all shadow-xl shadow-red-900/40">
                      اطلب عرض سعر
                   </button>
-
+ 
                   <button className="bg-white/10 hover:bg-white/20 text-white px-10 py-5 rounded-2xl font-black text-lg transition-all border border-white/10 flex items-center gap-3">
                      <Download size={20} />
                      تحميل دليل الإعلان
                   </button>
                </div>
             </div>
-
+ 
             <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2" />
             <div className="absolute bottom-0 left-0 w-96 h-96 bg-red-600/5 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2" />
          </div>
-
+ 
          <div className="max-w-7xl mx-auto px-6 -mt-24 relative z-10">
             {/* Why Advertise With Us */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-24">
                {stats.map((item, index) => {
-                  const Icon = item.icon;
-
+                  const Icon = typeof item.icon === 'string' ? (item.icon === 'BarChart' ? BarChart : item.icon === 'Users' ? Users : MousePointer) : item.icon;
+ 
                   return (
                      <div
                         key={index}

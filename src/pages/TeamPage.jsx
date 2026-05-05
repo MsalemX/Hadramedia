@@ -1,47 +1,65 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
 import { ChevronLeft, User, Mail, Send, Globe, Search } from 'lucide-react';
-
-const teamMembers = [
-  {
-    role: "رئيس التحرير",
-    members: [
-      { name: "د. عبدالله باطويل", title: "رئيس التحرير التنفيذي", image: "https://via.placeholder.com/150", bio: "خبير في الشؤون الاستراتيجية والصحافة الاستقصائية لأكثر من 20 عاماً." }
-    ]
-  },
-  {
-    role: "هيئة التحرير",
-    members: [
-      { name: "أ. مريم الكثيري", title: "مديرة التحرير", image: "https://via.placeholder.com/150", bio: "متخصصة في قضايا المجتمع والتعليم والإدارة المحلية." },
-      { name: "محمد علي بن بريك", title: "سكرتير التحرير", image: "https://via.placeholder.com/150", bio: "خبرة في إدارة المحتوى الرقمي والتحقق من المصادر." },
-      { name: "سالم العطاس", title: "محرر الشؤون الاقتصادية", image: "https://via.placeholder.com/150", bio: "محلل اقتصادي مهتم بشؤون الموانئ والطاقة في حضرموت." }
-    ]
-  },
-  {
-    role: "وحدة التحقيقات",
-    members: [
-      { name: "فريق التحقيق", title: "وحدة الصحافة الاستقصائية", image: "https://via.placeholder.com/150", bio: "مجموعة من الصحفيين المتخصصين في كشف ملفات الفساد والخدمات." }
-    ]
-  },
-  {
-    role: "المراسلون والمصورون",
-    members: [
-      { name: "أحمد بن طالب", title: "مراسل ميداني - سيئون", image: "https://via.placeholder.com/150" },
-      { name: "سعيد باوزير", title: "مصور فوتوغرافي", image: "https://via.placeholder.com/150" },
-      { name: "فاطمة العمودي", title: "مراسلة - المكلا", image: "https://via.placeholder.com/150" },
-      { name: "خالد المحضار", title: "مراسل الشؤون الإنسانية", image: "https://via.placeholder.com/150" }
-    ]
-  }
-];
+import { supabase } from '../lib/supabase';
 
 const TeamPage = () => {
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    const fetchPageData = async () => {
+      const { data: pageData } = await supabase
+        .from('site_pages')
+        .select('content')
+        .eq('id', 'team')
+        .single();
+      
+      if (pageData) setData(pageData.content);
+    };
+    fetchPageData();
+  }, []);
+
+  const teamTitle = data?.title || "فريق التحرير";
+  const teamDescription = data?.description || "نخبة من الصحفيين والباحثين الملتزمين بنقل الحقيقة وخدمة المجتمع الحضرمي بمهنية عالية.";
+  const teamSections = data?.sections || [
+    {
+      role: "رئيس التحرير",
+      members: [
+        { name: "د. عبدالله باطويل", title: "رئيس التحرير التنفيذي", image: "https://via.placeholder.com/150", bio: "خبير في الشؤون الاستراتيجية والصحافة الاستقصائية لأكثر من 20 عاماً." }
+      ]
+    },
+    {
+      role: "هيئة التحرير",
+      members: [
+        { name: "أ. مريم الكثيري", title: "مديرة التحرير", image: "https://via.placeholder.com/150", bio: "متخصصة في قضايا المجتمع والتعليم والإدارة المحلية." },
+        { name: "محمد علي بن بريك", title: "سكرتير التحرير", image: "https://via.placeholder.com/150", bio: "خبرة في إدارة المحتوى الرقمي والتحقق من المصادر." },
+        { name: "سالم العطاس", title: "محرر الشؤون الاقتصادية", image: "https://via.placeholder.com/150", bio: "محلل اقتصادي مهتم بشؤون الموانئ والطاقة في حضرموت." }
+      ]
+    },
+    {
+      role: "وحدة التحقيقات",
+      members: [
+        { name: "فريق التحقيق", title: "وحدة الصحافة الاستقصائية", image: "https://via.placeholder.com/150", bio: "مجموعة من الصحفيين المتخصصين في كشف ملفات الفساد والخدمات." }
+      ]
+    },
+    {
+      role: "المراسلون والمصورون",
+      members: [
+        { name: "أحمد بن طالب", title: "مراسل ميداني - سيئون", image: "https://via.placeholder.com/150" },
+        { name: "سعيد باوزير", title: "مصور فوتوغرافي", image: "https://via.placeholder.com/150" },
+        { name: "فاطمة العمودي", title: "مراسلة - المكلا", image: "https://via.placeholder.com/150" },
+        { name: "خالد المحضار", title: "مراسل الشؤون الإنسانية", image: "https://via.placeholder.com/150" }
+      ]
+    }
+  ];
+
   return (
     <div className="bg-[#f7f8fb] min-h-screen pb-20 font-cairo" dir="rtl">
       {/* Header Section */}
       <div className="bg-[#09264d] pt-20 pb-40 px-6 text-center">
-        <h1 className="text-4xl md:text-6xl font-black text-white mb-6">فريق التحرير</h1>
+        <h1 className="text-4xl md:text-6xl font-black text-white mb-6">{teamTitle}</h1>
         <p className="text-blue-100 text-lg md:text-xl font-bold max-w-2xl mx-auto opacity-80 leading-relaxed">
-          نخبة من الصحفيين والباحثين الملتزمين بنقل الحقيقة وخدمة المجتمع الحضرمي بمهنية عالية.
+          {teamDescription}
         </p>
       </div>
 
@@ -57,7 +75,7 @@ const TeamPage = () => {
         </div>
 
         {/* Team Sections */}
-        {teamMembers.map((section, idx) => (
+        {teamSections.map((section, idx) => (
           <div key={idx} className="mb-20">
             <div className="flex items-center gap-4 mb-10">
               <div className="w-2 h-8 bg-red-600 rounded-full" />
@@ -69,7 +87,7 @@ const TeamPage = () => {
                 <div key={i} className="bg-white rounded-[2.5rem] p-8 border border-gray-100 shadow-sm hover:shadow-2xl transition-all duration-500 group">
                   <div className="flex items-center gap-6 mb-6">
                     <div className="w-20 h-20 md:w-24 md:h-24 rounded-[2rem] overflow-hidden bg-slate-100 shadow-inner shrink-0">
-                      <img src={member.image} alt={member.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                      <img src={member.image || "https://via.placeholder.com/150"} alt={member.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                     </div>
                     <div>
                       <h3 className="text-xl font-black text-[#09264d] group-hover:text-red-600 transition-colors">{member.name}</h3>

@@ -1,65 +1,60 @@
-import React from 'react';
-import { Gavel, CheckCircle2, AlertTriangle, FileWarning, HelpCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { FileText, ShieldCheck, AlertTriangle, Scale } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 const TermsPage = () => {
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    const fetchPageData = async () => {
+      try {
+        const { data: pageData } = await supabase
+          .from('site_pages')
+          .select('content')
+          .eq('id', 'terms')
+          .single();
+        
+        if (pageData) setData(pageData.content);
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    fetchPageData();
+  }, []);
+
+  const title = data?.title || 'الشروط والأحكام';
+  const content = data?.content || `باستخدامك لموقع حضرميديا، فإنك توافق على الالتزام بالشروط والأحكام التالية. يرجى قراءتها بعناية.
+
+المحتوى المنشور في الموقع هو ملكية فكرية لحضرميديا ما لم يذكر خلاف ذلك. لا يجوز إعادة نشر المحتوى دون ذكر المصدر بشكل واضح.
+
+نحن نسعى جاهدين لضمان دقة المعلومات المنشورة، ولكننا لا نتحمل المسؤولية عن أي أخطاء أو نتائج ناتجة عن استخدام المعلومات المتاحة في الموقع.
+
+يُحظر استخدام الموقع لنشر محتوى يحرض على العنف أو الكراهية أو يخالف القوانين المحلية والدولية.
+
+نحتفظ بالحق في تعديل هذه الشروط في أي وقت دون إشعار مسبق.`;
+
   return (
     <div className="bg-[#f7f8fb] min-h-screen pb-20 font-cairo" dir="rtl">
       {/* Header */}
-      <div className="bg-white border-b border-gray-100 py-16 md:py-24 text-center">
-        <div className="max-w-4xl mx-auto px-6">
-           <div className="w-20 h-20 bg-red-50 text-red-600 rounded-[2rem] flex items-center justify-center mx-auto mb-8 shadow-inner">
-              <Gavel size={40} />
-           </div>
-           <h1 className="text-4xl md:text-5xl font-black text-[#09264d] mb-6">شروط الاستخدام</h1>
-           <p className="text-slate-500 text-lg font-bold">يرجى قراءة هذه الشروط بعناية قبل استخدام المنصة</p>
+      <div className="bg-[#09264d] text-white pt-24 pb-48 px-6 text-center relative overflow-hidden">
+        <div className="max-w-4xl mx-auto relative z-10">
+          <div className="w-20 h-20 bg-red-600/20 rounded-[2rem] flex items-center justify-center mx-auto mb-8 backdrop-blur-xl border border-white/10">
+            <Scale size={40} className="text-red-400" />
+          </div>
+          <h1 className="text-4xl md:text-6xl font-black mb-8 leading-tight">{title}</h1>
+          <p className="text-blue-100 text-lg md:text-xl font-bold opacity-80 leading-relaxed max-w-2xl mx-auto">
+            اتفاقية استخدام الموقع والقواعد المنظمة لتصفح المحتوى والمشاركة في منصات حضرميديا.
+          </p>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto px-6 py-16">
-        <div className="bg-white rounded-[3rem] p-10 md:p-16 shadow-sm border border-gray-100 space-y-12">
-          
-          <section className="space-y-6">
-            <h2 className="text-2xl font-black text-[#09264d] flex items-center gap-3">
-              <CheckCircle2 size={24} className="text-teal-600" /> قبول الشروط
-            </h2>
-            <p className="text-slate-600 font-bold leading-loose">
-              بمجرد دخولك إلى موقع حضرميديا، فإنك توافق على الالتزام بشروط الاستخدام هذه، وجميع القوانين واللوائح المعمول بها، وتتحمل المسؤولية عن الامتثال لأي قوانين محلية سارية.
-            </p>
-          </section>
-
-          <section className="space-y-6">
-            <h2 className="text-2xl font-black text-[#09264d] flex items-center gap-3">
-              <AlertTriangle size={24} className="text-orange-500" /> حقوق الملكية الفكرية
-            </h2>
-            <p className="text-slate-600 font-bold leading-loose">
-              جميع المحتويات المنشورة على حضرميديا من أخبار، تقارير، صور، فيديوهات، وتصاميم هي ملك حصري للمنصة ما لم يذكر خلاف ذلك. يمنع نسخ أو إعادة توزيع أي محتوى دون إذن كتابي مسبق أو ذكر المصدر بوضوح.
-            </p>
-          </section>
-
-          <section className="space-y-6">
-            <h2 className="text-2xl font-black text-[#09264d] flex items-center gap-3">
-              <FileWarning size={24} className="text-red-600" /> إخلاء المسؤولية
-            </h2>
-            <p className="text-slate-600 font-bold leading-loose">
-              يتم تقديم المواد الموجودة على موقعنا "كما هي". لا تقدم حضرميديا أي ضمانات، صريحة أو ضمنية، وتخلي مسؤوليتها بموجب هذا من جميع الضمانات الأخرى بما في ذلك الضمانات المتعلقة بصحة المعلومات أو دقتها.
-            </p>
-          </section>
-
-          <section className="space-y-6">
-            <h2 className="text-2xl font-black text-[#09264d] flex items-center gap-3">
-              <HelpCircle size={24} className="text-blue-600" /> سلوك المستخدم
-            </h2>
-            <p className="text-slate-600 font-bold leading-loose">
-              يلتزم المستخدم بعدم استخدام الموقع لإرسال أو نشر أي محتوى غير قانوني، تهديدي، مسيء، أو ينتهك حقوق الآخرين بأي شكل من الأشكال. نحتفظ بالحق في حذف أي تعليقات أو مساهمات تخالف هذه الشروط.
-            </p>
-          </section>
-
-          <div className="bg-red-50 p-8 rounded-3xl border border-red-100 text-center mt-12">
-             <p className="text-red-800 font-black">أي استفسار قانوني؟</p>
-             <p className="text-red-600 text-sm font-bold mt-2 mb-6">يرجى التواصل مع القسم القانوني عبر البريد الإلكتروني المخصص</p>
-             <button className="bg-red-600 text-white px-8 py-3 rounded-xl font-black text-sm hover:bg-red-700 transition-all shadow-lg">legal@hadramedia.com</button>
-          </div>
-
+      <div className="max-w-4xl mx-auto px-6 -mt-24 relative z-10">
+        <div className="bg-white rounded-[3rem] p-10 md:p-16 shadow-2xl border border-gray-100">
+           <div className="prose prose-lg max-w-none prose-slate prose-headings:font-black prose-p:font-bold prose-p:text-slate-600 prose-p:leading-loose">
+              <div className="whitespace-pre-wrap font-bold text-slate-600 leading-loose">
+                {content}
+              </div>
+           </div>
         </div>
       </div>
     </div>

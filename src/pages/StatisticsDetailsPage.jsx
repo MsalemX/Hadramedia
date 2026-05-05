@@ -124,77 +124,93 @@ const StatisticsDetailsPage = () => {
 
   return (
     <div className="bg-[#f7f8fb] min-h-screen pb-20 font-cairo" dir="rtl">
-      {/* Hero Header Section - Full Width Image */}
-      <div className="relative h-[60vh] md:h-[80vh] w-full overflow-hidden">
-        <img 
-          src={post.main_image || "/images/hero.png"} 
-          alt={post.title} 
-          className="absolute inset-0 w-full h-full object-cover transition-transform duration-10000 hover:scale-110"
-        />
-        {/* Gradients for readability */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#09264d] via-[#09264d]/40 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-transparent" />
+      {/* Breadcrumbs */}
+      <div className="max-w-7xl mx-auto px-6 pt-10">
+        <div className="flex items-center gap-2 text-xs font-black text-slate-400 mb-6">
+          <NavLink to="/" className="hover:text-blue-600 transition-colors">الرئيسية</NavLink>
+          <ChevronLeft size={14} className="opacity-50" />
+          <NavLink to="/polls" className="hover:text-blue-600 transition-colors">استطلاعات</NavLink>
+          <ChevronLeft size={14} className="opacity-50" />
+          <span className="text-slate-600 truncate max-w-[150px] md:max-w-[300px]">{post.title}</span>
+        </div>
+      </div>
 
-        {/* Top Navigation Overlay */}
-        <div className="absolute top-0 left-0 right-0 p-6 z-30">
-          <div className="max-w-6xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-2 text-xs font-black text-white/80 bg-black/20 backdrop-blur-md px-4 py-2 rounded-full border border-white/10">
-              <NavLink to="/" className="hover:text-white transition-colors">الرئيسية</NavLink>
-              <ChevronLeft size={14} className="opacity-50" />
-              <NavLink to="/polls" className="hover:text-white transition-colors">استطلاعات</NavLink>
-              <ChevronLeft size={14} className="opacity-50" />
-              <span className="text-white truncate max-w-[150px] md:max-w-[300px]">{post.title}</span>
-            </div>
+      {/* Hero Header Section - Clean Image */}
+      <div className="max-w-7xl mx-auto px-6 pt-10">
+        <div className="relative h-[300px] md:h-[500px] lg:h-[600px] w-full rounded-[3rem] overflow-hidden shadow-2xl border border-white/10 group">
+          <img 
+            src={post.main_image || "/images/hero.png"} 
+            alt={post.title} 
+            className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
+          />
+          <div className="absolute top-6 right-6">
+            <span className="bg-[#e00013] text-white px-5 py-2.5 rounded-2xl text-[10px] md:text-xs font-black shadow-2xl shadow-red-600/40 uppercase tracking-widest flex items-center gap-2 backdrop-blur-md">
+              <BarChart3 size={16} /> {post.category || 'استطلاع رأي'}
+            </span>
           </div>
         </div>
 
-        {/* Title and Meta Section */}
-        <div className="absolute inset-0 flex flex-col justify-end pb-20 md:pb-32">
-          <div className="max-w-5xl mx-auto px-6 w-full">
-            <div className="space-y-6 animate-in slide-in-from-bottom-10 duration-700">
-              <div className="flex items-center gap-3">
-                <span className="bg-[#e00013] text-white px-5 py-2.5 rounded-2xl text-[10px] md:text-xs font-black shadow-2xl shadow-red-600/40 uppercase tracking-widest flex items-center gap-2">
-                  <BarChart3 size={16} /> {post.category || 'استطلاع رأي'}
-                </span>
+        {/* Title and Meta Section - Below Image */}
+        <div className="mt-12 mb-10 text-right">
+          <h1 className="text-3xl md:text-5xl lg:text-6xl font-black text-[#09264d] leading-tight md:leading-[1.2] mb-8">
+            {post.title}
+          </h1>
+          
+          <div className="flex flex-wrap items-center gap-4 md:gap-6 text-xs md:text-sm font-black text-slate-400">
+            <div className="flex items-center gap-3 bg-white px-5 py-3 rounded-2xl border border-gray-100 shadow-sm">
+              <div className="w-8 h-8 bg-red-50 rounded-xl flex items-center justify-center text-red-600">
+                <User size={16} />
               </div>
-              <h1 className="text-3xl md:text-5xl lg:text-7xl font-black text-white leading-tight md:leading-[1.1] drop-shadow-2xl">
-                {post.title}
-              </h1>
-              
-              <div className="flex flex-wrap items-center gap-4 md:gap-8 text-xs md:text-sm font-black text-white/90 pt-4">
-                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-xl px-5 py-3 rounded-2xl border border-white/10 shadow-xl">
-                  <div className="w-8 h-8 bg-red-600 rounded-xl flex items-center justify-center shadow-lg">
-                    <User size={16} className="text-white" />
-                  </div>
-                  <span>بواسطة: {post.author || 'هيئة التحرير'}</span>
-                </div>
-                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-xl px-5 py-3 rounded-2xl border border-white/10 shadow-xl">
-                  <div className="w-8 h-8 bg-[#09264d] rounded-xl flex items-center justify-center shadow-lg">
-                    <Calendar size={16} className="text-white" />
-                  </div>
-                  <span>{new Date(post.created_at).toLocaleDateString('ar-YE')}</span>
-                </div>
-                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-xl px-5 py-3 rounded-2xl border border-white/10 shadow-xl">
-                  <div className="w-8 h-8 bg-green-600 rounded-xl flex items-center justify-center shadow-lg">
-                    <Eye size={16} className="text-white" />
-                  </div>
-                  <span>{post.views_count || 0} مشاهدة</span>
-                </div>
+              <span>بواسطة: {post.author || 'هيئة التحرير'}</span>
+            </div>
+            <div className="flex items-center gap-3 bg-white px-5 py-3 rounded-2xl border border-gray-100 shadow-sm">
+              <div className="w-8 h-8 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600">
+                <Calendar size={16} />
               </div>
+              <span>{new Date(post.created_at).toLocaleDateString('ar-YE')}</span>
+            </div>
+            <div className="flex items-center gap-3 bg-white px-5 py-3 rounded-2xl border border-gray-100 shadow-sm">
+              <div className="w-8 h-8 bg-green-50 rounded-xl flex items-center justify-center text-green-600">
+                <Eye size={16} />
+              </div>
+              <span>{post.views_count || 0} مشاهدة</span>
             </div>
           </div>
         </div>
       </div>
 
       {/* Main Content Area */}
-      <div className="max-w-4xl mx-auto px-6 -mt-16 relative z-20">
+      <div className="max-w-4xl mx-auto px-6 mt-10 relative z-20">
         
         {/* Content Card */}
         <div className="bg-white rounded-[3rem] p-8 md:p-16 shadow-[0_32px_64px_-12px_rgba(0,0,0,0.08)] border border-gray-100 mb-12 relative overflow-hidden group">
           <div className="absolute top-0 right-0 w-24 h-24 bg-red-50/50 rounded-bl-[4rem] -z-10 group-hover:scale-110 transition-transform" />
           
-          <div className="prose prose-lg prose-slate text-slate-700 font-medium leading-loose max-w-none relative z-10 article-content"
-               dangerouslySetInnerHTML={{ __html: post.content }} />
+          <div className="prose prose-lg prose-slate text-slate-700 font-medium leading-loose max-w-none relative z-10 article-content">
+            <style>{`
+              .article-content p {
+                background: #f8fafc80;
+                padding: 1.5rem;
+                border-radius: 1.5rem;
+                border: 1px solid #f1f5f9;
+                margin-bottom: 1.5rem;
+                transition: all 0.3s ease;
+                font-weight: 700;
+              }
+              @media (min-width: 768px) {
+                .article-content p {
+                  padding: 2rem;
+                  border-radius: 2rem;
+                }
+              }
+              .article-content p:hover {
+                background: white;
+                box-shadow: 0 20px 25px -5px rgb(9 38 77 / 0.05);
+                border-color: #e2e8f0;
+              }
+            `}</style>
+            <div dangerouslySetInnerHTML={{ __html: post.content }} />
+          </div>
         </div>
         
         <ReaderTools />

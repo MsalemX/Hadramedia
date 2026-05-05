@@ -1,15 +1,39 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Mail, Phone, MapPin, Send, MessageSquare, Clock, Globe } from 'lucide-react';
+import { supabase } from '../lib/supabase';
 
 const ContactPage = () => {
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    const fetchPageData = async () => {
+      const { data: pageData } = await supabase
+        .from('site_pages')
+        .select('content')
+        .eq('id', 'contact')
+        .single();
+      
+      if (pageData) setData(pageData.content);
+    };
+    fetchPageData();
+  }, []);
+
+  const title = data?.title || 'تواصل معنا';
+  const description = data?.description || 'نحن هنا للاستماع إليك. سواء كان لديك خبر، استفسار، أو اقتراح، لا تتردد في مراسلتنا عبر أي من قنوات التواصل المتاحة.';
+  const cards = data?.cards || [
+    { label: 'راسلنا بريدياً', info: 'info@hadramedia.com', icon: 'Mail' },
+    { label: 'اتصل بنا', info: '+967 5 300 000', icon: 'Phone' },
+    { label: 'مكتبنا', info: 'المكلا، شارع الميناء، برج الخير', icon: 'MapPin' }
+  ];
+
   return (
     <div className="bg-[#f7f8fb] min-h-screen pb-20 font-cairo" dir="rtl">
       {/* Header */}
       <div className="bg-[#09264d] text-white pt-24 pb-48 px-6 text-center relative overflow-hidden">
         <div className="max-w-4xl mx-auto relative z-10">
-          <h1 className="text-4xl md:text-6xl font-black mb-8 leading-tight">تواصل معنا</h1>
+          <h1 className="text-4xl md:text-6xl font-black mb-8 leading-tight">{title}</h1>
           <p className="text-blue-100 text-lg md:text-xl font-bold opacity-80 leading-relaxed max-w-2xl mx-auto">
-            نحن هنا للاستماع إليك. سواء كان لديك خبر، استفسار، أو اقتراح، لا تتردد في مراسلتنا عبر أي من قنوات التواصل المتاحة.
+            {description}
           </p>
         </div>
         <div className="absolute inset-0 bg-[url('images/hero.png')] opacity-10 bg-cover bg-center mix-blend-overlay" />
@@ -20,32 +44,20 @@ const ContactPage = () => {
           
           {/* Contact Info Cards */}
           <div className="lg:col-span-4 space-y-6">
-            <div className="bg-white p-10 rounded-[3rem] shadow-xl border border-gray-100 flex flex-col items-center text-center group hover:border-blue-100 transition-all">
-               <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-6 shadow-inner group-hover:bg-blue-600 group-hover:text-white transition-all">
-                  <Mail size={32} />
-               </div>
-               <h3 className="text-xl font-black text-[#09264d] mb-2">راسلنا بريدياً</h3>
-               <p className="text-slate-500 font-bold text-sm mb-4">للمراسلات العامة والإخبارية</p>
-               <span className="text-[#09264d] font-black">info@hadramedia.com</span>
-            </div>
-
-            <div className="bg-white p-10 rounded-[3rem] shadow-xl border border-gray-100 flex flex-col items-center text-center group hover:border-red-100 transition-all">
-               <div className="w-16 h-16 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center mb-6 shadow-inner group-hover:bg-red-600 group-hover:text-white transition-all">
-                  <Phone size={32} />
-               </div>
-               <h3 className="text-xl font-black text-[#09264d] mb-2">اتصل بنا</h3>
-               <p className="text-slate-500 font-bold text-sm mb-4">متاحون من السبت إلى الخميس</p>
-               <span className="text-[#09264d] font-black" dir="ltr">+967 5 300 000</span>
-            </div>
-
-            <div className="bg-white p-10 rounded-[3rem] shadow-xl border border-gray-100 flex flex-col items-center text-center group hover:border-teal-100 transition-all">
-               <div className="w-16 h-16 bg-teal-50 text-teal-600 rounded-2xl flex items-center justify-center mb-6 shadow-inner group-hover:bg-teal-600 group-hover:text-white transition-all">
-                  <MapPin size={32} />
-               </div>
-               <h3 className="text-xl font-black text-[#09264d] mb-2">مكتبنا</h3>
-               <p className="text-slate-500 font-bold text-sm mb-4">المقر الرئيسي - حضرموت</p>
-               <span className="text-[#09264d] font-black">المكلا، شارع الميناء، برج الخير</span>
-            </div>
+            {cards.map((card, i) => {
+              const Icon = card.icon === 'Mail' ? Mail : card.icon === 'Phone' ? Phone : MapPin;
+              const colorClass = card.icon === 'Mail' ? 'blue' : card.icon === 'Phone' ? 'red' : 'teal';
+              return (
+                <div key={i} className={`bg-white p-10 rounded-[3rem] shadow-xl border border-gray-100 flex flex-col items-center text-center group hover:border-${colorClass}-100 transition-all`}>
+                  <div className={`w-16 h-16 bg-${colorClass}-50 text-${colorClass}-600 rounded-2xl flex items-center justify-center mb-6 shadow-inner group-hover:bg-${colorClass}-600 group-hover:text-white transition-all`}>
+                    <Icon size={32} />
+                  </div>
+                  <h3 className="text-xl font-black text-[#09264d] mb-2">{card.label}</h3>
+                  <p className="text-slate-500 font-bold text-sm mb-4">{card.label === 'اتصل بنا' ? 'متاحون من السبت إلى الخميس' : 'المقر الرئيسي - حضرموت'}</p>
+                  <span className="text-[#09264d] font-black" dir={card.icon === 'Phone' ? 'ltr' : 'rtl'}>{card.info}</span>
+                </div>
+              );
+            })}
           </div>
 
           {/* Contact Form */}

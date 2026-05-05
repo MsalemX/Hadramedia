@@ -14,6 +14,7 @@ import {
   ChevronRight,
   TrendingUp,
   FileSearch,
+  Layout,
   Users,
   ShieldCheck,
   Flag,
@@ -109,6 +110,7 @@ const DashboardLayout = () => {
       items: [
         { to: "/dashboard/ads", icon: Newspaper, label: "الإعلانات" },
         { to: "/dashboard/stats", icon: BarChart3, label: "الإحصائيات" },
+        { to: "/dashboard/pages", icon: Layout, label: "إدارة الصفحات" },
         { to: "/dashboard/settings", icon: Settings, label: "إعدادات الموقع" },
         { to: "/dashboard/newsletter", icon: Mail, label: "النشرة البريدية" },
       ]
