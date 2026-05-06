@@ -80,6 +80,12 @@ const ContentEditor = () => {
 
   const uploadFile = async (file, bucket = 'images') => {
     try {
+      // Check file size (50MB limit for Supabase Free Plan)
+      const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+      if (file.size > MAX_FILE_SIZE) {
+        throw new Error(`حجم الملف كبير جداً (${(file.size / (1024 * 1024)).toFixed(2)} MB). الحد الأقصى المسموح به هو 50 MB في الخطة المجانية.`);
+      }
+
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}-${Math.random().toString(36).substring(2, 10)}.${fileExt}`;
       const filePath = `${fileName}`;

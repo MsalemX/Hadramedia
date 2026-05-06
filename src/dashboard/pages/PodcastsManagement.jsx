@@ -55,15 +55,24 @@ const PodcastsManagement = () => {
     fetchPodcasts();
   }, []);
 
-  const handleFileUpload = async (file, type) => {
+  const handleFileUpload = async (file) => {
     try {
+      // Check file size (50MB limit for Supabase Free Plan)
+      const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+      if (file.size > MAX_FILE_SIZE) {
+        throw new Error(`حجم الملف كبير جداً (${(file.size / (1024 * 1024)).toFixed(2)} MB). الحد الأقصى هو 50 MB في الخطة المجانية.`);
+      }
+
       const fileExt = file.name.split('.').pop();
       const fileName = `${Math.random()}.${fileExt}`;
       const filePath = `podcasts/${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('content')
-        .upload(filePath, file);
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
       if (uploadError) throw uploadError;
 
@@ -73,7 +82,7 @@ const PodcastsManagement = () => {
 
       return publicUrl;
     } catch (error) {
-      alert('Error uploading file');
+      alert(error.message || 'خطأ في رفع الملف');
       console.error(error);
       return null;
     }

@@ -42,12 +42,14 @@ async function setupStorage() {
       console.log("Bucket 'content' created successfully.");
     } else {
       console.log("Bucket 'content' already exists.");
-      // Ensure it's public
+      // Ensure it's public and increase file size limit if possible
       const { data, error: updateError } = await supabase.storage.updateBucket('content', {
-        public: true
+        public: true,
+        fileSizeLimit: 524288000, // 500MB (Note: Free tier might still cap at 50MB)
+        allowedMimeTypes: null
       });
       if (updateError) throw updateError;
-      console.log("Bucket 'content' is confirmed to be public.");
+      console.log("Bucket 'content' updated successfully with higher size limit (if allowed).");
     }
 
     console.log("Setup complete!");

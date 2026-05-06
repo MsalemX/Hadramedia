@@ -9,24 +9,64 @@ import {
    Phone,
    MessageSquare,
    Download,
+   Loader2
 } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 
 const AdvertisePage = () => {
    const [data, setData] = useState(null);
+   const [settings, setSettings] = useState(null);
+   const [loading, setLoading] = useState(false);
+   const [formData, setFormData] = useState({
+      name: '',
+      email: '',
+      company: '',
+      ad_type: 'نوع الإعلان المطلوب',
+      details: ''
+   });
 
    useEffect(() => {
-     const fetchPageData = async () => {
+     const fetchData = async () => {
+       // Fetch advertise page content
        const { data: pageData } = await supabase
          .from('site_pages')
          .select('content')
          .eq('id', 'advertise')
          .single();
-       
        if (pageData) setData(pageData.content);
      };
-     fetchPageData();
+     fetchData();
    }, []);
+
+   const handleSubmit = async (e) => {
+      e.preventDefault();
+      setLoading(true);
+      try {
+         const { error } = await supabase
+            .from('ad_requests')
+            .insert([{
+               name: formData.name,
+               email: formData.email,
+               company: formData.company,
+               ad_type: formData.ad_type,
+               details: formData.details,
+               status: 'قيد الانتظار'
+            }]);
+
+         if (error) throw error;
+         setFormData({ name: '', email: '', company: '', ad_type: 'نوع الإعلان المطلوب', details: '' });
+         alert('تم إرسال طلبك بنجاح! سيتواصل معك فريقنا قريباً.');
+      } catch (err) {
+         console.error(err);
+         alert('حدث خطأ أثناء إرسال الطلب، يرجى المحاولة لاحقاً.');
+      } finally {
+         setLoading(false);
+      }
+   };
+
+   const scrollToForm = () => {
+      document.getElementById('ad-form')?.scrollIntoView({ behavior: 'smooth' });
+   };
 
    const badge = data?.badge || 'نمو وتوسع';
    const title = data?.title || 'صل إلى جمهورك المستهدف في حضرموت واليمن';
@@ -88,37 +128,40 @@ const AdvertisePage = () => {
                <span className="bg-red-600 px-5 py-2 rounded-full text-xs font-black mb-8 inline-block uppercase tracking-widest shadow-lg">
                   {badge}
                </span>
- 
+
                <h1 className="text-4xl md:text-6xl font-black mb-8 leading-tight">
                   {title}
                </h1>
- 
+
                <p className="text-blue-100 text-lg md:text-xl font-bold opacity-80 leading-relaxed mb-12">
                   {description}
                </p>
- 
+
                <div className="flex flex-wrap justify-center gap-4">
-                  <button className="bg-red-600 hover:bg-red-700 text-white px-10 py-5 rounded-2xl font-black text-lg transition-all shadow-xl shadow-red-900/40">
+                  <button 
+                    onClick={scrollToForm}
+                    className="bg-red-600 hover:bg-red-700 text-white px-10 py-5 rounded-2xl font-black text-lg transition-all shadow-xl shadow-red-900/40"
+                  >
                      اطلب عرض سعر
                   </button>
- 
+
                   <button className="bg-white/10 hover:bg-white/20 text-white px-10 py-5 rounded-2xl font-black text-lg transition-all border border-white/10 flex items-center gap-3">
                      <Download size={20} />
                      تحميل دليل الإعلان
                   </button>
                </div>
             </div>
- 
+
             <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/10 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/2" />
             <div className="absolute bottom-0 left-0 w-96 h-96 bg-red-600/5 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2" />
          </div>
- 
+
          <div className="max-w-7xl mx-auto px-6 -mt-24 relative z-10">
             {/* Why Advertise With Us */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-24">
                {stats.map((item, index) => {
                   const Icon = typeof item.icon === 'string' ? (item.icon === 'BarChart' ? BarChart : item.icon === 'Users' ? Users : MousePointer) : item.icon;
- 
+
                   return (
                      <div
                         key={index}
@@ -215,7 +258,7 @@ const AdvertisePage = () => {
                               البريد الإلكتروني
                            </p>
                            <p className="font-bold text-[#09264d]">
-                              ads@hadramedia.com
+                              {data?.contact_email || 'info@hadramedia.com'}
                            </p>
                         </div>
                      </div>
@@ -227,27 +270,33 @@ const AdvertisePage = () => {
 
                         <div>
                            <p className="text-[10px] font-black text-slate-400 uppercase">
-                              واتساب للأعمال
+                              اتصل بنا / واتساب
                            </p>
                            <p className="font-bold text-[#09264d]">
-                              +967 770 000 000
+                              {data?.contact_phone || '+967 5 300 000'}
                            </p>
                         </div>
                      </div>
                   </div>
                </div>
 
-               <div className="lg:col-span-7">
-                  <form className="space-y-6 bg-slate-50 p-8 md:p-12 rounded-[3rem] border border-gray-100">
+               <div className="lg:col-span-7" id="ad-form">
+                  <form onSubmit={handleSubmit} className="space-y-6 bg-slate-50 p-8 md:p-12 rounded-[3rem] border border-gray-100">
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <input
+                           required
                            type="text"
+                           value={formData.name}
+                           onChange={(e) => setFormData({...formData, name: e.target.value})}
                            placeholder="الاسم الكامل"
                            className="bg-white border-none rounded-xl px-6 py-5 text-sm font-bold focus:ring-4 focus:ring-red-600/5 transition-all outline-none"
                         />
 
                         <input
+                           required
                            type="email"
+                           value={formData.email}
+                           onChange={(e) => setFormData({...formData, email: e.target.value})}
                            placeholder="البريد الإلكتروني"
                            className="bg-white border-none rounded-xl px-6 py-5 text-sm font-bold focus:ring-4 focus:ring-red-600/5 transition-all outline-none"
                         />
@@ -256,26 +305,36 @@ const AdvertisePage = () => {
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <input
                            type="text"
+                           value={formData.company}
+                           onChange={(e) => setFormData({...formData, company: e.target.value})}
                            placeholder="اسم الشركة"
                            className="bg-white border-none rounded-xl px-6 py-5 text-sm font-bold focus:ring-4 focus:ring-red-600/5 transition-all outline-none"
                         />
 
-                        <select className="bg-white border-none rounded-xl px-6 py-5 text-sm font-bold focus:ring-4 focus:ring-red-600/5 transition-all outline-none text-slate-400">
-                           <option>نوع الإعلان المطلوب</option>
-                           <option>بنر رئيسي</option>
-                           <option>مقال ترويجي</option>
-                           <option>إعلان جوال</option>
+                        <select 
+                           value={formData.ad_type}
+                           onChange={(e) => setFormData({...formData, ad_type: e.target.value})}
+                           className="bg-white border-none rounded-xl px-6 py-5 text-sm font-bold focus:ring-4 focus:ring-red-600/5 transition-all outline-none text-slate-400"
+                        >
+                           <option disabled>نوع الإعلان المطلوب</option>
+                           <option value="بنر رئيسي">بنر رئيسي</option>
+                           <option value="مقال ترويجي">مقال ترويجي</option>
                         </select>
                      </div>
 
                      <textarea
+                        value={formData.details}
+                        onChange={(e) => setFormData({...formData, details: e.target.value})}
                         placeholder="تفاصيل إضافية عن طلبك..."
                         rows={5}
                         className="w-full bg-white border-none rounded-xl px-6 py-5 text-sm font-bold focus:ring-4 focus:ring-red-600/5 transition-all outline-none"
                      />
 
-                     <button className="w-full bg-[#09264d] hover:bg-blue-900 text-white font-black py-5 rounded-2xl transition-all shadow-xl shadow-blue-900/20 text-xl flex items-center justify-center gap-3">
-                        <MessageSquare size={24} />
+                     <button 
+                        disabled={loading}
+                        className="w-full bg-[#09264d] hover:bg-blue-900 text-white font-black py-5 rounded-2xl transition-all shadow-xl shadow-blue-900/20 text-xl flex items-center justify-center gap-3 disabled:opacity-50"
+                     >
+                        {loading ? <Loader2 className="animate-spin" size={24} /> : <MessageSquare size={24} />}
                         إرسال الطلب
                      </button>
                   </form>

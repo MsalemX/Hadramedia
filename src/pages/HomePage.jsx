@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Eye, Clock, ChevronRight, ChevronLeft, Mail, Loader2 } from "lucide-react";
+import { Eye, Clock, ChevronRight, ChevronLeft, Mail, Loader2, Plus } from "lucide-react";
 import { motion } from "framer-motion";
 import { supabase } from "../lib/supabase";
 import AdBanner from "../components/AdBanner";
@@ -427,6 +427,27 @@ const HomePage = () => {
             </div>
           </div>
 
+          {/* Middle Ad & Advertise Section */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+            <div className="md:col-span-8 flex justify-start order-2 md:order-2">
+              <AdBanner position="content" className="w-full" />
+            </div>
+            <div className="md:col-span-4 flex justify-end order-1 md:order-1">
+              <Link 
+                to="/advertise" 
+                className="bg-white border-2 border-dashed border-gray-200 rounded-[2rem] p-6 flex items-center justify-between gap-4 hover:border-red-600 hover:bg-red-50 transition-all group w-full"
+              >
+                <div className="text-right">
+                  <h4 className="font-black text-slate-800 text-lg">أعلن معنا</h4>
+                  <p className="text-[10px] font-bold text-slate-400 mt-1">مساحة إعلانية شاغرة.. تواصل معنا</p>
+                </div>
+                <div className="w-12 h-12 bg-red-50 text-red-600 rounded-2xl flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-all shadow-sm">
+                  <Plus size={24} />
+                </div>
+              </Link>
+            </div>
+          </div>
+
           {/* Articles Section - Full Width Background */}
           {articles.length > 0 && <ArticlesSection articles={articles} />}
 
@@ -442,14 +463,9 @@ const HomePage = () => {
           {/* Cartoons Grid */}
           {cartoons.length > 0 && <NewsGrid title="كاريكاتير" news={cartoons} color="red-600" link="/cartoons" />}
 
-          {/* Bottom Ad & Social Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
-            <div className="lg:col-span-8 h-full">
-              <AdBanner position="content" className="h-full flex items-center" />
-            </div>
-            <div className="lg:col-span-4">
-              <SocialCard />
-            </div>
+          {/* Social Section */}
+          <div className="max-w-4xl mx-auto w-full">
+            <SocialCard />
           </div>
         </div>
       </main>

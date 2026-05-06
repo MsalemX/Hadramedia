@@ -25,10 +25,69 @@ const AdsManagement = () => {
     position: 'sidebar',
     status: 'نشط'
   });
+  const [contactInfo, setContactInfo] = useState({
+    email: '',
+    phone: ''
+  });
+  const [updatingContact, setUpdatingContact] = useState(false);
 
   useEffect(() => {
     fetchAds();
+    fetchContactInfo();
   }, []);
+
+  const fetchContactInfo = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('site_pages')
+        .select('content')
+        .eq('id', 'advertise')
+        .single();
+      
+      if (data?.content) {
+        setContactInfo({
+          email: data.content.contact_email || '',
+          phone: data.content.contact_phone || ''
+        });
+      }
+    } catch (err) {
+      console.error("Error fetching contact info:", err);
+    }
+  };
+
+  const updateContactInfo = async () => {
+    try {
+      setUpdatingContact(true);
+      
+      // Get current content first to merge
+      const { data: current } = await supabase
+        .from('site_pages')
+        .select('content')
+        .eq('id', 'advertise')
+        .single();
+      
+      const newContent = {
+        ...(current?.content || {}),
+        contact_email: contactInfo.email,
+        contact_phone: contactInfo.phone
+      };
+
+      const { error } = await supabase
+        .from('site_pages')
+        .upsert({ 
+          id: 'advertise', 
+          content: newContent,
+          updated_at: new Date()
+        });
+
+      if (error) throw error;
+      alert('تم تحديث بيانات التواصل بنجاح');
+    } catch (err) {
+      alert('خطأ أثناء التحديث: ' + err.message);
+    } finally {
+      setUpdatingContact(false);
+    }
+  };
 
   const fetchAds = async () => {
     try {
@@ -48,6 +107,12 @@ const AdsManagement = () => {
   };
 
   const uploadFile = async (file) => {
+    // Check file size (50MB limit for Supabase Free Plan)
+    const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
+    if (file.size > MAX_FILE_SIZE) {
+      throw new Error(`حجم الملف كبير جداً (${(file.size / (1024 * 1024)).toFixed(2)} MB). الحد الأقصى هو 50 MB في الخطة المجانية.`);
+    }
+
     const fileExt = file.name.split('.').pop();
     const fileName = `${Math.random()}-${Date.now()}.${fileExt}`;
     const filePath = `ads/${fileName}`;
@@ -177,6 +242,46 @@ const AdsManagement = () => {
           <Plus size={20} />
           إضافة إعلان جديد
         </button>
+      </div>
+
+      {/* Advertiser Contact Settings */}
+      <div className="bg-white p-8 rounded-[40px] border border-gray-100 shadow-sm">
+        <div className="flex items-center gap-3 mb-6">
+          <div className="w-1.5 h-6 bg-red-600 rounded-full" />
+          <h3 className="text-lg font-black text-slate-800">بيانات التواصل للمعلنين (تظهر في صفحة أعلن معنا)</h3>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+          <div className="space-y-2">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">البريد الإلكتروني</label>
+            <input 
+              type="email" 
+              value={contactInfo.email}
+              onChange={(e) => setContactInfo({...contactInfo, email: e.target.value})}
+              placeholder="ads@hadramedia.com"
+              className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-3.5 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-blue-600/5 transition-all"
+            />
+          </div>
+          
+          <div className="space-y-2">
+            <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest px-2">رقم الواتساب / الهاتف</label>
+            <input 
+              type="text" 
+              value={contactInfo.phone}
+              onChange={(e) => setContactInfo({...contactInfo, phone: e.target.value})}
+              placeholder="+967 770 000 000"
+              className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-3.5 text-sm font-bold focus:outline-none focus:ring-4 focus:ring-blue-600/5 transition-all"
+            />
+          </div>
+
+          <button 
+            onClick={updateContactInfo}
+            disabled={updatingContact}
+            className="bg-[#09264d] hover:bg-blue-900 text-white px-8 py-4 rounded-2xl font-black text-sm transition-all shadow-lg shadow-blue-900/20 disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            {updatingContact ? <Loader2 size={18} className="animate-spin" /> : 'تحديث البيانات'}
+          </button>
+        </div>
       </div>
 
       {loading ? (

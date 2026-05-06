@@ -27,7 +27,7 @@ const PollsManagement = () => {
   const [formData, setFormData] = useState({
     title: '',
     author: '',
-    content: '',
+    content: [''],
     main_image: '',
     status: 'نشط'
   });
@@ -57,7 +57,7 @@ const PollsManagement = () => {
     setFormData({
       title: '',
       author: '',
-      content: '',
+      content: [''],
       main_image: '',
       status: 'نشط'
     });
@@ -75,7 +75,7 @@ const PollsManagement = () => {
     setFormData({
       title: poll.title,
       author: poll.author || '',
-      content: poll.content || '',
+      content: Array.isArray(poll.content) ? poll.content : (poll.content ? poll.content.split('\n\n') : ['']),
       main_image: poll.main_image || '',
       status: poll.status || 'نشط'
     });
@@ -134,7 +134,7 @@ const PollsManagement = () => {
       const payload = {
         title: formData.title,
         author: formData.author,
-        content: formData.content,
+        content: formData.content.filter(p => p.trim() !== ''), // Store as array
         main_image: finalImageUrl,
         status: formData.status || 'نشط'
       };
@@ -394,17 +394,46 @@ const PollsManagement = () => {
                 </div>
               </div>
 
-              {/* Content */}
-              <div className="space-y-2">
-                <label className="text-xs font-black text-slate-500 uppercase tracking-widest mr-2">محتوى التقرير</label>
-                <textarea
-                  required
-                  rows={8}
-                  value={formData.content}
-                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  placeholder="اكتب تفاصيل الاستطلاع هنا..."
-                  className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 text-sm focus:outline-none focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600/20 transition-all font-bold resize-none"
-                />
+              {/* Content Paragraphs */}
+              <div className="space-y-4">
+                <label className="text-xs font-black text-slate-500 uppercase tracking-widest mr-2 flex justify-between items-center">
+                  محتوى التقرير (فقرات)
+                  <button 
+                    type="button" 
+                    onClick={() => setFormData({...formData, content: [...formData.content, '']})}
+                    className="text-blue-600 hover:text-blue-700 text-[10px] flex items-center gap-1 bg-blue-50 px-3 py-1 rounded-lg"
+                  >
+                    <Plus size={12} /> إضافة فقرة
+                  </button>
+                </label>
+                
+                {formData.content.map((para, idx) => (
+                  <div key={idx} className="relative group">
+                    <textarea
+                      rows={4}
+                      value={para}
+                      onChange={(e) => {
+                        const newContent = [...formData.content];
+                        newContent[idx] = e.target.value;
+                        setFormData({ ...formData, content: newContent });
+                      }}
+                      placeholder={`الفقرة ${idx + 1}...`}
+                      className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 text-sm focus:outline-none focus:ring-4 focus:ring-blue-600/5 focus:border-blue-600/20 transition-all font-bold resize-none"
+                    />
+                    {formData.content.length > 1 && (
+                      <button 
+                        type="button"
+                        onClick={() => {
+                          const newContent = formData.content.filter((_, i) => i !== idx);
+                          setFormData({ ...formData, content: newContent });
+                        }}
+                        className="absolute -left-2 -top-2 bg-white text-red-500 rounded-full p-1 shadow-sm border border-red-100 opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <MinusCircle size={16} />
+                      </button>
+                    )}
+                  </div>
+                ))}
               </div>
 
               {/* Submit */}

@@ -90,13 +90,13 @@ const DashboardLayout = () => {
         { to: "/dashboard/cross-media", icon: PlayCircle, label: "الكروس ميديا" },
         { to: "/dashboard/podcasts", icon: Mic, label: "البودكاست" },
         { to: "/dashboard/polls", icon: BarChart3, label: "الاستطلاعات" },
+        { to: "/dashboard/ad-requests", icon: MessageSquare, label: "طلبات الإعلانات" },
       ]
     },
     {
-      title: "التصنيفات والوسوم",
+      title: "التصنيفات",
       items: [
         { to: "/dashboard/categories", icon: Settings, label: "التصنيفات" },
-        { to: "/dashboard/tags", icon: Settings, label: "الوسوم" },
       ]
     },
     {

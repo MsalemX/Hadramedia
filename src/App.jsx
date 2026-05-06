@@ -50,7 +50,6 @@ import InvestigationsManagement from './dashboard/pages/InvestigationsManagement
 import ArticlesManagement from './dashboard/pages/ArticlesManagement';
 import CartoonsManagement from './dashboard/pages/CartoonsManagement';
 import CategoriesManagement from './dashboard/pages/CategoriesManagement';
-import TagsManagement from './dashboard/pages/TagsManagement';
 import UsersManagement from './dashboard/pages/UsersManagement';
 import AdsManagement from './dashboard/pages/AdsManagement';
 import StatsManagement from './dashboard/pages/StatsManagement';
@@ -60,6 +59,7 @@ import PodcastsManagement from './dashboard/pages/PodcastsManagement';
 import PollsManagement from './dashboard/pages/PollsManagement';
 import ContentEditor from './dashboard/pages/ContentEditor';
 import PagesManagement from './dashboard/pages/PagesManagement';
+import AdRequestsManagement from './dashboard/pages/AdRequestsManagement';
 
 import { supabase } from './lib/supabase';
 
@@ -164,7 +164,6 @@ function App() {
         <Route path="articles" element={<ArticlesManagement />} />
         <Route path="cartoons" element={<CartoonsManagement />} />
         <Route path="categories" element={<CategoriesManagement />} />
-        <Route path="tags" element={<TagsManagement />} />
         <Route path="users" element={<UsersManagement />} />
         <Route path="ads" element={<AdsManagement />} />
         <Route path="stats" element={<StatsManagement />} />
@@ -173,6 +172,7 @@ function App() {
         <Route path="podcasts" element={<PodcastsManagement />} />
         <Route path="polls" element={<PollsManagement />} />
         <Route path="pages" element={<PagesManagement />} />
+        <Route path="ad-requests" element={<AdRequestsManagement />} />
         <Route path="content/add" element={<ContentEditor />} />
         <Route path="content/edit/:id" element={<ContentEditor />} />
       </Route>

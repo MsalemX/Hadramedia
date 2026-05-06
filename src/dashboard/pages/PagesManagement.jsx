@@ -468,6 +468,20 @@ const PagesManagement = () => {
                 </div>
               </div>
 
+              <SectionHeader title="بيانات التواصل للإعلان" />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+                <InputGroup 
+                  label="البريد الإلكتروني للإعلانات" 
+                  value={pageData.contact_email} 
+                  onChange={(val) => setPageData({...pageData, contact_email: val})} 
+                />
+                <InputGroup 
+                  label="رقم التواصل / واتساب" 
+                  value={pageData.contact_phone} 
+                  onChange={(val) => setPageData({...pageData, contact_phone: val})} 
+                />
+              </div>
+
               <SectionHeader title="مساحات الإعلان" />
               <div className="space-y-4">
                 {pageData.placements?.map((ad, i) => (

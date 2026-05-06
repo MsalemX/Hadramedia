@@ -187,11 +187,13 @@ const ArticleDetailsPage = () => {
             {post.content && (post.content.includes('<p>') || post.content.includes('<br')) ? (
               <div dangerouslySetInnerHTML={{ __html: post.content }} />
             ) : (
-              (post.content || '').split(/\n\n+/).filter(p => p.trim()).map((paragraph, idx) => (
-                <p key={idx} className="mb-8 leading-[2.2] text-slate-700 font-medium text-lg text-justify">
-                  <LinkifyText text={paragraph.trim()} />
-                </p>
-              ))
+                (post.content || '').split(/\n\n+/).filter(p => p.trim()).map((paragraph, idx) => (
+                  <div key={idx} className="bg-slate-50/50 p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] border border-slate-100 mb-4 hover:bg-white hover:shadow-xl hover:shadow-blue-900/5 transition-all duration-300">
+                    <p className="leading-[2.2] text-slate-700 font-medium text-lg text-justify m-0">
+                      <LinkifyText text={paragraph.trim()} />
+                    </p>
+                  </div>
+                ))
             )}
           </div>
           <ShareButtons title={post.title} />
