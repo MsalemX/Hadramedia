@@ -58,4 +58,30 @@
     word-break: break-word;
     overflow-wrap: break-word;
   }
+
+  .article-content.framed-paragraphs p {
+    background: #f8fafc80;
+    padding: 1.5rem;
+    border-radius: 1.5rem;
+    border: 1px solid #f1f5f9;
+    margin-bottom: 0.75rem;
+    transition: all 0.3s ease;
+    font-weight: 700;
+    line-height: 2;
+    text-align: justify;
+    margin-top: 0;
+  }
+
+  @media (min-width: 768px) {
+    .article-content.framed-paragraphs p {
+      padding: 2rem;
+      border-radius: 2rem;
+    }
+  }
+
+  .article-content.framed-paragraphs p:hover {
+    background: white;
+    box-shadow: 0 10px 15px -3px rgb(9 38 77 / 0.05);
+    border-color: #e2e8f0;
+  }
 }

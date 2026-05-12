@@ -186,22 +186,14 @@ const PostDetailsPage = () => {
             </div>
 
             <div className="bg-white rounded-[40px] p-8 md:p-12 shadow-sm border border-gray-100 text-right">
-            <div className="prose prose-lg max-w-none font-bold text-slate-700 leading-relaxed article-content text-right">
-              <style>{`
-                .article-content p {
-                  line-height: 2;
-                  margin: 0;
-                }
-              `}</style>
+            <div className="prose prose-lg max-w-none font-bold text-slate-700 leading-relaxed article-content text-right framed-paragraphs">
               {post.content && (post.content.includes('<p>') || post.content.includes('<br')) ? (
                 <div dangerouslySetInnerHTML={{ __html: post.content }} />
               ) : (
                 (post.content || '').split(/\n\n+/).filter(p => p.trim()).map((paragraph, idx) => (
-                  <div key={idx} className="bg-slate-50/50 p-6 md:p-8 rounded-[1.5rem] md:rounded-[2rem] border border-slate-100 mb-4 hover:bg-white hover:shadow-xl hover:shadow-blue-900/5 transition-all duration-300">
-                    <p className="leading-[2] text-slate-700 font-bold text-lg text-justify">
-                      <LinkifyText text={paragraph.trim()} />
-                    </p>
-                  </div>
+                  <p key={idx} className="leading-[2] text-slate-700 font-bold text-lg text-justify">
+                    <LinkifyText text={paragraph.trim()} />
+                  </p>
                 ))
               )}
             </div>

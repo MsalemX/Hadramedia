@@ -108,10 +108,6 @@ function TopHeader({ toggleMenu, isOpen }) {
             </div>
           )}
 
-          {/* Mobile Site Name - Always shown, but smaller */}
-          <div className="md:hidden">
-            <h1 className="text-[#09264d] font-black text-lg whitespace-nowrap drop-shadow-sm ml-2">حضرميديا</h1>
-          </div>
         </div>
 
         {/* LEFT: Search & Date */}
